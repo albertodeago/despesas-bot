@@ -23,12 +23,9 @@ if (
 
 // TODO: funzione per aggiungere una categoria o sotto categoria
 // TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> tricky, bisogna risettare "allCategories" se uno lancia sto comando
-// TODO: comando per aggiungere una spesa
-//  - /aggiungi <importo> <descrizione> <categoria>? <sottocategoria>? -> verifica categoria e sottocategoria, se vanno bene mette la spesa
-//  - /aggiungi <importo> <descrizione> -> chiede la categoria e la sottocategoria
-// TODO: - alias con /a
+// TODO: - alias con /a per aggiungi?
 //  - /aggiungi <importo> <descrizione> <categoria> -> chiede la sottocategoria
-//  - /aggiungi veloce <importo> <descrizione>
+// TODO: - /aggiungi veloce <importo> <descrizione> -> aggiunge la spesa con categoria NON_CATEGORIZZATA
 // TODO: - alias con /av ?
 // TODO: come gestiamo le spese ricorrenti?
 // TODO: posso farmi mandare dei reminder dal bot? per esempio per le spese ricorrenti?

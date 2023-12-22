@@ -1,6 +1,10 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { Category } from '../categories/fetch';
-import { fromMsg } from '../../utils';
+import {
+  fromMsg,
+  createExpenseRow,
+  getDescriptionFromTokenizedMessage,
+} from '../../utils';
 import { ExpenseRow, writeGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
 import { CONFIG } from '../../config/config';
@@ -24,13 +28,11 @@ type AddExpenseParams = {
   googleSheetClient: sheets_v4.Sheets;
   formattedDate: string;
   amount: number;
-  description: string;
+  description?: string;
   categoryName: string;
-  subCategoryName: string;
+  subCategoryName?: string;
 };
 const addExpense = async ({
-  bot,
-  chatId,
   googleSheetClient,
   formattedDate,
   amount,
@@ -38,9 +40,13 @@ const addExpense = async ({
   categoryName,
   subCategoryName,
 }: AddExpenseParams): Promise<undefined | unknown> => {
-  const expense: [ExpenseRow] = [
-    [formattedDate, amount, categoryName, subCategoryName, description],
-  ];
+  const expense = createExpenseRow({
+    date: formattedDate,
+    amount,
+    categoryName,
+    subCategoryName,
+    description,
+  });
   try {
     await writeGoogleSheet({
       client: googleSheetClient,
@@ -66,12 +72,12 @@ export const AddExpenseCommand = {
     async (msg: TelegramBot.Message) => {
       const { chatId, tokens, date } = fromMsg(msg);
       console.log(
-        `AddExpenseCommand handler. Chat ${chatId}. Tokens ${tokens}`
+        `AddExpenseCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
       );
 
       const categoriesFlat = allCategories.map((c) => c.name);
 
-      // we need at least 'aggiungi <amount> <categoria>'
+      // we need at least 'aggiungi <amount> <descrizione>|<categoria>'
       if (tokens.length < 3) {
         bot.sendMessage(chatId, getMsgExplanation());
         return;
@@ -113,7 +119,8 @@ export const AddExpenseCommand = {
           }
           return;
         } else {
-          // we need to show the subcategories and then add the expense
+          // we have the category, but we need to understand the subcategory
+          // show the subcategories and then add the expense
           const subCategories = category.subCategories.map((sc) => [
             { text: sc.name },
           ]);
@@ -140,7 +147,7 @@ export const AddExpenseCommand = {
             }
 
             // we got everything, add the expense
-            const description = tokens.slice(2, tokens.length - 1).join(' ');
+            const description = getDescriptionFromTokenizedMessage(tokens);
             const err = await addExpense({
               bot,
               chatId,
@@ -175,10 +182,14 @@ export const AddExpenseCommand = {
         }
 
         // we got everything, add the expense
-        const description = tokens.slice(2, tokens.length - 2).join(' ');
-        const expense: [ExpenseRow] = [
-          [formattedDate, amount, category.name, subCategory.name, description],
-        ];
+        const description = getDescriptionFromTokenizedMessage(tokens, 2);
+        const expense = createExpenseRow({
+          date: formattedDate,
+          amount,
+          categoryName: category.name,
+          subCategoryName: subCategory.name,
+          description,
+        });
         try {
           await writeGoogleSheet({
             client: googleSheetClient,
@@ -194,7 +205,7 @@ export const AddExpenseCommand = {
           return;
         }
       } else {
-        const description = tokens.slice(2, tokens.length).join(' ');
+        const description = getDescriptionFromTokenizedMessage(tokens, 0);
         // the user wants to add the expense, but he didn't specify the category and subcategory
         // we need to show the category list (and after the subcategories based on his response)
         bot.sendMessage(chatId, 'Scegli una categoria', {
@@ -215,9 +226,12 @@ export const AddExpenseCommand = {
 
           if (category.subCategories.length === 0) {
             // the category doesn't have any subcategories, we can add the expense
-            const expense: [ExpenseRow] = [
-              [formattedDate, amount, category.name, '', description],
-            ];
+            const expense = createExpenseRow({
+              date: formattedDate,
+              amount,
+              categoryName: category.name,
+              description,
+            });
             try {
               await writeGoogleSheet({
                 client: googleSheetClient,
@@ -251,15 +265,13 @@ export const AddExpenseCommand = {
             }
 
             // we got everything, add the expense
-            const expense: [ExpenseRow] = [
-              [
-                formattedDate,
-                amount,
-                category.name,
-                subCategory.name,
-                description,
-              ],
-            ];
+            const expense = createExpenseRow({
+              date: formattedDate,
+              amount,
+              categoryName: category.name,
+              subCategoryName: subCategory.name,
+              description,
+            });
             try {
               await writeGoogleSheet({
                 client: googleSheetClient,
