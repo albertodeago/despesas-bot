@@ -61,6 +61,113 @@ const addExpense = async ({
   }
 };
 
+type HandleGenericParams = {
+  bot: TelegramBot;
+  chatId: number;
+  tokens: string[];
+  googleSheetClient: sheets_v4.Sheets;
+  formattedDate: string;
+  amount: number;
+};
+type HandleCategoryAndSubcategoryParams = HandleGenericParams & {
+  allCategories: Category[];
+};
+type HandleSubcategoryParams = HandleGenericParams & {
+  category: Category;
+};
+export const getCategoryAndSubcategoryHandler =
+  ({
+    bot,
+    allCategories,
+    chatId,
+    tokens,
+    googleSheetClient,
+    formattedDate,
+    amount,
+  }: HandleCategoryAndSubcategoryParams) =>
+  async (msg: TelegramBot.Message) => {
+    const category = allCategories.find((c) => c.name === msg.text);
+    if (!category) {
+      bot.sendMessage(chatId, getErrorMessage());
+      return;
+    }
+
+    const description = getDescriptionFromTokenizedMessage(tokens, 0);
+
+    // now, if there are subcategories, show them, otherwise add the expense
+    if (category.subCategories.length === 0) {
+      // the category doesn't have any subcategories, we can add the expense
+      const err = await addExpense({
+        bot,
+        chatId,
+        googleSheetClient,
+        formattedDate,
+        amount,
+        description,
+        categoryName: category.name,
+      });
+      bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+      return;
+    }
+
+    // the category has subcategories, we need to show them
+    bot.sendMessage(chatId, 'Scegli una sottocategoria', {
+      reply_markup: {
+        keyboard: category.subCategories.map((sc) => [{ text: sc.name }]),
+        one_time_keyboard: true,
+      },
+    });
+    bot.once(
+      'message',
+      getSubcategoryHandler({
+        bot,
+        category,
+        chatId,
+        tokens,
+        googleSheetClient,
+        formattedDate,
+        amount,
+      })
+    );
+    return;
+  };
+
+export const getSubcategoryHandler =
+  ({
+    bot,
+    category,
+    chatId,
+    tokens,
+    googleSheetClient,
+    formattedDate,
+    amount,
+  }: HandleSubcategoryParams) =>
+  async (msg: TelegramBot.Message) => {
+    const subCategory = category.subCategories.find(
+      (sc) => sc.name === msg.text
+    );
+    if (!subCategory) {
+      // the user inserted a specific subcategory but we couldn't find it
+      bot.sendMessage(chatId, getErrorMessage());
+      return;
+    }
+
+    // we got everything, add the expense
+    const description = getDescriptionFromTokenizedMessage(tokens);
+    const err = await addExpense({
+      bot,
+      chatId,
+      googleSheetClient,
+      formattedDate,
+      amount,
+      description,
+      categoryName: category.name,
+      subCategoryName: subCategory.name,
+    });
+    bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+    return;
+  };
+
 export const AddExpenseCommand = {
   pattern: /^aggiungi/i,
   getHandler:
@@ -130,38 +237,21 @@ export const AddExpenseCommand = {
           });
 
           // we add another listener to get the subcategory
-          // TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(  (maybe we can mitigate this with a check on the chatId, but not .once then)
-          bot.once('message', async (msg) => {
-            const subCategory = category.subCategories.find(
-              (sc) => sc.name === msg.text
-            );
-            if (!subCategory) {
-              // the user inserted a specific subcategory but we couldn't find it
-              bot.sendMessage(
-                chatId,
-                'Cè stato un problema, reinserisci la spesa'
-              );
-              return;
-            }
-
-            // we got everything, add the expense
-            const description = getDescriptionFromTokenizedMessage(tokens);
-            const err = await addExpense({
+          // TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
+          // (maybe we can mitigate this with a check on the chatId, but not .once then)
+          bot.once(
+            'message',
+            getSubcategoryHandler({
               bot,
+              category,
               chatId,
+              tokens,
               googleSheetClient,
               formattedDate,
               amount,
-              description,
-              categoryName: category.name,
-              subCategoryName: subCategory.name,
-            });
-            bot.sendMessage(
-              chatId,
-              err ? getErrorMessage(err) : getOkMessage()
-            );
-            return;
-          });
+            })
+          );
+          return;
         }
       } else if (categoriesFlat.includes(secondLastToken)) {
         // second last token is a category, need to check if last token is a (correct) subcategory
@@ -203,68 +293,23 @@ export const AddExpenseCommand = {
             one_time_keyboard: true,
           },
         });
-        // TODO: this is error prone too, another message could screw this up (maybe we can mitigate this with a check on the chatId, but not .once then)
-        bot.once('message', async (msg) => {
-          const category = allCategories.find((c) => c.name === msg.text);
-          if (!category) {
-            bot.sendMessage(chatId, getErrorMessage());
-            return;
-          }
 
-          // now, if there are subcategories, show them, otherwise add the expense
-
-          if (category.subCategories.length === 0) {
-            // the category doesn't have any subcategories, we can add the expense
-            const err = await addExpense({
-              bot,
-              chatId,
-              googleSheetClient,
-              formattedDate,
-              amount,
-              description,
-              categoryName: category.name,
-            });
-            bot.sendMessage(
-              chatId,
-              err ? getErrorMessage(err) : getOkMessage()
-            );
-            return;
-          }
-
-          // the category has subcategories, we need to show them
-          bot.sendMessage(chatId, 'Scegli una sottocategoria', {
-            reply_markup: {
-              keyboard: category.subCategories.map((sc) => [{ text: sc.name }]),
-              one_time_keyboard: true,
-            },
-          });
-          bot.once('message', async (msg) => {
-            const subCategory = category.subCategories.find(
-              (sc) => sc.name === msg.text
-            );
-            if (!subCategory) {
-              bot.sendMessage(chatId, getErrorMessage());
-              return;
-            }
-
-            // we got everything, add the expense
-            const err = await addExpense({
-              bot,
-              chatId,
-              googleSheetClient,
-              formattedDate,
-              amount,
-              description,
-              categoryName: category.name,
-              subCategoryName: subCategory.name,
-            });
-            bot.sendMessage(
-              chatId,
-              err ? getErrorMessage(err) : getOkMessage()
-            );
-            return;
-          });
-        });
+        // we need to wait for both the category and the subcategory (if exists)
+        // TODO: this is error prone too, another message could screw this up
+        // (maybe we can mitigate this with a check on the chatId, but not .once then)
+        bot.once(
+          'message',
+          getCategoryAndSubcategoryHandler({
+            bot,
+            allCategories,
+            chatId,
+            tokens,
+            googleSheetClient,
+            formattedDate,
+            amount,
+          })
+        );
+        return;
       }
     },
 };

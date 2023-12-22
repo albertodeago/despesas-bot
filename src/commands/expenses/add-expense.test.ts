@@ -1,5 +1,9 @@
 import { describe, expect, vi, it, afterEach } from 'vitest';
-import { AddExpenseCommand } from './add-expense';
+import {
+  AddExpenseCommand,
+  getCategoryAndSubcategoryHandler,
+  getSubcategoryHandler,
+} from './add-expense';
 import TelegramBot from 'node-telegram-bot-api';
 
 // TODO: in this file we probably should mock the sheetId, tabName, range, etc...
@@ -120,7 +124,7 @@ describe('AddExpenseCommand', () => {
     expect(calledWith[1]).toContain('Scegli una sottocategoria');
 
     // we also set a once listener after this
-    expect(bot.once).toHaveBeenCalled(); // TODO: we should export the handler for the once and test it
+    expect(bot.once).toHaveBeenCalled(); // tested with getSubcategoryHandler
   });
 
   it('should send an error message if the second last token is a category but the last one is not a subcategory', () => {
@@ -210,6 +214,121 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Scegli una categoria');
-    expect(bot.once).toHaveBeenCalled(); // TODO: we should export the handler for the once and test it
+    expect(bot.once).toHaveBeenCalled(); // tested with getCategoryAndSubcategoryHandler
+  });
+
+  describe('getCategoryAndSubcategoryHandler', () => {
+    const getHandler = () =>
+      getCategoryAndSubcategoryHandler({
+        // @ts-expect-error
+        bot,
+        // @ts-expect-error
+        googleSheetClient: mockGoogleSheetClient,
+        allCategories: categories,
+        chatId: 123,
+        tokens: ['aggiungi', '20', 'descrizione', 'multi', 'token'],
+        formattedDate: '15/12/2023',
+        amount: 50,
+      });
+
+    it("should send an error message if the category doesn't exist", async () => {
+      const categoryHandler = getHandler();
+      await categoryHandler({ ...defaultMsg, text: 'not-existing' });
+
+      expect(bot.sendMessage).toHaveBeenCalledWith(
+        123,
+        'Cè stato un problema, reinserisci la spesa\n'
+      );
+    });
+
+    it("should insert the expense if the selected category doesn't have subcategories", async () => {
+      const categoryHandler = getHandler();
+      await categoryHandler({ ...defaultMsg, text: 'Category_3' });
+
+      expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+        client: mockGoogleSheetClient,
+        sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
+        tabName: 'Spese',
+        range: 'A:E',
+        data: [['15/12/2023', 50, 'Category_3', '', 'descrizione multi token']],
+      });
+      await vi.waitFor(() => {
+        if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+          throw 'Mock not called yet';
+      });
+      const calledWith = bot.sendMessage.mock.calls[0];
+      expect(calledWith[0]).toBe(123);
+      expect(calledWith[1]).toContain('Fatto!');
+    });
+
+    it('should ask for the subcategory if the selected category have subcategories', async () => {
+      const categoryHandler = getHandler();
+      await categoryHandler({ ...defaultMsg, text: 'Category_1' });
+
+      const calledWith = bot.sendMessage.mock.calls[0];
+      expect(calledWith[0]).toBe(123);
+      expect(calledWith[1]).toContain('Scegli una sottocategoria');
+      expect(bot.once).toHaveBeenCalled(); // tested with getSubcategoryHandler
+    });
+  });
+
+  describe('getSubcategoryHandler', () => {
+    const getHandler = () =>
+      getSubcategoryHandler({
+        // @ts-expect-error
+        bot,
+        // @ts-expect-error
+        googleSheetClient: mockGoogleSheetClient,
+        category: categories[0],
+        chatId: 123,
+        tokens: [
+          'aggiungi',
+          '20',
+          'descrizione',
+          'multi',
+          'token',
+          'Category_1',
+        ],
+        formattedDate: '15/12/2023',
+        amount: 20,
+      });
+
+    it("should send an error message if the subcategory doesn't exist", async () => {
+      const subCategoryHandler = getHandler();
+      await subCategoryHandler({ ...defaultMsg, text: 'not-existing' });
+
+      expect(bot.sendMessage).toHaveBeenCalledWith(
+        123,
+        'Cè stato un problema, reinserisci la spesa\n'
+      );
+    });
+
+    it('should add the expense if the subcategory is correct', async () => {
+      const subCategoryHandler = getHandler();
+      await subCategoryHandler({ ...defaultMsg, text: 'Subcategory_1' });
+
+      expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+        client: mockGoogleSheetClient,
+        sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
+        tabName: 'Spese',
+        range: 'A:E',
+        data: [
+          [
+            '15/12/2023',
+            20,
+            'Category_1',
+            'Subcategory_1',
+            'descrizione multi token',
+          ],
+        ],
+      });
+      await vi.waitFor(() => {
+        if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+          throw 'Mock not called yet';
+      });
+      const calledWith = bot.sendMessage.mock.calls[0];
+      expect(calledWith[0]).toBe(123);
+      expect(calledWith[1]).toContain('Fatto!');
+    });
   });
 });
