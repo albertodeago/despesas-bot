@@ -5,7 +5,7 @@ import {
   createExpenseRow,
   getDescriptionFromTokenizedMessage,
 } from '../../utils';
-import { ExpenseRow, writeGoogleSheet } from '../../google';
+import { writeGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
 import { CONFIG } from '../../config/config';
 
@@ -101,22 +101,20 @@ export const AddExpenseCommand = {
         const category = allCategories.find((c) => c.name === lastToken)!;
         if (category.subCategories.length === 0) {
           // the category doesn't have any subcategories, we can add the expense
-          const description = tokens.slice(2, tokens.length - 1).join(' ');
-          const expense: [ExpenseRow] = [
-            [formattedDate, amount, category.name, '', description],
-          ];
-          try {
-            await writeGoogleSheet({
-              client: googleSheetClient,
-              sheetId: CONFIG.sheetId,
-              tabName: CONFIG.tabName,
-              range: CONFIG.range,
-              data: expense,
-            });
-            bot.sendMessage(chatId, getOkMessage());
-          } catch (e) {
-            bot.sendMessage(chatId, getErrorMessage(e));
-          }
+
+          // all the tokens except the first one (aggiungi), the amount and
+          // the last one (category) are the description
+          const description = getDescriptionFromTokenizedMessage(tokens);
+          const err = await addExpense({
+            bot,
+            chatId,
+            googleSheetClient,
+            formattedDate,
+            amount,
+            description,
+            categoryName: category.name,
+          });
+          bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
           return;
         } else {
           // we have the category, but we need to understand the subcategory
@@ -183,27 +181,18 @@ export const AddExpenseCommand = {
 
         // we got everything, add the expense
         const description = getDescriptionFromTokenizedMessage(tokens, 2);
-        const expense = createExpenseRow({
-          date: formattedDate,
+        const err = await addExpense({
+          bot,
+          chatId,
+          googleSheetClient,
+          formattedDate,
           amount,
+          description,
           categoryName: category.name,
           subCategoryName: subCategory.name,
-          description,
         });
-        try {
-          await writeGoogleSheet({
-            client: googleSheetClient,
-            sheetId: CONFIG.sheetId,
-            tabName: CONFIG.tabName,
-            range: CONFIG.range,
-            data: expense,
-          });
-          bot.sendMessage(chatId, getOkMessage());
-          return;
-        } catch (e) {
-          bot.sendMessage(chatId, getErrorMessage(e));
-          return;
-        }
+        bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+        return;
       } else {
         const description = getDescriptionFromTokenizedMessage(tokens, 0);
         // the user wants to add the expense, but he didn't specify the category and subcategory
@@ -226,26 +215,20 @@ export const AddExpenseCommand = {
 
           if (category.subCategories.length === 0) {
             // the category doesn't have any subcategories, we can add the expense
-            const expense = createExpenseRow({
-              date: formattedDate,
+            const err = await addExpense({
+              bot,
+              chatId,
+              googleSheetClient,
+              formattedDate,
               amount,
-              categoryName: category.name,
               description,
+              categoryName: category.name,
             });
-            try {
-              await writeGoogleSheet({
-                client: googleSheetClient,
-                sheetId: CONFIG.sheetId,
-                tabName: CONFIG.tabName,
-                range: CONFIG.range,
-                data: expense,
-              });
-              bot.sendMessage(chatId, getOkMessage());
-              return;
-            } catch (e) {
-              bot.sendMessage(chatId, getErrorMessage(e));
-              return;
-            }
+            bot.sendMessage(
+              chatId,
+              err ? getErrorMessage(err) : getOkMessage()
+            );
+            return;
           }
 
           // the category has subcategories, we need to show them
@@ -265,27 +248,21 @@ export const AddExpenseCommand = {
             }
 
             // we got everything, add the expense
-            const expense = createExpenseRow({
-              date: formattedDate,
+            const err = await addExpense({
+              bot,
+              chatId,
+              googleSheetClient,
+              formattedDate,
               amount,
+              description,
               categoryName: category.name,
               subCategoryName: subCategory.name,
-              description,
             });
-            try {
-              await writeGoogleSheet({
-                client: googleSheetClient,
-                sheetId: CONFIG.sheetId,
-                tabName: CONFIG.tabName,
-                range: CONFIG.range,
-                data: expense,
-              });
-              bot.sendMessage(chatId, getOkMessage());
-              return;
-            } catch (e) {
-              bot.sendMessage(chatId, getErrorMessage(e));
-              return;
-            }
+            bot.sendMessage(
+              chatId,
+              err ? getErrorMessage(err) : getOkMessage()
+            );
+            return;
           });
         });
       }
