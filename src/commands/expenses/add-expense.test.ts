@@ -97,11 +97,13 @@ describe('AddExpenseCommand', () => {
       range: 'A:E',
       data: [['15/12/2023', 20, 'Category_3', '', 'descrizione']],
     });
-    vi.waitFor(() => {
-      const calledWith = bot.sendMessage.mock.calls[0];
-      expect(calledWith[0]).toBe(123);
-      expect(calledWith[1]).toContain('Fatto!');
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
     });
+    const calledWith = bot.sendMessage.mock.calls[0];
+    expect(calledWith[0]).toBe(123);
+    expect(calledWith[1]).toContain('Fatto!');
   });
 
   it("should ask for the subcategory if the message doesn't finish with a category with no subcategories", () => {
@@ -140,7 +142,7 @@ describe('AddExpenseCommand', () => {
     );
   });
 
-  it('should add the expense if the message finish with a category and subcategory', () => {
+  it('should add the expense if the message finish with a category and subcategory', async () => {
     const handler = AddExpenseCommand.getHandler(
       // @ts-expect-error
       bot,
@@ -156,14 +158,16 @@ describe('AddExpenseCommand', () => {
       range: 'A:E',
       data: [['15/12/2023', 20, 'Category_1', 'Subcategory_1', 'descrizione']],
     });
-    vi.waitFor(() => {
-      const calledWith = bot.sendMessage.mock.calls[0];
-      expect(calledWith[0]).toBe(123);
-      expect(calledWith[1]).toContain('Fatto!');
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
     });
+    const calledWith = bot.sendMessage.mock.calls[0];
+    expect(calledWith[0]).toBe(123);
+    expect(calledWith[1]).toContain('Fatto!');
   });
 
-  it("should add the expense also if the message doesn't have a description", () => {
+  it("should add the expense also if the message doesn't have a description", async () => {
     const handler = AddExpenseCommand.getHandler(
       // @ts-expect-error
       bot,
@@ -182,11 +186,13 @@ describe('AddExpenseCommand', () => {
       range: 'A:E',
       data: [['15/12/2023', 20, 'Category_1', 'Subcategory_1', '']],
     });
-    vi.waitFor(() => {
-      const calledWith = bot.sendMessage.mock.calls[0];
-      expect(calledWith[0]).toBe(123);
-      expect(calledWith[1]).toContain('Fatto!');
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
     });
+    const calledWith = bot.sendMessage.mock.calls[0];
+    expect(calledWith[0]).toBe(123);
+    expect(calledWith[1]).toContain('Fatto!');
   });
 
   it("should ask to select a category if the message doesn't provide one", () => {
