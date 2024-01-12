@@ -3,3 +3,4 @@ node_modules
 dist
 client_secret.json
 telegram_secret.json
+.vercel

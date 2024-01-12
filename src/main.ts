@@ -47,6 +47,7 @@ TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
 TODO: deploy on lambda
   TODO: dev bot per development?
   TODO: how to make bot available in dev? should we use polling in dev or something like ngrok?
+TODO: cleanup files... E.g. do we still need `telegram_secret.json`?
 */
 
 const main = async () => {
