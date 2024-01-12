@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A telegram bot to track your expenses",
   "main": "main.js",
+  "type": "module",
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest watch",

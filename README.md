@@ -13,3 +13,11 @@ Steps to make this:
 - test the app with `npm run test`
 - run the app with `npm run start`
 - build the app with `npm run build`
+
+## Building locally
+
+The app uses vercel, to run in development mode run
+
+```bash
+npx vercel dev
+```
