@@ -1,0 +1,3 @@
+{
+  "app": "npm run build --prefer-ts-exts dist/infrastructure/despesas-bot.ts"
+}
