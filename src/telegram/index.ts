@@ -14,7 +14,7 @@ export const getBot = (secret: string): TelegramBot => {
   console.log(`Node env: ${process.env.NODE_ENV}`);
   const url = isDev
     ? 'https://19be-79-41-228-175.ngrok-free.app'
-    : 'https://despesas-bot.vercel.app';
+    : process.env.VERCEL_URL;
   bot.setWebHook(`${url}/bot${secret}`);
 
   return bot;
