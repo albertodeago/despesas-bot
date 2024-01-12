@@ -16,6 +16,7 @@
   "license": "ISC",
   "dependencies": {
     "@google-cloud/local-auth": "2.1.0",
+    "aws-cdk": "^2.119.0",
     "dotenv": "^16.3.1",
     "googleapis": "95.0.0",
     "node-telegram-bot-api": "0.64.0"
