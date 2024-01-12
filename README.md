@@ -13,3 +13,27 @@ Steps to make this:
 - test the app with `npm run test`
 - run the app with `npm run start`
 - build the app with `npm run build`
+
+## Infrastructure
+
+The infra is maintained with terraform.
+To install terraform follow [this instructions](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli).
+
+Common commands for terraform:
+Verify that the terraform files are correct:
+
+```bash
+terraform validate
+```
+
+See changes and plan the changes:
+
+```bash
+terraform plan
+```
+
+Apply the changes (deploy infrastructure):
+
+```bash
+terraform apply
+```
