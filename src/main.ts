@@ -59,7 +59,7 @@ const main = async () => {
     googleSheetClient,
     CONFIG.sheetId
   );
-  const categoriesFlat = allCategories.map((c) => c.name);
+  // const categoriesFlat = allCategories.map((c) => c.name);
 
   const bot = getBot(TELEGRAM_SECRET);
 
