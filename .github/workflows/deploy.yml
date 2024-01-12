@@ -1,0 +1,45 @@
+on: [push, workflow_dispatch]
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'eu-central-1'
+
+      - name: Install
+        run: npm i
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm run test
+
+      - name: Synth stack
+        run: npx cdk synth
+        env:
+          TELEGRAM_SECRET: ${{ secrets.TELEGRAM_SECRET }}
+
+      - name: Deploy stack
+        run: npx cdk deploy --require-approval never
+        env:
+          TELEGRAM_SECRET: ${{ secrets.TELEGRAM_SECRET }}
+
+      # Would be cool to have an e2e that actually send a special message and makes the bot answer to ME that the deploy went well
+      # - name: End to end test
+      #   run: yarn e2e
+      #   env:
+      #     TELEGRAM_SECRET: ${{ secrets.TELEGRAM_SECRET }}
