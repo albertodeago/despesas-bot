@@ -4,12 +4,11 @@
   "description": "A telegram bot to track your expenses",
   "main": "main.js",
   "scripts": {
-    "test": "vitest",
-    "build": "esbuild --bundle ./src/main.ts --platform=node --target=node16 --outfile=./dist/main.js",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
     "todo": "to implement watcher, see https://how-to.dev/how-to-add-live-reload-to-esbuild-server",
-    "build_new": "node esbuild.config.js",
-    "dev_new": "node esbuild.config.js -w",
-    "dev": "npm run build && node ./dist/main.js"
+    "dev": "npm run build && NODE_ENV=development node ./dist/main.js"
   },
   "author": "Alberto De Agostini",
   "license": "ISC",

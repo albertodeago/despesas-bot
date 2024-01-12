@@ -59,9 +59,10 @@ const main = async () => {
     googleSheetClient,
     CONFIG.sheetId
   );
-  const categoriesFlat = allCategories.map((c) => c.name);
+  // const categoriesFlat = allCategories.map((c) => c.name);
 
   const bot = getBot(TELEGRAM_SECRET);
+  console.log('Bot up and listening');
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
 
