@@ -44,6 +44,9 @@ TODO: possiamo anche parsare i vocali e rispondere a quelli?
 TODO: dire a botfather cosa può fare e cambiare icona al bot
 TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
 TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
+TODO: deploy on lambda
+  TODO: dev bot per development?
+  TODO: how to make bot available in dev? should we use polling in dev or something like ngrok?
 */
 
 const main = async () => {
