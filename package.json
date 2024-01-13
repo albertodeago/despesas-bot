@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "next": "14.0.4",
+    "node-telegram-bot-api": "^0.64.0",
     "react": "^18",
     "react-dom": "^18",
     "vercel": "^33.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",
+    "@types/node-telegram-bot-api": "^0.64.2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",
