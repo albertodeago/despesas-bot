@@ -13,3 +13,19 @@ Steps to make this:
 - test the app with `npm run test`
 - run the app with `npm run start`
 - build the app with `npm run build`
+
+## Deploy
+
+The app is running in `fly.io` service. To deploy, first install the fly cli and login:
+
+```
+brew install flyctl
+
+flyctl auth login
+```
+
+then, to deploy, run
+
+```bash
+fly deploy
+```

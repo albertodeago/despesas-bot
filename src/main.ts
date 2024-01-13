@@ -11,7 +11,9 @@ import { AddExpenseCommand } from './commands/expenses/add-expense';
 // TODO: don't push the config files, should we remove them?
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
-const GOOGLE_SECRET_PRIVATE_KEY = process.env.GOOGLE_SECRET_PRIVATE_KEY;
+const GOOGLE_SECRET_PRIVATE_KEY = (
+  process.env.GOOGLE_SECRET_PRIVATE_KEY || ''
+).replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library
 
 if (
   !TELEGRAM_SECRET ||
@@ -59,11 +61,15 @@ const main = async () => {
     googleSheetClient,
     CONFIG.sheetId
   );
-  const categoriesFlat = allCategories.map((c) => c.name);
+  // const categoriesFlat = allCategories.map((c) => c.name);
 
-  const bot = getBot(TELEGRAM_SECRET);
+  const bot = await getBot(TELEGRAM_SECRET);
+  console.log('Bot up and listening...');
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
+  bot.on('message', (msg) => {
+    console.log('Received message', msg.text);
+  });
 
   bot.onText(StartCommand.pattern, StartCommand.getHandler(bot));
 
