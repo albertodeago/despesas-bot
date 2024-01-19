@@ -24,7 +24,7 @@ if (
 }
 
 /**
-TODO: funzione per aggiungere una categoria o sotto categoria
+TODO: funzione per aggiungere una categoria o sotto categoria ?
 TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> tricky, bisogna risettare "allCategories" se uno lancia sto comando
 TODO: - alias con /a per aggiungi?
  - /aggiungi <importo> <descrizione> <categoria> -> chiede la sottocategoria
@@ -49,6 +49,7 @@ TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
 TODO: deploy on lambda
   TODO: dev bot per development?
   TODO: how to make bot available in dev? should we use polling in dev or something like ngrok?
+TODO: action to deploy on merge to master
 */
 
 const main = async () => {
@@ -57,11 +58,11 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
+  // TODO: what if a category changes? We should probably load them at every message (caching for a while)
   const allCategories = await fetchCategories(
     googleSheetClient,
     CONFIG.sheetId
   );
-  // const categoriesFlat = allCategories.map((c) => c.name);
 
   const bot = await getBot(TELEGRAM_SECRET);
   console.log('Bot up and listening...');
