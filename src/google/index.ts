@@ -69,3 +69,41 @@ export async function writeGoogleSheet({
     },
   });
 }
+
+/**
+ * Example of usage (update one row (two cells, like the analytics active chats))
+ *
+ * const resp = await updateGoogleSheet({
+ *   client: googleSheetClient,
+ *   sheetId: 'sheet-id',
+ *   tabName: 'tab-name',
+ *   range: 'A1:B1',                  <- one row - two cells
+ *   data: [['Active chats', '5']],   <- one row - two cells
+ * });
+ *
+ */
+export async function updateGoogleSheet({
+  client,
+  sheetId,
+  tabName,
+  range,
+  data,
+}: {
+  client: sheets_v4.Sheets;
+  sheetId: string;
+  tabName: string;
+  range: string;
+  data: any;
+}) {
+  const resp = await client.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `${tabName}!${range}`,
+    valueInputOption: 'RAW',
+    requestBody: {
+      majorDimension: 'ROWS',
+      values: data,
+    },
+  });
+
+  return resp.data;
+}
