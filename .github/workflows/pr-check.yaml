@@ -24,5 +24,10 @@ jobs:
       - name: Typechecking
         run: npm run ts-check
 
-      - name: Unit Tests
-        run: npm run test
+      # - name: Unit Tests
+      #   run: npm run test:coverage
+
+      - name: Check Coverage
+        uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          test-script: npm run test:coverage

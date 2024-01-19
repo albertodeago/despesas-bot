@@ -4,3 +4,4 @@ dist
 client_secret.json
 telegram_secret.json
 .DS_Store
+coverage
