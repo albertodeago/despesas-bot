@@ -4,3 +4,5 @@ export const CONFIG = {
   tabName: 'Spese',
   range: 'A:E',
 };
+
+export const UNCATEGORIZED_CATEGORY = 'NON CATEGORIZZATA';

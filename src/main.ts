@@ -6,8 +6,8 @@ import { CONFIG } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
+import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 
-// TODO: don't push the config files, should we remove them?
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
 const GOOGLE_SECRET_PRIVATE_KEY = (
@@ -26,32 +26,38 @@ if (
 }
 
 /**
-TODO: funzione per aggiungere una categoria o sotto categoria ?
-TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> tricky, bisogna risettare "allCategories" se uno lancia sto comando
-TODO: - alias con /a per aggiungi?
- - /aggiungi <importo> <descrizione> <categoria> -> chiede la sottocategoria
-TODO: - /aggiungi veloce <importo> <descrizione> -> aggiunge la spesa con categoria NON_CATEGORIZZATA
-TODO: - alias con /av ?
-TODO: come gestiamo le spese ricorrenti?
-TODO: posso farmi mandare dei reminder dal bot? per esempio per le spese ricorrenti?
-TODO: messaggio ricorrente settimanale o mensile per un resoconto?
- - sarebbe fighissimo ricevere il resoconto anche in Grafico a torta tipo
-TODO: unit test
-TODO: come rendiamo il BOT privato? comando /password? oppure check sulla chatId/userId?
- - oppure *se si può* farlo generico, ogni "chat" deve attivarlo, il bot si salva chatId-spreadsheetId e lo facciamo generico
-  TODO: Provato -> condividendo il foglio al bot, il bot può scrivere in più sheets, quindi può essere "generico"
-    - per farlo generico servirebbe un comando di /start in cui si passa l'ID del foglio.
-      il bot dovrebbe salvarsi da qualche parte una mappa chatId-spreadsheetId e poi in base
-      ai messaggi che arrivano dovrebbe scrivere sul foglio giusto
-      - potremmo tenere questa mappa/stato in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
-TODO: possiamo anche parsare i vocali e rispondere a quelli?
-TODO: dire a botfather cosa può fare e cambiare icona al bot
-TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
-TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
-TODO: deploy on lambda
-  TODO: dev bot per development?
-  TODO: how to make bot available in dev? should we use polling in dev or something like ngrok?
-TODO: action to deploy on merge to master
+MANDATORY
+- TODO: rendere il bot generico
+  - /start <sheetId> -> salva chatId-spreadsheetId
+  - /stop -> cancella chatId-spreadsheetId
+  - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
+  - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
+- TODO: /help per capire come funziona (anche come condividere il sheet al bot)
+- TODO: dire a botfather cosa può fare e cambiare icona al bot
+- TODO: action to deploy on merge to master
+  - sarebbe figo se il bot mandasse un messaggio su una chat hardcodata (mia) quando è stato deployato (più facile di quando sembra, mess quando parte se è in prod mode)
+  - auto bump version e print della versione quando si aggiorna?
+- TODO: Checks on PR, almeno ts-check e unit test
+- TODO: Analytics
+  - quante spese aggiunte
+  - in quante chat attivo
+
+- TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
+
+FUTURE:
+- TODO: come gestiamo le spese ricorrenti?
+  - TODO: posso farmi mandare dei reminder dal bot? per esempio per le spese ricorrenti?
+- TODO: messaggio ricorrente settimanale o mensile per un resoconto?
+  - sarebbe fighissimo ricevere il resoconto anche in Grafico a torta tipo
+- TODO: possiamo anche parsare i vocali e rispondere a quelli?
+
+OPTIONAL:
+- TODO: funzione per aggiungere una categoria o sotto categoria ?
+- TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> tricky, bisogna risettare "allCategories" se uno lancia sto comando
+- TODO: - alias /a per "aggiungi"?
+- TODO: - alias /av per "aggiungi veloce"?
+- TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
+- TODO: - better log management, .info sempre e .debug solo per dev?
 */
 
 const main = async () => {
@@ -60,7 +66,6 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
-  // TODO: what if a category changes? We should probably load them at every message (caching for a while)
   const allCategories = await fetchCategories(
     googleSheetClient,
     CONFIG.sheetId
@@ -79,6 +84,11 @@ const main = async () => {
   bot.onText(
     AddExpenseCommand.pattern,
     AddExpenseCommand.getHandler(bot, allCategories, googleSheetClient)
+  );
+
+  bot.onText(
+    AddExpenseQuickCommand.pattern,
+    AddExpenseQuickCommand.getHandler(bot, googleSheetClient)
   );
 
   bot.onText(

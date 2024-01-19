@@ -8,19 +8,12 @@ import {
 import { writeGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
 import { CONFIG } from '../../config/config';
-
-const getMsgExplanation = () => `Per aggiungere una spesa, scrivere\n
-aggiungi <importo> <descrizione> <categoria>? <sottocategoria>?\n\n
-Se invece vuoi aggiungere velocemente una spesa non categorizzandola, scrivi\n
-aggiungi veloce <importo> <descrizione>\n`;
-const getWrongAmountMessage =
-  () => `L'importo dev'essere un numero. Un esempio per inserire una spesa è:\n
-aggiungi 7.50 aperitivo`;
-const getOkMessage = () => `Fatto!`;
-const getErrorMessage = (e?: unknown) => {
-  const errMsg = e ? `\nErrore:\n${e}` : '';
-  return `C\è stato un problema, reinserisci la spesa\n${errMsg}`;
-};
+import {
+  getMsgExplanation,
+  getWrongAmountMessage,
+  getOkMessage,
+  getErrorMessage,
+} from './messages';
 
 type AddExpenseParams = {
   bot: TelegramBot;
@@ -92,7 +85,7 @@ export const getCategoryAndSubcategoryHandler =
       return;
     }
 
-    const description = getDescriptionFromTokenizedMessage(tokens, 0);
+    const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
 
     // now, if there are subcategories, show them, otherwise add the expense
     if (category.subCategories.length === 0) {
@@ -168,8 +161,8 @@ export const getSubcategoryHandler =
     return;
   };
 
-export const AddExpenseCommand = {
-  pattern: /^aggiungi/i,
+export const AddExpenseCommand: BotCommand = {
+  pattern: /^aggiungi\s*((?!veloce).)*$/i,
   getHandler:
     (
       bot: TelegramBot,
@@ -270,7 +263,7 @@ export const AddExpenseCommand = {
         }
 
         // we got everything, add the expense
-        const description = getDescriptionFromTokenizedMessage(tokens, 2);
+        const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
         const err = await addExpense({
           bot,
           chatId,
@@ -284,7 +277,7 @@ export const AddExpenseCommand = {
         bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
         return;
       } else {
-        const description = getDescriptionFromTokenizedMessage(tokens, 0);
+        const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
         // the user wants to add the expense, but he didn't specify the category and subcategory
         // we need to show the category list (and after the subcategories based on his response)
         bot.sendMessage(chatId, 'Scegli una categoria', {

@@ -1,0 +1,28 @@
+name: PR Check
+
+on:
+  pull_request:
+
+env:
+  NODE_VERSION: 20.8
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typechecking
+        run: npm run ts-check
+
+      - name: Unit Tests
+        run: npm run test
