@@ -1,8 +1,7 @@
 import 'dotenv/config';
-import { ExpenseRow, getGoogleSheetClient, writeGoogleSheet } from './google';
-import { fromMsg } from './utils';
+import { getGoogleSheetClient } from './google';
 import { CategoriesCommand } from './commands/categories/categories';
-import { Category, fetchCategories } from './commands/categories/fetch';
+import { fetchCategories } from './commands/categories/fetch';
 import { CONFIG } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
