@@ -1,5 +1,9 @@
 name: PR Check
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   pull_request:
 
@@ -25,4 +29,7 @@ jobs:
         run: npm run ts-check
 
       - name: Unit Tests
-        run: npm run test
+        run: npm run test:coverage
+
+      - name: 'Report Coverage'
+        uses: davelosert/vitest-coverage-report-action@v2
