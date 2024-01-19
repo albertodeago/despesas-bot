@@ -44,14 +44,14 @@ describe('utils', () => {
   describe('getDescriptionFromTokenizedMessage', () => {
     it('should return the description from a tokenized message with no category and subcategory', () => {
       const tokens = ['aggiungi', '10', 'descrizione'];
-      const description = getDescriptionFromTokenizedMessage(tokens, 0);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
 
       expect(description).toBe('descrizione');
     });
 
     it("should return the description from a tokenized message even if it's empty with no category and subcategory", () => {
       const tokens = ['aggiungi', '10', ''];
-      const description = getDescriptionFromTokenizedMessage(tokens, 0);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
 
       expect(description).toBe('');
     });
@@ -66,7 +66,7 @@ describe('utils', () => {
         'long',
         'description',
       ];
-      const description = getDescriptionFromTokenizedMessage(tokens, 0);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
 
       expect(description).toBe('this is a long description');
     });
@@ -109,14 +109,14 @@ describe('utils', () => {
         'Category_1',
         'Subcategory_1',
       ];
-      const description = getDescriptionFromTokenizedMessage(tokens, 2);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
 
       expect(description).toBe('descrizione');
     });
 
     it("should return the description from a tokenized message even if it's empty with subcategory", () => {
       const tokens = ['aggiungi', '10', '', 'Category_1', 'Subcategory_1'];
-      const description = getDescriptionFromTokenizedMessage(tokens, 2);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
 
       expect(description).toBe('');
     });
@@ -133,7 +133,23 @@ describe('utils', () => {
         'Category_1',
         'Subcategory_1',
       ];
-      const description = getDescriptionFromTokenizedMessage(tokens, 2);
+      const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
+
+      expect(description).toBe('this is a long description');
+    });
+
+    it("should return the description from a tokenized message with a different number of tokens from left and right if it's provided", () => {
+      const tokens = [
+        'aggiungi',
+        'veloce',
+        '10',
+        'this',
+        'is',
+        'a',
+        'long',
+        'description',
+      ];
+      const description = getDescriptionFromTokenizedMessage(tokens, 3, 0);
 
       expect(description).toBe('this is a long description');
     });

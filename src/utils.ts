@@ -33,5 +33,6 @@ export const createExpenseRow = ({
 
 export const getDescriptionFromTokenizedMessage = (
   tokens: string[],
+  tokensFromLeft: number = 2,
   tokensFromRight: number = 1
-) => tokens.slice(2, tokens.length - tokensFromRight).join(' ');
+) => tokens.slice(tokensFromLeft, tokens.length - tokensFromRight).join(' ');
