@@ -85,7 +85,7 @@ export const getCategoryAndSubcategoryHandler =
       return;
     }
 
-    const description = getDescriptionFromTokenizedMessage(tokens, 0);
+    const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
 
     // now, if there are subcategories, show them, otherwise add the expense
     if (category.subCategories.length === 0) {
@@ -263,7 +263,7 @@ export const AddExpenseCommand: BotCommand = {
         }
 
         // we got everything, add the expense
-        const description = getDescriptionFromTokenizedMessage(tokens, 2);
+        const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
         const err = await addExpense({
           bot,
           chatId,
@@ -277,7 +277,7 @@ export const AddExpenseCommand: BotCommand = {
         bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
         return;
       } else {
-        const description = getDescriptionFromTokenizedMessage(tokens, 0);
+        const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
         // the user wants to add the expense, but he didn't specify the category and subcategory
         // we need to show the category list (and after the subcategories based on his response)
         bot.sendMessage(chatId, 'Scegli una categoria', {
