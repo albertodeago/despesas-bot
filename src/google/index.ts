@@ -44,6 +44,58 @@ export async function readGoogleSheet({
   return res.data.values as string[][] | null | undefined;
 }
 
+/**
+ * Docs: https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/append
+ * Examples of usage:
+ *
+ * Append one row (two cells)
+ * const resp = await appendGoogleSheet({
+ *   client: googleSheetClient,
+ *   sheetId: 'sheet-id',
+ *   tabName: 'tab-name',
+ *   range: 'A:B',                <- columns, no need to specify the rows because we append
+ *   data: [['a', 'b']],          <- one row - two cells
+ * });
+ *
+ * Append 3 rows with 1 cell each
+ * const resp = await appendGoogleSheet({
+ *   client: googleSheetClient,
+ *   sheetId: 'sheet-id',
+ *   tabName: 'tab-name',
+ *   range: 'A:B',                <- columns, no need to specify the rows because we append
+ *   data: [['a'], ['b'], ['c']], <- three row with one cell
+ * });
+ */
+export async function appendGoogleSheet({
+  client,
+  sheetId,
+  tabName,
+  range,
+  data,
+  insertDataOption = 'INSERT_ROWS',
+  valueInputOption = 'RAW',
+}: {
+  client: sheets_v4.Sheets;
+  sheetId: SheetId;
+  tabName: string;
+  range: string;
+  data: any[];
+  valueInputOption?: 'RAW' | 'USER_ENTERED';
+  insertDataOption?: 'INSERT_ROWS' | 'OVERWRITE';
+}) {
+  const resp = await client.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: `${tabName}!${range}`,
+    valueInputOption,
+    insertDataOption,
+    requestBody: {
+      majorDimension: 'ROWS',
+      values: data,
+    },
+  });
+  return resp.data;
+}
+
 export type ExpenseRow = [string, number, string, string, string]; // TODO: type this better date, categories, subcategories
 export async function writeGoogleSheet({
   client,
@@ -58,7 +110,7 @@ export async function writeGoogleSheet({
   range: string;
   data: ExpenseRow[];
 }) {
-  await client.spreadsheets.values.append({
+  return client.spreadsheets.values.append({
     spreadsheetId: sheetId,
     range: `${tabName}!${range}`,
     valueInputOption: 'RAW',
@@ -93,7 +145,7 @@ export async function updateGoogleSheet({
   sheetId: string;
   tabName: string;
   range: string;
-  data: any;
+  data: any[];
 }) {
   const resp = await client.spreadsheets.values.update({
     spreadsheetId: sheetId,
