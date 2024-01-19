@@ -1,8 +1,7 @@
 import 'dotenv/config';
-import { ExpenseRow, getGoogleSheetClient, writeGoogleSheet } from './google';
-import { fromMsg } from './utils';
+import { getGoogleSheetClient } from './google';
 import { CategoriesCommand } from './commands/categories/categories';
-import { Category, fetchCategories } from './commands/categories/fetch';
+import { fetchCategories } from './commands/categories/fetch';
 import { CONFIG } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
@@ -14,6 +13,9 @@ const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
 const GOOGLE_SECRET_PRIVATE_KEY = (
   process.env.GOOGLE_SECRET_PRIVATE_KEY || ''
 ).replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library
+
+const ENVIRONMENT: Environment =
+  process.env.NODE_ENV === 'development' ? 'development' : 'production';
 
 if (
   !TELEGRAM_SECRET ||
@@ -64,8 +66,8 @@ const main = async () => {
     CONFIG.sheetId
   );
 
-  const bot = await getBot(TELEGRAM_SECRET);
-  console.log('Bot up and listening...');
+  const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
+  console.log(`Bot up and listening. Environment ${ENVIRONMENT}`);
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {
