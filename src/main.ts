@@ -15,6 +15,9 @@ const GOOGLE_SECRET_PRIVATE_KEY = (
   process.env.GOOGLE_SECRET_PRIVATE_KEY || ''
 ).replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library
 
+const ENVIRONMENT: Environment =
+  process.env.NODE_ENV === 'development' ? 'development' : 'production';
+
 if (
   !TELEGRAM_SECRET ||
   !GOOGLE_SECRET_CLIENT_EMAIL ||
@@ -64,8 +67,8 @@ const main = async () => {
     CONFIG.sheetId
   );
 
-  const bot = await getBot(TELEGRAM_SECRET);
-  console.log('Bot up and listening...');
+  const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
+  console.log(`Bot up and listening. Environment ${ENVIRONMENT}`);
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {
