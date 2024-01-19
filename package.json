@@ -7,7 +7,8 @@
     "test": "vitest",
     "build": "esbuild --bundle ./src/main.ts --platform=node --target=node16 --outfile=./dist/main.js",
     "todo": "to implement watcher, see https://how-to.dev/how-to-add-live-reload-to-esbuild-server",
-    "dev": "npm run build && node ./dist/main.js"
+    "dev": "npm run build && node ./dist/main.js",
+    "ts-check": "tsc --noEmit"
   },
   "author": "Alberto De Agostini",
   "license": "ISC",
