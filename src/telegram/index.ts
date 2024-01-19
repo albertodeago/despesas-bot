@@ -1,6 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 
-export const getBot = async (secret: string): TelegramBot => {
+export const getBot = async (secret: string): Promise<TelegramBot> => {
   const bot = new TelegramBot(secret, {
     // polling: true
     webHook: {
