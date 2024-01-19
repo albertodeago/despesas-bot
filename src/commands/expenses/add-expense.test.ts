@@ -62,7 +62,6 @@ describe('AddExpenseCommand', () => {
 
   it("should send a explanation message if it doesn't have the necessary info to answer", () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -76,7 +75,6 @@ describe('AddExpenseCommand', () => {
 
   it('should send a explanation message if the amount is not a number', () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -90,7 +88,6 @@ describe('AddExpenseCommand', () => {
 
   it('should add the expense if the message finish with a category with no subcategories', async () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -115,7 +112,6 @@ describe('AddExpenseCommand', () => {
 
   it("should ask for the subcategory if the message doesn't finish with a category with no subcategories", () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -132,7 +128,6 @@ describe('AddExpenseCommand', () => {
 
   it('should send an error message if the second last token is a category but the last one is not a subcategory', () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -151,7 +146,6 @@ describe('AddExpenseCommand', () => {
 
   it('should add the expense if the message finish with a category and subcategory', async () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -176,7 +170,6 @@ describe('AddExpenseCommand', () => {
 
   it("should add the expense also if the message doesn't have a description", async () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient
@@ -204,7 +197,6 @@ describe('AddExpenseCommand', () => {
 
   it("should ask to select a category if the message doesn't provide one", () => {
     const handler = AddExpenseCommand.getHandler(
-      // @ts-expect-error
       bot,
       categories,
       mockGoogleSheetClient

@@ -151,7 +151,6 @@ describe('CategoriesCommand', () => {
   });
 
   it('should answer with all the categories and subcategories', () => {
-    // @ts-expect-error
     const handler = CategoriesCommand.getHandler(bot, categories);
     handler(defaultMsg);
 
@@ -171,7 +170,6 @@ describe('CategoriesCommand', () => {
   });
 
   it('should answer with just the specified category, listing subcategories', () => {
-    // @ts-expect-error
     const handler = CategoriesCommand.getHandler(bot, categories);
     handler({
       ...defaultMsg,
