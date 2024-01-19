@@ -51,10 +51,13 @@ describe('AddExpenseCommand', () => {
     vi.clearAllMocks();
   });
 
-  it('should match "aggiungi"', () => {
+  it('should match "aggiungi\s*((?!veloce).)*$"', () => {
     expect(AddExpenseCommand.pattern.test('aggiungi')).toBe(true);
+    expect(AddExpenseCommand.pattern.test('aggiungi ')).toBe(true);
     expect(AddExpenseCommand.pattern.test('aggiung')).toBe(false);
     expect(AddExpenseCommand.pattern.test('aggiungi 10')).toBe(true);
+    expect(AddExpenseCommand.pattern.test('aggiungi veloce')).toBe(false);
+    expect(AddExpenseCommand.pattern.test('aggiungi vel')).toBe(true);
   });
 
   it("should send a explanation message if it doesn't have the necessary info to answer", () => {

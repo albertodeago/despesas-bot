@@ -19,11 +19,11 @@ const getCategoriesAnswer = (categories: Category[]) => {
   return answer;
 };
 
-export const CategoriesCommand = {
+export const CategoriesCommand: BotCommand = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
     (bot: TelegramBot, allCategories: Category[]) =>
-    (msg: TelegramBot.Message) => {
+    async (msg: TelegramBot.Message) => {
       const { chatId, tokens } = fromMsg(msg);
       console.log(
         `CategoriesCommand handler. Chat ${chatId}. Tokens ${tokens}`
@@ -56,5 +56,6 @@ export const CategoriesCommand = {
           parse_mode: 'Markdown',
         });
       }
+      return;
     },
 };
