@@ -35,7 +35,6 @@ MANDATORY
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: sarebbe figo se il bot mandasse un messaggio su una chat hardcodata (mia) quando è stato deployato (più facile di quando sembra, mess quando parte se è in prod mode)
-- TODO: auto bump version e print della versione quando si aggiorna?
 - TODO: Analytics
   - quante spese aggiunte
   - in quante chat attivo
