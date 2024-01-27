@@ -70,11 +70,15 @@ const main = async () => {
   );
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
-  console.log(`Bot v${version} up and listening. Environment ${ENVIRONMENT}`);
+  const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
+
+  // On startup we want to inform the admin that the bot is up
+  console.log(upAndRunningMsg);
+  bot.sendMessage(CONFIG.DEPLOY_CHAT_ID, upAndRunningMsg);
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {
-    console.log('Received message', msg.text);
+    console.log(`Received message on chat ${msg.chat.id}: ${msg.text}`);
   });
 
   bot.onText(StartCommand.pattern, StartCommand.getHandler(bot));
