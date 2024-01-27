@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.DESPESAS_PAT }}
       # To bump major -> "BREAKING CHANGE" | "major" | pattern "refactor!: drop node v16"
       # To bump minor -> "feat: new API" | "feature: new API"
       # otherwise it will bump patch
