@@ -9,8 +9,22 @@ env:
   NODE_VERSION: 20.8
 
 jobs:
+  bump-version:
+    name: 'Automated Version Bump'
+    # To bump major -> "BREAKING CHANGE" | "major" | pattern "refactor!: drop node v16"
+    # To bump minor -> "feat: new API" | "feature: new API"
+    # otherwise it will bump patch
+    uses: 'phips28/gh-action-bump-version@master'
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    with:
+      commit-message: 'CI: bumps version to {{version}} [skip ci]'
+    permissions:
+      contents: write
+
   deploy:
     name: Deploy app
+    needs: bump-version
     runs-on: ubuntu-latest
     concurrency: deploy-group # ensure only one action runs at a time
     steps:
