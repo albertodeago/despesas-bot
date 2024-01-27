@@ -7,6 +7,7 @@ import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
+import { version } from '../package.json';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -33,9 +34,8 @@ MANDATORY
   - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
-- TODO: action to deploy on merge to master
-  - sarebbe figo se il bot mandasse un messaggio su una chat hardcodata (mia) quando è stato deployato (più facile di quando sembra, mess quando parte se è in prod mode)
-  - auto bump version e print della versione quando si aggiorna?
+- TODO: sarebbe figo se il bot mandasse un messaggio su una chat hardcodata (mia) quando è stato deployato (più facile di quando sembra, mess quando parte se è in prod mode)
+- TODO: auto bump version e print della versione quando si aggiorna?
 - TODO: Analytics
   - quante spese aggiunte
   - in quante chat attivo
@@ -71,7 +71,7 @@ const main = async () => {
   );
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
-  console.log(`Bot up and listening. Environment ${ENVIRONMENT}`);
+  console.log(`Bot v${version} up and listening. Environment ${ENVIRONMENT}`);
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {

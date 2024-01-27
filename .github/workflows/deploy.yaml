@@ -16,6 +16,7 @@ jobs:
     name: 'Automated Version Bump'
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       # To bump major -> "BREAKING CHANGE" | "major" | pattern "refactor!: drop node v16"
       # To bump minor -> "feat: new API" | "feature: new API"
       # otherwise it will bump patch
