@@ -64,7 +64,7 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
-  // const analytics = new Analytics(googleSheetClient, CONFIG, ENVIRONMENT);
+  const analytics = new Analytics(googleSheetClient, CONFIG, ENVIRONMENT);
 
   const allCategories = await fetchCategories(
     googleSheetClient,
@@ -87,12 +87,17 @@ const main = async () => {
 
   bot.onText(
     AddExpenseCommand.pattern,
-    AddExpenseCommand.getHandler(bot, allCategories, googleSheetClient)
+    AddExpenseCommand.getHandler(
+      bot,
+      allCategories,
+      analytics,
+      googleSheetClient
+    )
   );
 
   bot.onText(
     AddExpenseQuickCommand.pattern,
-    AddExpenseQuickCommand.getHandler(bot, googleSheetClient)
+    AddExpenseQuickCommand.getHandler(bot, googleSheetClient, analytics)
   );
 
   bot.onText(

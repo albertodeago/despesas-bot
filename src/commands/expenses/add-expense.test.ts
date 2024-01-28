@@ -45,6 +45,9 @@ const defaultMsg: TelegramBot.Message = {
   date: 1702637184, // telegram date is a bit weird, it's a timestamp / 1000
   message_id: 987654321,
 };
+const mockAnalytics = {
+  addTrackedExpense: vi.fn(),
+};
 
 describe('AddExpenseCommand', () => {
   afterEach(() => {
@@ -64,6 +67,7 @@ describe('AddExpenseCommand', () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({ ...defaultMsg, text: 'aggiungi' });
@@ -71,12 +75,14 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Per aggiungere una spesa, scrivere');
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it('should send a explanation message if the amount is not a number', () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({ ...defaultMsg, text: 'aggiungi merda in casa' });
@@ -84,12 +90,14 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain("L'importo dev'essere un numero");
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it('should add the expense if the message finish with a category with no subcategories', async () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_3' });
@@ -108,12 +116,14 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it("should ask for the subcategory if the message doesn't finish with a category with no subcategories", () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_1' });
@@ -124,12 +134,14 @@ describe('AddExpenseCommand', () => {
 
     // we also set a once listener after this
     expect(bot.once).toHaveBeenCalled(); // tested with getSubcategoryHandler
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it('should send an error message if the second last token is a category but the last one is not a subcategory', () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({
@@ -142,12 +154,14 @@ describe('AddExpenseCommand', () => {
     expect(calledWith[1]).toContain(
       'Non sono riuscito ad individuare la categoria e sotto categoria, reinserisci la spesa'
     );
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it('should add the expense if the message finish with a category and subcategory', async () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler(defaultMsg);
@@ -166,12 +180,14 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it("should add the expense also if the message doesn't have a description", async () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
+      mockAnalytics,
       mockGoogleSheetClient
     );
     handler({
@@ -193,13 +209,15 @@ describe('AddExpenseCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it("should ask to select a category if the message doesn't provide one", () => {
     const handler = AddExpenseCommand.getHandler(
       bot,
       categories,
-      mockGoogleSheetClient
+      mockGoogleSheetClient,
+      mockAnalytics
     );
     handler({
       ...defaultMsg,
@@ -210,6 +228,7 @@ describe('AddExpenseCommand', () => {
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Scegli una categoria');
     expect(bot.once).toHaveBeenCalled(); // tested with getCategoryAndSubcategoryHandler
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   describe('getCategoryAndSubcategoryHandler', () => {
@@ -224,6 +243,8 @@ describe('AddExpenseCommand', () => {
         tokens: ['aggiungi', '20', 'descrizione', 'multi', 'token'],
         formattedDate: '15/12/2023',
         amount: 50,
+        // @ts-expect-error
+        analytics: mockAnalytics,
       });
 
     it("should send an error message if the category doesn't exist", async () => {
@@ -234,6 +255,7 @@ describe('AddExpenseCommand', () => {
         123,
         'Cè stato un problema, reinserisci la spesa\n'
       );
+      expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
     });
 
     it("should insert the expense if the selected category doesn't have subcategories", async () => {
@@ -254,6 +276,7 @@ describe('AddExpenseCommand', () => {
       const calledWith = bot.sendMessage.mock.calls[0];
       expect(calledWith[0]).toBe(123);
       expect(calledWith[1]).toContain('Fatto!');
+      expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
     });
 
     it('should ask for the subcategory if the selected category have subcategories', async () => {
@@ -264,6 +287,7 @@ describe('AddExpenseCommand', () => {
       expect(calledWith[0]).toBe(123);
       expect(calledWith[1]).toContain('Scegli una sottocategoria');
       expect(bot.once).toHaveBeenCalled(); // tested with getSubcategoryHandler
+      expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
     });
   });
 
@@ -286,6 +310,8 @@ describe('AddExpenseCommand', () => {
         ],
         formattedDate: '15/12/2023',
         amount: 20,
+        // @ts-expect-error
+        analytics: mockAnalytics,
       });
 
     it("should send an error message if the subcategory doesn't exist", async () => {
@@ -296,6 +322,7 @@ describe('AddExpenseCommand', () => {
         123,
         'Cè stato un problema, reinserisci la spesa\n'
       );
+      expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
     });
 
     it('should add the expense if the subcategory is correct', async () => {
@@ -324,6 +351,7 @@ describe('AddExpenseCommand', () => {
       const calledWith = bot.sendMessage.mock.calls[0];
       expect(calledWith[0]).toBe(123);
       expect(calledWith[1]).toContain('Fatto!');
+      expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
     });
   });
 });

@@ -14,6 +14,7 @@ import {
   getOkMessage,
   getErrorMessage,
 } from './messages';
+import { Analytics } from '../../analytics';
 
 type AddExpenseParams = {
   bot: TelegramBot;
@@ -61,6 +62,7 @@ type HandleGenericParams = {
   googleSheetClient: sheets_v4.Sheets;
   formattedDate: string;
   amount: number;
+  analytics: Analytics;
 };
 type HandleCategoryAndSubcategoryParams = HandleGenericParams & {
   allCategories: Category[];
@@ -77,6 +79,7 @@ export const getCategoryAndSubcategoryHandler =
     googleSheetClient,
     formattedDate,
     amount,
+    analytics,
   }: HandleCategoryAndSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const category = allCategories.find((c) => c.name === msg.text);
@@ -100,6 +103,9 @@ export const getCategoryAndSubcategoryHandler =
         categoryName: category.name,
       });
       bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+      if (!err) {
+        analytics.addTrackedExpense();
+      }
       return;
     }
 
@@ -120,6 +126,7 @@ export const getCategoryAndSubcategoryHandler =
         googleSheetClient,
         formattedDate,
         amount,
+        analytics,
       })
     );
     return;
@@ -134,6 +141,7 @@ export const getSubcategoryHandler =
     googleSheetClient,
     formattedDate,
     amount,
+    analytics,
   }: HandleSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const subCategory = category.subCategories.find(
@@ -158,6 +166,9 @@ export const getSubcategoryHandler =
       subCategoryName: subCategory.name,
     });
     bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+    if (!err) {
+      analytics.addTrackedExpense();
+    }
     return;
   };
 
@@ -167,6 +178,7 @@ export const AddExpenseCommand: BotCommand = {
     (
       bot: TelegramBot,
       allCategories: Category[],
+      analytics: Analytics,
       googleSheetClient: sheets_v4.Sheets
     ) =>
     async (msg: TelegramBot.Message) => {
@@ -215,6 +227,9 @@ export const AddExpenseCommand: BotCommand = {
             categoryName: category.name,
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+          if (!err) {
+            analytics.addTrackedExpense();
+          }
           return;
         } else {
           // we have the category, but we need to understand the subcategory
@@ -242,6 +257,7 @@ export const AddExpenseCommand: BotCommand = {
               googleSheetClient,
               formattedDate,
               amount,
+              analytics,
             })
           );
           return;
@@ -275,6 +291,9 @@ export const AddExpenseCommand: BotCommand = {
           subCategoryName: subCategory.name,
         });
         bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+        if (!err) {
+          analytics.addTrackedExpense();
+        }
         return;
       } else {
         const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
@@ -300,6 +319,7 @@ export const AddExpenseCommand: BotCommand = {
             googleSheetClient,
             formattedDate,
             amount,
+            analytics,
           })
         );
         return;
