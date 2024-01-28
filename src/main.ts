@@ -7,6 +7,7 @@ import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
+import { Analytics } from './analytics';
 import { version } from '../package.json';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
@@ -34,7 +35,6 @@ MANDATORY
   - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
-- TODO: sarebbe figo se il bot mandasse un messaggio su una chat hardcodata (mia) quando è stato deployato (più facile di quando sembra, mess quando parte se è in prod mode)
 - TODO: Analytics
   - quante spese aggiunte
   - in quante chat attivo
@@ -56,6 +56,7 @@ OPTIONAL:
 - TODO: - alias /av per "aggiungi veloce"?
 - TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
 - TODO: - better log management, .info sempre e .debug solo per dev?
+- TODO: do we want to "log" errors on my chat?
 */
 
 const main = async () => {
@@ -63,6 +64,8 @@ const main = async () => {
     clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
+
+  // const analytics = new Analytics(googleSheetClient, CONFIG, ENVIRONMENT);
 
   const allCategories = await fetchCategories(
     googleSheetClient,
