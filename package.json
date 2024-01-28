@@ -7,8 +7,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
-    "build": "esbuild --bundle ./src/main.ts --platform=node --target=node16 --outfile=./dist/main.js",
-    "todo": "to implement watcher, see https://how-to.dev/how-to-add-live-reload-to-esbuild-server",
+    "build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
     "dev": "npm run build && node ./dist/main.js",
     "ts-check": "tsc --noEmit"
   },
