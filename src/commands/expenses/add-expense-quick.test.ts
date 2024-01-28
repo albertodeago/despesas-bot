@@ -28,6 +28,9 @@ const defaultMsg: TelegramBot.Message = {
   date: 1702637184, // telegram date is a bit weird, it's a timestamp / 1000
   message_id: 987654321,
 };
+const mockAnalytics = {
+  addTrackedExpense: vi.fn(),
+};
 
 describe('AddExpenseQuickCommand', () => {
   afterEach(() => {
@@ -54,19 +57,22 @@ describe('AddExpenseQuickCommand', () => {
   it('should send a explanation message if the amount is not a number', () => {
     const handler = AddExpenseQuickCommand.getHandler(
       bot,
-      mockGoogleSheetClient
+      mockGoogleSheetClient,
+      mockAnalytics
     );
     handler({ ...defaultMsg, text: 'aggiungi veloce merda in salotto' });
 
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain("L'importo dev'essere un numero");
+    expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it("should add the expense also if the message doesn't have a description (uncategorized)", async () => {
     const handler = AddExpenseQuickCommand.getHandler(
       bot,
-      mockGoogleSheetClient
+      mockGoogleSheetClient,
+      mockAnalytics
     );
     handler({
       ...defaultMsg,
@@ -89,12 +95,14 @@ describe('AddExpenseQuickCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it('should add the expense with the provided description (uncategorized)', async () => {
     const handler = AddExpenseQuickCommand.getHandler(
       bot,
-      mockGoogleSheetClient
+      mockGoogleSheetClient,
+      mockAnalytics
     );
     handler({
       ...defaultMsg,
@@ -123,12 +131,14 @@ describe('AddExpenseQuickCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it('should add the expense with the provided long description (uncategorized)', async () => {
     const handler = AddExpenseQuickCommand.getHandler(
       bot,
-      mockGoogleSheetClient
+      mockGoogleSheetClient,
+      mockAnalytics
     );
     handler({
       ...defaultMsg,
@@ -157,5 +167,6 @@ describe('AddExpenseQuickCommand', () => {
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
+    expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 });

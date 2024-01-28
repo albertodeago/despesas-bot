@@ -12,6 +12,7 @@ import {
   getOkMessage,
   getErrorMessage,
 } from './messages';
+import { Analytics } from '../../analytics';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
@@ -51,7 +52,11 @@ const addExpense = async ({
 export const AddExpenseQuickCommand: BotCommand = {
   pattern: /^aggiungi veloce/i,
   getHandler:
-    (bot: TelegramBot, googleSheetClient: sheets_v4.Sheets) =>
+    (
+      bot: TelegramBot,
+      googleSheetClient: sheets_v4.Sheets,
+      analytics: Analytics
+    ) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, tokens, date } = fromMsg(msg);
       console.log(
@@ -79,6 +84,9 @@ export const AddExpenseQuickCommand: BotCommand = {
         description,
       });
       bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+
+      analytics.addTrackedExpense();
+
       return;
     },
 };
