@@ -34,12 +34,11 @@ MANDATORY
   - /stop -> cancella chatId-spreadsheetId
   - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
-- TODO: dire a botfather cosa può fare e cambiare icona al bot
-- TODO: Analytics
+- TODO: Analytics (apply it)
   - quante spese aggiunte
   - in quante chat attivo
 - TODO: /help per capire come funziona (anche come condividere il sheet al bot)
-
+- TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
 
 FUTURE:
@@ -51,12 +50,12 @@ FUTURE:
 
 OPTIONAL:
 - TODO: funzione per aggiungere una categoria o sotto categoria ?
-- TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> tricky, bisogna risettare "allCategories" se uno lancia sto comando
+- TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> ricordarsi che bisogna "scacheare" se si fa questo
 - TODO: - alias /a per "aggiungi"?
 - TODO: - alias /av per "aggiungi veloce"?
 - TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
-- TODO: - better log management, .info sempre e .debug solo per dev?
-- TODO: do we want to "log" errors on my chat?
+- TODO: better log management, .info sempre e .debug solo per dev?
+- TODO: create an "error tracker" that sends error to my chat?
 */
 
 const main = async () => {
