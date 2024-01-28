@@ -25,6 +25,9 @@ export async function getGoogleSheetClient({
   });
 }
 
+/**
+ * Read from a google sheet
+ */
 export async function readGoogleSheet({
   client,
   sheetId,
