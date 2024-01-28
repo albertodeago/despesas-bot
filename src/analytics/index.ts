@@ -16,7 +16,54 @@ export class Analytics {
     this.config = config[env].ANALYTICS;
   }
 
-  setActiveChats() {}
+  /**
+   * Return the current number of chats in which the bot is active
+   */
+  async getNumActiveChats(): Promise<number | undefined> {
+    try {
+      const resp = await readGoogleSheet({
+        client: this.client,
+        sheetId: this.config.SHEET_ID,
+        tabName: this.config.TAB_NAME,
+        range: this.config.ACTIVE_CHATS_RANGE,
+      });
+      const result = parseInt(resp?.[0]?.[1] ?? '');
+
+      if (isNaN(result)) {
+        console.error(`Error: active chats found is ${result}`);
+        return undefined; // something wrong happened
+      }
+
+      return result;
+    } catch (e) {
+      console.error('Error while fetching active chats', e);
+      return undefined;
+    }
+  }
+
+  /**
+   * Increase or decrease the number of active chats
+   */
+  async changeNumActiveChats(type: 'increase' | 'decrease') {
+    // read the current value, then update it
+    const currentValue = await this.getNumActiveChats();
+    if (currentValue !== undefined) {
+      const newValue =
+        type === 'increase' ? currentValue + 1 : currentValue - 1;
+      try {
+        await updateGoogleSheet({
+          client: this.client,
+          sheetId: this.config.SHEET_ID,
+          tabName: this.config.TAB_NAME,
+          range: this.config.ACTIVE_CHATS_RANGE,
+          data: [[this.config.ACTIVE_CHATS_LABEL, newValue]],
+        });
+      } catch (e) {
+        console.error('Error while updating active chats', e);
+        return undefined;
+      }
+    }
+  }
 
   /**
    * Return the current number of tracked expenses
@@ -32,7 +79,7 @@ export class Analytics {
       const result = parseInt(resp?.[0]?.[1] ?? '');
 
       if (isNaN(result)) {
-        console.error('No tracked expenses found');
+        console.error(`Error: tracked expense found is ${result}`);
         return undefined; // something wrong happened
       }
 
