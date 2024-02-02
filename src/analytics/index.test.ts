@@ -19,15 +19,13 @@ const mockGoogleSheetClient = {
   },
 };
 const mockConfig = {
-  development: {
-    ANALYTICS: {
-      SHEET_ID: 'sheet-id',
-      TAB_NAME: 'tab-name',
-      TRACKED_EXPENSES_RANGE: 'A2:B2',
-      TRACKED_EXPENSES_LABEL: 'Tracked expenses',
-      ACTIVE_CHATS_RANGE: 'A1:B1',
-      ACTIVE_CHATS_LABEL: 'Active chats',
-    },
+  ANALYTICS: {
+    SHEET_ID: 'sheet-id',
+    TAB_NAME: 'tab-name',
+    TRACKED_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_EXPENSES_LABEL: 'Tracked expenses',
+    ACTIVE_CHATS_RANGE: 'A1:B1',
+    ACTIVE_CHATS_LABEL: 'Active chats',
   },
 };
 describe('Analytics', () => {

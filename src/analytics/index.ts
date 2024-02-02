@@ -5,7 +5,7 @@ import type { CONFIG_TYPE } from '../config/config';
 
 export class Analytics {
   client: sheets_v4.Sheets;
-  config: CONFIG_TYPE[Environment]['ANALYTICS'];
+  config: CONFIG_TYPE['ANALYTICS'];
 
   constructor(
     googleSheetClient: sheets_v4.Sheets,
@@ -13,7 +13,7 @@ export class Analytics {
     env: Environment
   ) {
     this.client = googleSheetClient;
-    this.config = config[env].ANALYTICS;
+    this.config = config.ANALYTICS;
   }
 
   /**

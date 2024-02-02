@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { getGoogleSheetClient } from './google';
 import { CategoriesCommand } from './commands/categories/categories';
 import { fetchCategories } from './commands/categories/fetch';
-import { CONFIG } from './config/config';
+import { getConfig } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
@@ -59,6 +59,8 @@ OPTIONAL:
 */
 
 const main = async () => {
+  const CONFIG = getConfig(ENVIRONMENT);
+
   const googleSheetClient = await getGoogleSheetClient({
     clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
