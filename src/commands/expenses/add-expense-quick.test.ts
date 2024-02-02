@@ -1,9 +1,12 @@
-import { describe, expect, vi, it, afterEach } from 'vitest';
+import { describe, expect, vi, it, afterEach, beforeEach } from 'vitest';
 import { AddExpenseQuickCommand } from './add-expense-quick';
 import TelegramBot from 'node-telegram-bot-api';
 import { UNCATEGORIZED_CATEGORY } from '../../config/config';
 
 // TODO: in this file we probably should mock the sheetId, tabName, range, etc...
+// ^ is the above comment still valid?
+
+// TODO: can we centralize the mocks? a lot of redundant info between tests
 
 const mocks = vi.hoisted(() => {
   return {
@@ -31,8 +34,28 @@ const defaultMsg: TelegramBot.Message = {
 const mockAnalytics = {
   addTrackedExpense: vi.fn(),
 };
+const mockConfig = {
+  sheetId: 'sheet-id',
+  tabName: 'tab-name',
+  range: 'A:Z',
+};
 
 describe('AddExpenseQuickCommand', () => {
+  let handler: ReturnType<typeof AddExpenseQuickCommand.getHandler>;
+
+  beforeEach(() => {
+    handler = AddExpenseQuickCommand.getHandler({
+      // @ts-expect-error
+      bot,
+      // @ts-expect-error
+      googleSheetClient: mockGoogleSheetClient,
+      // @ts-expect-error
+      analytics: mockAnalytics,
+      // @ts-expect-error
+      config: mockConfig,
+    });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -55,11 +78,6 @@ describe('AddExpenseQuickCommand', () => {
   });
 
   it('should send a explanation message if the amount is not a number', () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({ ...defaultMsg, text: 'aggiungi veloce merda in salotto' });
 
     const calledWith = bot.sendMessage.mock.calls[0];
@@ -69,11 +87,6 @@ describe('AddExpenseQuickCommand', () => {
   });
 
   it("should add the expense also if the message doesn't have a description (uncategorized)", async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20',
@@ -81,9 +94,9 @@ describe('AddExpenseQuickCommand', () => {
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         ['15/12/2023', 20, UNCATEGORIZED_CATEGORY, UNCATEGORIZED_CATEGORY, ''],
       ],
@@ -99,11 +112,6 @@ describe('AddExpenseQuickCommand', () => {
   });
 
   it('should add the expense with the provided description (uncategorized)', async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20 descrizione',
@@ -111,9 +119,9 @@ describe('AddExpenseQuickCommand', () => {
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         [
           '15/12/2023',
@@ -135,11 +143,6 @@ describe('AddExpenseQuickCommand', () => {
   });
 
   it('should add the expense with the provided long description (uncategorized)', async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20 descrizione incredibilmente verbosa',
@@ -147,9 +150,9 @@ describe('AddExpenseQuickCommand', () => {
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         [
           '15/12/2023',

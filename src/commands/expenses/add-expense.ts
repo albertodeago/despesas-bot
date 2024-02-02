@@ -7,7 +7,6 @@ import {
 } from '../../utils';
 import { writeGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
-import { CONFIG } from '../../config/config';
 import {
   getMsgExplanation,
   getWrongAmountMessage,
@@ -15,6 +14,7 @@ import {
   getErrorMessage,
 } from './messages';
 import { Analytics } from '../../analytics';
+import type { CONFIG_TYPE } from '../../config/config';
 
 type AddExpenseParams = {
   bot: TelegramBot;
@@ -25,6 +25,7 @@ type AddExpenseParams = {
   description?: string;
   categoryName: string;
   subCategoryName?: string;
+  config: CONFIG_TYPE;
 };
 const addExpense = async ({
   googleSheetClient,
@@ -33,6 +34,7 @@ const addExpense = async ({
   description,
   categoryName,
   subCategoryName,
+  config,
 }: AddExpenseParams): Promise<undefined | unknown> => {
   const expense = createExpenseRow({
     date: formattedDate,
@@ -44,9 +46,9 @@ const addExpense = async ({
   try {
     await writeGoogleSheet({
       client: googleSheetClient,
-      sheetId: CONFIG.sheetId,
-      tabName: CONFIG.tabName,
-      range: CONFIG.range,
+      sheetId: config.sheetId,
+      tabName: config.tabName,
+      range: config.range,
       data: expense,
     });
     return;
@@ -63,6 +65,7 @@ type HandleGenericParams = {
   formattedDate: string;
   amount: number;
   analytics: Analytics;
+  config: CONFIG_TYPE;
 };
 type HandleCategoryAndSubcategoryParams = HandleGenericParams & {
   allCategories: Category[];
@@ -80,6 +83,7 @@ export const getCategoryAndSubcategoryHandler =
     formattedDate,
     amount,
     analytics,
+    config,
   }: HandleCategoryAndSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const category = allCategories.find((c) => c.name === msg.text);
@@ -101,6 +105,7 @@ export const getCategoryAndSubcategoryHandler =
         amount,
         description,
         categoryName: category.name,
+        config,
       });
       bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
       if (!err) {
@@ -127,6 +132,7 @@ export const getCategoryAndSubcategoryHandler =
         formattedDate,
         amount,
         analytics,
+        config,
       })
     );
     return;
@@ -142,6 +148,7 @@ export const getSubcategoryHandler =
     formattedDate,
     amount,
     analytics,
+    config,
   }: HandleSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const subCategory = category.subCategories.find(
@@ -164,6 +171,7 @@ export const getSubcategoryHandler =
       description,
       categoryName: category.name,
       subCategoryName: subCategory.name,
+      config,
     });
     bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
     if (!err) {
@@ -172,15 +180,17 @@ export const getSubcategoryHandler =
     return;
   };
 
-export const AddExpenseCommand: BotCommand = {
+type AddExpenseCommandHandlerProps = {
+  bot: TelegramBot;
+  allCategories: Category[];
+  analytics: Analytics;
+  googleSheetClient: sheets_v4.Sheets;
+  config: CONFIG_TYPE;
+};
+export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
   pattern: /^aggiungi\s*((?!veloce).)*$/i,
   getHandler:
-    (
-      bot: TelegramBot,
-      allCategories: Category[],
-      analytics: Analytics,
-      googleSheetClient: sheets_v4.Sheets
-    ) =>
+    ({ bot, allCategories, analytics, googleSheetClient, config }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, tokens, date } = fromMsg(msg);
       console.log(
@@ -225,6 +235,7 @@ export const AddExpenseCommand: BotCommand = {
             amount,
             description,
             categoryName: category.name,
+            config,
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
           if (!err) {
@@ -258,6 +269,7 @@ export const AddExpenseCommand: BotCommand = {
               formattedDate,
               amount,
               analytics,
+              config,
             })
           );
           return;
@@ -289,6 +301,7 @@ export const AddExpenseCommand: BotCommand = {
           description,
           categoryName: category.name,
           subCategoryName: subCategory.name,
+          config,
         });
         bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
         if (!err) {
@@ -320,6 +333,7 @@ export const AddExpenseCommand: BotCommand = {
             formattedDate,
             amount,
             analytics,
+            config,
           })
         );
         return;

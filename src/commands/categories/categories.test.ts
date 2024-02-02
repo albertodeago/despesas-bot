@@ -1,4 +1,4 @@
-import { describe, expect, vi, it } from 'vitest';
+import { beforeEach, describe, expect, vi, it } from 'vitest';
 import { googleResultToCategories } from './fetch';
 import { CategoriesCommand } from './categories';
 import TelegramBot from 'node-telegram-bot-api';
@@ -140,6 +140,13 @@ const defaultMsg: TelegramBot.Message = {
   message_id: 987654321,
 };
 describe('CategoriesCommand', () => {
+  let handler: ReturnType<typeof CategoriesCommand.getHandler>;
+
+  beforeEach(() => {
+    // @ts-expect-error
+    handler = CategoriesCommand.getHandler({ bot, allCategories: categories });
+  });
+
   it('should match /categorie and /c', () => {
     expect(CategoriesCommand.pattern.test('/categorie')).toBe(true);
     expect(CategoriesCommand.pattern.test('/categorie auto')).toBe(true);
@@ -151,7 +158,6 @@ describe('CategoriesCommand', () => {
   });
 
   it('should answer with all the categories and subcategories', () => {
-    const handler = CategoriesCommand.getHandler(bot, categories);
     handler(defaultMsg);
 
     expect(bot.sendMessage).toHaveBeenCalledWith(
@@ -170,7 +176,6 @@ describe('CategoriesCommand', () => {
   });
 
   it('should answer with just the specified category, listing subcategories', () => {
-    const handler = CategoriesCommand.getHandler(bot, categories);
     handler({
       ...defaultMsg,
       text: '/categorie Category_1',

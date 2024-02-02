@@ -75,8 +75,8 @@ export async function appendGoogleSheet({
   tabName,
   range,
   data,
-  insertDataOption = 'INSERT_ROWS',
   valueInputOption = 'RAW',
+  insertDataOption = 'INSERT_ROWS',
 }: {
   client: sheets_v4.Sheets;
   sheetId: SheetId;
@@ -99,7 +99,7 @@ export async function appendGoogleSheet({
   return resp.data;
 }
 
-// TODO: we should have a generic writegoogle function, this is already a specialization to write expenses
+// TODO: we should move this into a use-case
 export type ExpenseRow = [string, number, string, string, string]; // TODO: type this better date, categories, subcategories
 export async function writeGoogleSheet({
   client,

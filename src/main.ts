@@ -59,18 +59,18 @@ OPTIONAL:
 */
 
 const main = async () => {
-  const CONFIG = getConfig(ENVIRONMENT);
+  const config = getConfig(ENVIRONMENT);
 
   const googleSheetClient = await getGoogleSheetClient({
     clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
-  const analytics = new Analytics(googleSheetClient, CONFIG, ENVIRONMENT);
+  const analytics = new Analytics(googleSheetClient, config, ENVIRONMENT);
 
   const allCategories = await fetchCategories(
     googleSheetClient,
-    CONFIG.sheetId
+    config.sheetId
   );
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
@@ -78,7 +78,7 @@ const main = async () => {
 
   // On startup we want to inform the admin that the bot is up
   console.log(upAndRunningMsg);
-  bot.sendMessage(CONFIG.DEPLOY_CHAT_ID, upAndRunningMsg);
+  bot.sendMessage(config.DEPLOY_CHAT_ID, upAndRunningMsg);
 
   // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {
@@ -89,22 +89,28 @@ const main = async () => {
 
   bot.onText(
     AddExpenseCommand.pattern,
-    AddExpenseCommand.getHandler(
+    AddExpenseCommand.getHandler({
       bot,
       allCategories,
       analytics,
-      googleSheetClient
-    )
+      googleSheetClient,
+      config: config,
+    })
   );
 
   bot.onText(
     AddExpenseQuickCommand.pattern,
-    AddExpenseQuickCommand.getHandler(bot, googleSheetClient, analytics)
+    AddExpenseQuickCommand.getHandler({
+      bot,
+      googleSheetClient,
+      analytics,
+      config,
+    })
   );
 
   bot.onText(
     CategoriesCommand.pattern,
-    CategoriesCommand.getHandler(bot, allCategories)
+    CategoriesCommand.getHandler({ bot, allCategories })
   );
 };
 main();

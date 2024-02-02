@@ -1,4 +1,4 @@
-import { describe, expect, vi, it, afterEach } from 'vitest';
+import { describe, expect, vi, it, afterEach, beforeEach } from 'vitest';
 import {
   AddExpenseCommand,
   getCategoryAndSubcategoryHandler,
@@ -7,6 +7,7 @@ import {
 import TelegramBot from 'node-telegram-bot-api';
 
 // TODO: in this file we probably should mock the sheetId, tabName, range, etc...
+// ^ is the above message still valid?
 
 const mocks = vi.hoisted(() => {
   return {
@@ -16,6 +17,12 @@ const mocks = vi.hoisted(() => {
 vi.mock('../../google', () => ({
   writeGoogleSheet: mocks.spyWriteGoogleSheet,
 }));
+
+const mockConfig = {
+  sheetId: 'sheet-id',
+  tabName: 'tab-name',
+  range: 'A:Z',
+};
 
 const categories = [
   {
@@ -50,11 +57,26 @@ const mockAnalytics = {
 };
 
 describe('AddExpenseCommand', () => {
+  let handler: (msg: TelegramBot.Message) => void;
+
+  beforeEach(() => {
+    handler = AddExpenseCommand.getHandler({
+      // @ts-expect-error
+      bot,
+      allCategories: categories,
+      // @ts-expect-error
+      analytics: mockAnalytics,
+      // @ts-expect-error
+      googleSheetClient: mockGoogleSheetClient,
+      // @ts-expect-error
+      config: mockConfig,
+    });
+  });
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should match "aggiungi\s*((?!veloce).)*$"', () => {
+  it('should match "aggiungis*((?!veloce).)*$"', () => {
     expect(AddExpenseCommand.pattern.test('aggiungi')).toBe(true);
     expect(AddExpenseCommand.pattern.test('aggiungi ')).toBe(true);
     expect(AddExpenseCommand.pattern.test('aggiung')).toBe(false);
@@ -64,12 +86,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it("should send a explanation message if it doesn't have the necessary info to answer", () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({ ...defaultMsg, text: 'aggiungi' });
 
     const calledWith = bot.sendMessage.mock.calls[0];
@@ -79,12 +95,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it('should send a explanation message if the amount is not a number', () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({ ...defaultMsg, text: 'aggiungi merda in casa' });
 
     const calledWith = bot.sendMessage.mock.calls[0];
@@ -94,19 +104,13 @@ describe('AddExpenseCommand', () => {
   });
 
   it('should add the expense if the message finish with a category with no subcategories', async () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_3' });
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [['15/12/2023', 20, 'Category_3', '', 'descrizione']],
     });
     await vi.waitFor(() => {
@@ -120,12 +124,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it("should ask for the subcategory if the message doesn't finish with a category with no subcategories", () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_1' });
 
     const calledWith = bot.sendMessage.mock.calls[0];
@@ -138,12 +136,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it('should send an error message if the second last token is a category but the last one is not a subcategory', () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi 20 descrizione Category_1 merda',
@@ -158,19 +150,13 @@ describe('AddExpenseCommand', () => {
   });
 
   it('should add the expense if the message finish with a category and subcategory', async () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler(defaultMsg);
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [['15/12/2023', 20, 'Category_1', 'Subcategory_1', 'descrizione']],
     });
     await vi.waitFor(() => {
@@ -184,12 +170,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it("should add the expense also if the message doesn't have a description", async () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockAnalytics,
-      mockGoogleSheetClient
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi 20 Category_1 Subcategory_1',
@@ -197,9 +177,9 @@ describe('AddExpenseCommand', () => {
 
     expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [['15/12/2023', 20, 'Category_1', 'Subcategory_1', '']],
     });
     await vi.waitFor(() => {
@@ -213,12 +193,6 @@ describe('AddExpenseCommand', () => {
   });
 
   it("should ask to select a category if the message doesn't provide one", () => {
-    const handler = AddExpenseCommand.getHandler(
-      bot,
-      categories,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi 20 descrizione del cazzo ma senza una categoria',
@@ -245,6 +219,8 @@ describe('AddExpenseCommand', () => {
         amount: 50,
         // @ts-expect-error
         analytics: mockAnalytics,
+        // @ts-expect-error
+        config: mockConfig,
       });
 
     it("should send an error message if the category doesn't exist", async () => {
@@ -264,9 +240,9 @@ describe('AddExpenseCommand', () => {
 
       expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
         client: mockGoogleSheetClient,
-        sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-        tabName: 'Spese',
-        range: 'A:E',
+        sheetId: 'sheet-id',
+        tabName: 'tab-name',
+        range: 'A:Z',
         data: [['15/12/2023', 50, 'Category_3', '', 'descrizione multi token']],
       });
       await vi.waitFor(() => {
@@ -312,6 +288,8 @@ describe('AddExpenseCommand', () => {
         amount: 20,
         // @ts-expect-error
         analytics: mockAnalytics,
+        // @ts-expect-error
+        config: mockConfig,
       });
 
     it("should send an error message if the subcategory doesn't exist", async () => {
@@ -331,9 +309,9 @@ describe('AddExpenseCommand', () => {
 
       expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
         client: mockGoogleSheetClient,
-        sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-        tabName: 'Spese',
-        range: 'A:E',
+        sheetId: 'sheet-id',
+        tabName: 'tab-name',
+        range: 'A:Z',
         data: [
           [
             '15/12/2023',

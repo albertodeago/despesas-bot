@@ -19,10 +19,14 @@ const getCategoriesAnswer = (categories: Category[]) => {
   return answer;
 };
 
-export const CategoriesCommand: BotCommand = {
+type CategoriesCommandHandlerProps = {
+  bot: TelegramBot;
+  allCategories: Category[];
+};
+export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
-    (bot: TelegramBot, allCategories: Category[]) =>
+    ({ bot, allCategories }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, tokens } = fromMsg(msg);
       console.log(
