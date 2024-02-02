@@ -1,4 +1,5 @@
 type SheetId = string;
+type ChatId = string;
 
 type Environment = 'development' | 'production';
 
@@ -8,7 +9,7 @@ type BotCommand<T> = {
 };
 
 type ChatConfig = {
-  chatId: TelegramBot.Message.Chat.id;
+  chatId: ChatId;
   spreadsheetId: SheetId;
   // active means that the user ran the /start command, so the bot is interacting with the chat
   isActive: boolean;

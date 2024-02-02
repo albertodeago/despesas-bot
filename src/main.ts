@@ -4,7 +4,7 @@ import { CategoriesCommand } from './commands/categories/categories';
 import { fetchCategories } from './commands/categories/fetch';
 import { getConfig } from './config/config';
 import { getBot } from './telegram';
-import { StartCommand } from './commands/start';
+import { StartCommand } from './commands/start/start';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { Analytics } from './analytics';
@@ -34,6 +34,7 @@ MANDATORY
   - /stop -> cancella chatId-spreadsheetId
   - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
+- TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
   - quante spese aggiunte
   - in quante chat attivo
@@ -85,7 +86,10 @@ const main = async () => {
     console.log(`Received message on chat ${msg.chat.id}: ${msg.text}`);
   });
 
-  bot.onText(StartCommand.pattern, StartCommand.getHandler(bot));
+  bot.onText(
+    StartCommand.pattern,
+    StartCommand.getHandler({ bot, googleSheetClient, config })
+  );
 
   bot.onText(
     AddExpenseCommand.pattern,

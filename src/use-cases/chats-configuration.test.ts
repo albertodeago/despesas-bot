@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import {
   addChatToConfiguration,
   getChatsConfiguration,
+  isChatInConfiguration,
   updateChatInConfiguration,
 } from './chats-configuration';
 
@@ -119,6 +120,40 @@ describe('USE-CASE: chats-configuration', () => {
           isActive: true,
         },
       ]);
+    });
+  });
+
+  describe('isChatInConfiguration', () => {
+    it('should return true if the chat is in the configuration', async () => {
+      const res = await isChatInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-123'
+      );
+      expect(res).toEqual(true);
+    });
+
+    it('should return false if the chat is not in the configuration', async () => {
+      const res = await isChatInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-000'
+      );
+      expect(res).toEqual(false);
+    });
+
+    it('should return false if an error occurs while fetching the chats configuration', async () => {
+      spyGet.mockImplementationOnce(() => Promise.reject());
+
+      const res = await isChatInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-123'
+      );
+      expect(res).toEqual(false);
     });
   });
 

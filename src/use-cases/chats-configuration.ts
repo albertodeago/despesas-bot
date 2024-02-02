@@ -6,6 +6,7 @@ import {
 } from '../google';
 import { CONFIG_TYPE } from '../config/config';
 
+// TODO: do we want to cache the result by default (by some minutes for example) and add a parameter to force the read?
 export const getChatsConfiguration = async (
   client: sheets_v4.Sheets,
   config: CONFIG_TYPE
@@ -36,9 +37,32 @@ export const getChatsConfiguration = async (
   } catch (e) {
     console.error(e);
     return undefined;
+    // TODO: sarebbe meglio tracciare l'errore e basta, return undefined costringe un sacco di IF in giro
   }
 
   return [];
+};
+
+export const isChatInConfiguration = async (
+  client: sheets_v4.Sheets,
+  config: CONFIG_TYPE,
+  chatId: ChatId
+) => {
+  try {
+    const chatsConfig = await getChatsConfiguration(client, config);
+    if (chatsConfig) {
+      const index = chatsConfig.findIndex(
+        (chatConfig) => chatConfig.chatId === chatId
+      );
+      if (index !== -1) {
+        return true;
+      }
+    }
+  } catch (e) {
+    console.error('Error while checking if the bot is started in the chat', e);
+  }
+
+  return false;
 };
 
 export const addChatToConfiguration = async (

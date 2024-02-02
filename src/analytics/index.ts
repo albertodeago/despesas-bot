@@ -3,6 +3,7 @@ import { readGoogleSheet, updateGoogleSheet } from '../google';
 
 import type { CONFIG_TYPE } from '../config/config';
 
+// TODO: do we actually need the activeChats? We can just read the chatConfig and count the active ones...
 export class Analytics {
   client: sheets_v4.Sheets;
   config: CONFIG_TYPE['ANALYTICS'];

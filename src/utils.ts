@@ -6,6 +6,7 @@ export const fromMsg = (msg: TelegramBot.Message) => {
 
   return {
     chatId: msg.chat.id,
+    strChatId: `${msg.chat.id}`,
     messageText: msg.text,
     date: new Date(msg.date * 1000),
     tokens,
