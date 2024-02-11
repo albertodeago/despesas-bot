@@ -9,17 +9,22 @@ import {
   updateChatInConfiguration,
 } from '../../use-cases/chats-configuration';
 
-const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese.
+const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese e mi sono collegato al tuo foglio di calcolo.
+
 Per aggiungere una spesa, puoi usare questi comandi (non hanno lo slash davanti per essere più veloci da utilizzare):
- - aggiungi <quantità> <descrizione> <categoria> <sotto-categoria>
- Un esempio può essere (ipotizzando che cibo sia una tua categoria e ristorante una sotto-categoria di cibo):
- aggiungi 10.5 pranzo con colleghi cibo ristorante
- - aggiungi veloce 20 pranzo con colleghi
- questo comando aggiunge la spesa ma senza associarci una categoria.
+
+- aggiungi <quantità> <descrizione> <categoria> <sotto-categoria>
+  Un esempio può essere (ipotizzando che cibo sia una tua categoria e ristorante una sotto-categoria di cibo):
+  aggiungi 10.5 pranzo con colleghi cibo ristorante
+- aggiungi veloce 20 pranzo con colleghi
+
+quest'ultimo comando aggiunge la spesa ma senza associarci una categoria.
 
 Se non ti ricordi le tue categorie, puoi sempre chiedere al bot con il comando /categorie.
 
 Ricorda che le tue spese saranno tracciate nel foglio di calcolo da te scelto, puoi sempre andare a modificare le tue spese lì.
+
+Se vuoi smettere di tracciare le spese scrivi /stop
 `;
 
 const NO_SHEET_ID_MSG = `Devi specificare un id di foglio di calcolo. Esempio: /start sheet-id
