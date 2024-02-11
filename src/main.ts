@@ -31,12 +31,11 @@ if (
 /**
 MANDATORY
 - TODO: rendere il bot generico
-  - TODO: quando arriva un messaggio controllare se ha senso parsarlo (se è di una chat inactive o inesistente, possiamo ignorarlo)
   - TODO: dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
   - quante spese aggiunte
-  - in quante chat attivo
+  - in quante chat attivo (da rimuovere)
 - TODO: /help per capire come funziona (anche come condividere il sheet al bot)
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
@@ -56,6 +55,14 @@ OPTIONAL:
 - TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
 - TODO: better log management, .info sempre e .debug solo per dev?
 - TODO: create an "error tracker" that sends error to my chat?
+- TODO: better structure for project
+
+Probably a big refactor would make things easier.
+If we put just one listener for every message, in that listener we could:
+- log request
+- check if the msg is to be ignored
+- get / refresh the cache for the categories for that chatId
+- based on the message, "call" a command or something like that
 */
 
 const main = async () => {

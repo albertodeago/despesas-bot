@@ -6,6 +6,10 @@ const sharedConfigProps = {
   // sheetId: '17higBTMCC09k95Dr_ccw7BRClxdkdBwT3dk9xqnpiVg', // despesas-2
   tabName: 'Spese',
   range: 'A:E',
+  CATEGORIES: {
+    TAB_NAME: 'Categorie',
+    RANGE: 'A2:Z100',
+  },
 };
 
 const developmentConfig: typeof productionConfig = {
