@@ -5,6 +5,7 @@ import { fetchCategories } from './commands/categories/fetch';
 import { getConfig } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start/start';
+import { StopCommand } from './commands/stop/stop';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { Analytics } from './analytics';
@@ -32,7 +33,6 @@ MANDATORY
 - TODO: rendere il bot generico
   - /start <sheetId> -> salva chatId-spreadsheetId
   - /stop -> cancella chatId-spreadsheetId
-  - potremmo tenere questa mappa/stato (chatId-sheetId) in un altro sheetId, con un po' di "cache" per accessi continui (tipo 5/10m)
   - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
@@ -89,6 +89,11 @@ const main = async () => {
   bot.onText(
     StartCommand.pattern,
     StartCommand.getHandler({ bot, googleSheetClient, config })
+  );
+
+  bot.onText(
+    StopCommand.pattern,
+    StopCommand.getHandler({ bot, googleSheetClient, config })
   );
 
   bot.onText(
