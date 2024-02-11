@@ -15,6 +15,9 @@ import {
 } from './messages';
 import { Analytics } from '../../analytics';
 import type { CONFIG_TYPE } from '../../config/config';
+import { isChatActiveInConfiguration } from '../../use-cases/chats-configuration';
+
+const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
 type AddExpenseParams = {
   bot: TelegramBot;
@@ -192,41 +195,123 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
   getHandler:
     ({ bot, allCategories, analytics, googleSheetClient, config }) =>
     async (msg: TelegramBot.Message) => {
-      const { chatId, tokens, date } = fromMsg(msg);
+      const { chatId, strChatId, tokens, date } = fromMsg(msg);
       console.log(
         `AddExpenseCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
       );
 
-      const categoriesFlat = allCategories.map((c) => c.name);
+      try {
+        // check, if it's a message in a inactive (on non existent) chat based on our
+        // config, we can just skip it
+        const _isChatActiveInConfiguration = await isChatActiveInConfiguration(
+          googleSheetClient,
+          config,
+          strChatId
+        );
+        if (!_isChatActiveInConfiguration) {
+          return;
+        }
 
-      // we need at least 'aggiungi <amount> <descrizione>|<categoria>'
-      if (tokens.length < 3) {
-        bot.sendMessage(chatId, getMsgExplanation());
-        return;
-      }
+        const categoriesFlat = allCategories.map((c) => c.name);
 
-      let formattedDate = date.toLocaleDateString('it-IT');
-      const amount = parseFloat(tokens[1]);
-      if (isNaN(amount)) {
-        bot.sendMessage(chatId, getWrongAmountMessage());
-        return;
-      }
+        // we need at least 'aggiungi <amount> <descrizione>|<categoria>'
+        if (tokens.length < 3) {
+          bot.sendMessage(chatId, getMsgExplanation());
+          return;
+        }
 
-      // ok we have the amount, now we need to understand category
-      // and maybe the subcategory
-      const secondLastToken = tokens[tokens.length - 2];
-      const lastToken = tokens[tokens.length - 1];
-      if (categoriesFlat.includes(lastToken)) {
-        // last token is a category. if that category have no subcategories, we can add
-        // the expense, otherwise we need to show the subcategories
+        let formattedDate = date.toLocaleDateString('it-IT');
+        const amount = parseFloat(tokens[1]);
+        if (isNaN(amount)) {
+          bot.sendMessage(chatId, getWrongAmountMessage());
+          return;
+        }
 
-        const category = allCategories.find((c) => c.name === lastToken)!;
-        if (category.subCategories.length === 0) {
-          // the category doesn't have any subcategories, we can add the expense
+        // ok we have the amount, now we need to understand category
+        // and maybe the subcategory
+        const secondLastToken = tokens[tokens.length - 2];
+        const lastToken = tokens[tokens.length - 1];
+        if (categoriesFlat.includes(lastToken)) {
+          // last token is a category. if that category have no subcategories, we can add
+          // the expense, otherwise we need to show the subcategories
 
-          // all the tokens except the first one (aggiungi), the amount and
-          // the last one (category) are the description
-          const description = getDescriptionFromTokenizedMessage(tokens);
+          const category = allCategories.find((c) => c.name === lastToken)!;
+          if (category.subCategories.length === 0) {
+            // the category doesn't have any subcategories, we can add the expense
+
+            // all the tokens except the first one (aggiungi), the amount and
+            // the last one (category) are the description
+            const description = getDescriptionFromTokenizedMessage(tokens);
+            const err = await addExpense({
+              bot,
+              chatId,
+              googleSheetClient,
+              formattedDate,
+              amount,
+              description,
+              categoryName: category.name,
+              config,
+            });
+            bot.sendMessage(
+              chatId,
+              err ? getErrorMessage(err) : getOkMessage()
+            );
+            if (!err) {
+              analytics.addTrackedExpense();
+            }
+            return;
+          } else {
+            // we have the category, but we need to understand the subcategory
+            // show the subcategories and then add the expense
+            const subCategories = category.subCategories.map((sc) => [
+              { text: sc.name },
+            ]);
+            bot.sendMessage(chatId, 'Scegli una sottocategoria', {
+              reply_markup: {
+                keyboard: subCategories,
+                one_time_keyboard: true,
+              },
+            });
+
+            // we add another listener to get the subcategory
+            // TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
+            // (maybe we can mitigate this with a check on the chatId, but not .once then)
+            bot.once(
+              'message',
+              getSubcategoryHandler({
+                bot,
+                category,
+                chatId,
+                tokens,
+                googleSheetClient,
+                formattedDate,
+                amount,
+                analytics,
+                config,
+              })
+            );
+            return;
+          }
+        } else if (categoriesFlat.includes(secondLastToken)) {
+          // second last token is a category, need to check if last token is a (correct) subcategory
+          const category = allCategories.find(
+            (c) => c.name === secondLastToken
+          )!;
+          const subCategory = category.subCategories.find(
+            (sc) => sc.name === lastToken
+          );
+          // TODO: it would be nice to have some kind of tolerance to typos
+          if (!subCategory) {
+            // last token is not a subcategory, send an error message
+            bot.sendMessage(
+              chatId,
+              `Non sono riuscito ad individuare la categoria e sotto categoria, reinserisci la spesa`
+            );
+            return;
+          }
+
+          // we got everything, add the expense
+          const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
           const err = await addExpense({
             bot,
             chatId,
@@ -235,6 +320,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
             amount,
             description,
             categoryName: category.name,
+            subCategoryName: subCategory.name,
             config,
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
@@ -243,26 +329,24 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           }
           return;
         } else {
-          // we have the category, but we need to understand the subcategory
-          // show the subcategories and then add the expense
-          const subCategories = category.subCategories.map((sc) => [
-            { text: sc.name },
-          ]);
-          bot.sendMessage(chatId, 'Scegli una sottocategoria', {
+          const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
+          // the user wants to add the expense, but he didn't specify the category and subcategory
+          // we need to show the category list (and after the subcategories based on his response)
+          bot.sendMessage(chatId, 'Scegli una categoria', {
             reply_markup: {
-              keyboard: subCategories,
+              keyboard: allCategories.map((c) => [{ text: c.name }]),
               one_time_keyboard: true,
             },
           });
 
-          // we add another listener to get the subcategory
-          // TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
+          // we need to wait for both the category and the subcategory (if exists)
+          // TODO: this is error prone too, another message could screw this up
           // (maybe we can mitigate this with a check on the chatId, but not .once then)
           bot.once(
             'message',
-            getSubcategoryHandler({
+            getCategoryAndSubcategoryHandler({
               bot,
-              category,
+              allCategories,
               chatId,
               tokens,
               googleSheetClient,
@@ -274,69 +358,9 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           );
           return;
         }
-      } else if (categoriesFlat.includes(secondLastToken)) {
-        // second last token is a category, need to check if last token is a (correct) subcategory
-        const category = allCategories.find((c) => c.name === secondLastToken)!;
-        const subCategory = category.subCategories.find(
-          (sc) => sc.name === lastToken
-        );
-        // TODO: it would be nice to have some kind of tolerance to typos
-        if (!subCategory) {
-          // last token is not a subcategory, send an error message
-          bot.sendMessage(
-            chatId,
-            `Non sono riuscito ad individuare la categoria e sotto categoria, reinserisci la spesa`
-          );
-          return;
-        }
-
-        // we got everything, add the expense
-        const description = getDescriptionFromTokenizedMessage(tokens, 2, 2);
-        const err = await addExpense({
-          bot,
-          chatId,
-          googleSheetClient,
-          formattedDate,
-          amount,
-          description,
-          categoryName: category.name,
-          subCategoryName: subCategory.name,
-          config,
-        });
-        bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
-        if (!err) {
-          analytics.addTrackedExpense();
-        }
-        return;
-      } else {
-        const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
-        // the user wants to add the expense, but he didn't specify the category and subcategory
-        // we need to show the category list (and after the subcategories based on his response)
-        bot.sendMessage(chatId, 'Scegli una categoria', {
-          reply_markup: {
-            keyboard: allCategories.map((c) => [{ text: c.name }]),
-            one_time_keyboard: true,
-          },
-        });
-
-        // we need to wait for both the category and the subcategory (if exists)
-        // TODO: this is error prone too, another message could screw this up
-        // (maybe we can mitigate this with a check on the chatId, but not .once then)
-        bot.once(
-          'message',
-          getCategoryAndSubcategoryHandler({
-            bot,
-            allCategories,
-            chatId,
-            tokens,
-            googleSheetClient,
-            formattedDate,
-            amount,
-            analytics,
-            config,
-          })
-        );
-        return;
+      } catch (e) {
+        console.error('An error ocurred handling the add-expense command', e);
+        bot.sendMessage(chatId, GENERIC_ERROR_MSG);
       }
     },
 };

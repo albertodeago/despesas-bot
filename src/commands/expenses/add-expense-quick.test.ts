@@ -8,13 +8,17 @@ import { UNCATEGORIZED_CATEGORY } from '../../config/config';
 
 // TODO: can we centralize the mocks? a lot of redundant info between tests
 
-const mocks = vi.hoisted(() => {
-  return {
-    spyWriteGoogleSheet: vi.fn(() => Promise.resolve()),
-  };
-});
+const googleMocks = vi.hoisted(() => ({
+  spyWriteGoogleSheet: vi.fn(() => Promise.resolve()),
+}));
 vi.mock('../../google', () => ({
-  writeGoogleSheet: mocks.spyWriteGoogleSheet,
+  writeGoogleSheet: googleMocks.spyWriteGoogleSheet,
+}));
+const chatsConfigMocks = vi.hoisted(() => ({
+  isChatActiveInConfiguration: () => Promise.resolve(true),
+}));
+vi.mock('../../use-cases/chats-configuration', () => ({
+  isChatActiveInConfiguration: chatsConfigMocks.isChatActiveInConfiguration,
 }));
 
 const bot = {
@@ -38,6 +42,13 @@ const mockConfig = {
   sheetId: 'sheet-id',
   tabName: 'tab-name',
   range: 'A:Z',
+};
+
+const waitMessage = async () => {
+  await vi.waitFor(() => {
+    if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+      throw 'Mock not called yet';
+  });
 };
 
 describe('AddExpenseQuickCommand', () => {
@@ -77,9 +88,10 @@ describe('AddExpenseQuickCommand', () => {
     ).toBe(true);
   });
 
-  it('should send a explanation message if the amount is not a number', () => {
+  it('should send a explanation message if the amount is not a number', async () => {
     handler({ ...defaultMsg, text: 'aggiungi veloce merda in salotto' });
 
+    await waitMessage();
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain("L'importo dev'essere un numero");
@@ -92,7 +104,8 @@ describe('AddExpenseQuickCommand', () => {
       text: 'aggiungi veloce 20',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage();
+    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -100,10 +113,6 @@ describe('AddExpenseQuickCommand', () => {
       data: [
         ['15/12/2023', 20, UNCATEGORIZED_CATEGORY, UNCATEGORIZED_CATEGORY, ''],
       ],
-    });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
     });
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
@@ -117,7 +126,8 @@ describe('AddExpenseQuickCommand', () => {
       text: 'aggiungi veloce 20 descrizione',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage();
+    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -132,10 +142,6 @@ describe('AddExpenseQuickCommand', () => {
         ],
       ],
     });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
-    });
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
@@ -148,7 +154,8 @@ describe('AddExpenseQuickCommand', () => {
       text: 'aggiungi veloce 20 descrizione incredibilmente verbosa',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage();
+    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -162,10 +169,6 @@ describe('AddExpenseQuickCommand', () => {
           'descrizione incredibilmente verbosa',
         ],
       ],
-    });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
     });
     const calledWith = bot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
