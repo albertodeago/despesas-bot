@@ -4,6 +4,7 @@ import {
   getChatsConfiguration,
   isChatInConfiguration,
   updateChatInConfiguration,
+  isChatActiveInConfiguration,
 } from './chats-configuration';
 
 const spyGet = vi.fn(() =>
@@ -216,6 +217,40 @@ describe('USE-CASE: chats-configuration', () => {
         mockChatConfig
       );
       expect(res).toEqual(true);
+    });
+  });
+
+  describe('isChatActiveInConfiguration', () => {
+    it('should return false if the chat is not found in the config', async () => {
+      const result = await isChatActiveInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-666'
+      );
+      expect(result).toBe(false);
+    });
+
+    it("should return false if the chat is in the config but it' inactive", async () => {
+      const result = await isChatActiveInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-456'
+      );
+
+      expect(result).toBe(false);
+    });
+
+    it("should return true if the chat is in the config and it's active", async () => {
+      const result = await isChatActiveInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-789'
+      );
+
+      expect(result).toBe(true);
     });
   });
 });

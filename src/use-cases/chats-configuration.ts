@@ -94,7 +94,7 @@ export const addChatToConfiguration = async (
 export const updateChatInConfiguration = async (
   client: sheets_v4.Sheets,
   config: CONFIG_TYPE,
-  chatId: string,
+  chatId: ChatId,
   newChatConfig: ChatConfig
 ): Promise<boolean> => {
   // first we need to read the configuration, then we need to find the line with the right chatId
@@ -136,4 +136,24 @@ export const updateChatInConfiguration = async (
   }
 
   return false;
+};
+
+export const isChatActiveInConfiguration = async (
+  client: sheets_v4.Sheets,
+  config: CONFIG_TYPE,
+  chatId: ChatId
+) => {
+  const _isChatInConfiguration = await isChatInConfiguration(
+    client,
+    config,
+    chatId
+  );
+  if (!_isChatInConfiguration) {
+    return false;
+  }
+
+  const chats = await getChatsConfiguration(client, config);
+  const chat = chats?.find((c) => c.chatId === chatId);
+
+  return chat && chat.isActive;
 };
