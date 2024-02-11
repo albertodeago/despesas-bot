@@ -1,7 +1,16 @@
-import { beforeEach, describe, expect, vi, it } from 'vitest';
+import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
 import { googleResultToCategories } from './fetch';
 import { CategoriesCommand } from './categories';
 import TelegramBot from 'node-telegram-bot-api';
+
+const mocks = vi.hoisted(() => {
+  return {
+    isChatActiveInConfiguration: vi.fn(() => Promise.resolve(true)),
+  };
+});
+vi.mock('../../use-cases/chats-configuration', () => ({
+  isChatActiveInConfiguration: mocks.isChatActiveInConfiguration,
+}));
 
 const expectations = [
   {
@@ -127,9 +136,13 @@ const categories = [
     subCategories: [],
   },
 ];
+
 const bot = {
   sendMessage: vi.fn(),
 };
+const mockConfig = {};
+const mockGoogleSheetClient = {};
+
 const defaultMsg: TelegramBot.Message = {
   text: '/categorie',
   chat: {
@@ -143,8 +156,18 @@ describe('CategoriesCommand', () => {
   let handler: ReturnType<typeof CategoriesCommand.getHandler>;
 
   beforeEach(() => {
-    // @ts-expect-error
-    handler = CategoriesCommand.getHandler({ bot, allCategories: categories });
+    handler = CategoriesCommand.getHandler({
+      // @ts-expect-error
+      bot,
+      // @ts-expect-error
+      googleSheetClient: mockGoogleSheetClient,
+      // @ts-expect-error
+      config: mockConfig,
+      allCategories: categories,
+    });
+  });
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it('should match /categorie and /c', () => {
@@ -157,9 +180,13 @@ describe('CategoriesCommand', () => {
     expect(CategoriesCommand.pattern.test('/citando Dante')).toBe(false);
   });
 
-  it('should answer with all the categories and subcategories', () => {
+  it('should answer with all the categories and subcategories', async () => {
     handler(defaultMsg);
 
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
     expect(bot.sendMessage).toHaveBeenCalledWith(
       123,
       `Ecco le categorie
@@ -175,12 +202,16 @@ describe('CategoriesCommand', () => {
     );
   });
 
-  it('should answer with just the specified category, listing subcategories', () => {
+  it('should answer with just the specified category, listing subcategories', async () => {
     handler({
       ...defaultMsg,
       text: '/categorie Category_1',
     });
 
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
     expect(bot.sendMessage).toHaveBeenCalledWith(
       123,
       `Ecco le sottocategorie di *Category_1*

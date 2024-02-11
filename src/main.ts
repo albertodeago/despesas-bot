@@ -31,8 +31,8 @@ if (
 /**
 MANDATORY
 - TODO: rendere il bot generico
-  - quando arriva un messaggio controllare se ha senso parsarlo (se è di una chat inactive o inesistente, possiamo ignorarlo)
-  - dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
+  - TODO: quando arriva un messaggio controllare se ha senso parsarlo (se è di una chat inactive o inesistente, possiamo ignorarlo)
+  - TODO: dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
   - quante spese aggiunte
@@ -118,7 +118,12 @@ const main = async () => {
 
   bot.onText(
     CategoriesCommand.pattern,
-    CategoriesCommand.getHandler({ bot, allCategories })
+    CategoriesCommand.getHandler({
+      bot,
+      googleSheetClient,
+      config,
+      allCategories,
+    })
   );
 };
 main();

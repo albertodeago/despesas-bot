@@ -1,6 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
 import { Category } from './fetch';
+import { isChatActiveInConfiguration } from '../../use-cases/chats-configuration';
+import { sheets_v4 } from 'googleapis';
+import { CONFIG_TYPE } from '../../config/config';
 
 // construct the message to send to the user from a list of categories
 const getCategoriesAnswer = (categories: Category[]) => {
@@ -21,17 +24,31 @@ const getCategoriesAnswer = (categories: Category[]) => {
 
 type CategoriesCommandHandlerProps = {
   bot: TelegramBot;
+  googleSheetClient: sheets_v4.Sheets;
+  config: CONFIG_TYPE;
   allCategories: Category[];
 };
 export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
-    ({ bot, allCategories }) =>
+    ({ bot, googleSheetClient, config, allCategories }) =>
     async (msg: TelegramBot.Message) => {
-      const { chatId, tokens } = fromMsg(msg);
+      const { chatId, strChatId, tokens } = fromMsg(msg);
       console.log(
         `CategoriesCommand handler. Chat ${chatId}. Tokens ${tokens}`
       );
+
+      // check, if it's a message in a inactive (on non existent) chat based on our
+      // config, we can just skip this
+      const _isChatActiveInConfiguration = await isChatActiveInConfiguration(
+        googleSheetClient,
+        config,
+        strChatId
+      );
+      if (!_isChatActiveInConfiguration) {
+        return;
+      }
+      // TODO: what if the above call rejects? We  should have a generic error handler
 
       if (tokens.length > 1) {
         // We want to answer with just the specified category
