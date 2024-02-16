@@ -1,9 +1,14 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
 import { Category } from './fetch';
-import { isChatActiveInConfiguration } from '../../use-cases/chats-configuration';
+import {
+  isChatActiveInConfiguration,
+  getSpreadsheetIdFromChat,
+} from '../../use-cases/chats-configuration';
+// import { getSpread } from '../../use-cases/categories';
 import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../../config/config';
+import { Categories } from '../../use-cases/categories';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
@@ -28,12 +33,13 @@ type CategoriesCommandHandlerProps = {
   bot: TelegramBot;
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
-  allCategories: Category[];
+  // allCategories: Category[];
+  categoriesUC: Categories;
 };
 export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
-    ({ bot, googleSheetClient, config, allCategories }) =>
+    ({ bot, googleSheetClient, config, categoriesUC }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       console.log(
@@ -51,6 +57,16 @@ export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
         if (!_isChatActiveInConfiguration) {
           return;
         }
+
+        // get the spreadSheetId that we need to use to get the categories
+        const spreadSheetId = await getSpreadsheetIdFromChat(
+          googleSheetClient,
+          config,
+          strChatId
+        );
+
+        // get the categories of the current chat
+        const allCategories = await categoriesUC.get(spreadSheetId);
 
         if (tokens.length > 1) {
           // We want to answer with just the specified category

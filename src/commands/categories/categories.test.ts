@@ -6,10 +6,12 @@ import TelegramBot from 'node-telegram-bot-api';
 const mocks = vi.hoisted(() => {
   return {
     isChatActiveInConfiguration: vi.fn(() => Promise.resolve(true)),
+    getSpreadsheetIdFromChat: vi.fn(() => Promise.resolve('')),
   };
 });
 vi.mock('../../use-cases/chats-configuration', () => ({
   isChatActiveInConfiguration: mocks.isChatActiveInConfiguration,
+  getSpreadsheetIdFromChat: mocks.getSpreadsheetIdFromChat,
 }));
 
 const expectations = [
@@ -142,6 +144,24 @@ const bot = {
 };
 const mockConfig = {};
 const mockGoogleSheetClient = {};
+const mockCategoriesUC = {
+  async get() {
+    return [
+      {
+        name: 'Category_1',
+        subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
+      },
+      {
+        name: 'Category_2',
+        subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
+      },
+      {
+        name: 'Category_3',
+        subCategories: [],
+      },
+    ];
+  },
+};
 
 const defaultMsg: TelegramBot.Message = {
   text: '/categorie',
@@ -163,7 +183,8 @@ describe('CategoriesCommand', () => {
       googleSheetClient: mockGoogleSheetClient,
       // @ts-expect-error
       config: mockConfig,
-      allCategories: categories,
+      // @ts-expect-error - TODO: we should create some interface type, so we just care that we receive something that have the 'get' method, not the entire class shape
+      categoriesUC: mockCategoriesUC,
     });
   });
   afterEach(() => {

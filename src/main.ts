@@ -10,6 +10,7 @@ import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { Analytics } from './analytics';
 import { version } from '../package.json';
+import { Categories } from './use-cases/categories';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -75,10 +76,7 @@ const main = async () => {
 
   const analytics = new Analytics(googleSheetClient, config, ENVIRONMENT);
 
-  const allCategories = await fetchCategories(
-    googleSheetClient,
-    config.sheetId
-  );
+  const categoriesUC = new Categories(googleSheetClient, config);
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
@@ -129,7 +127,7 @@ const main = async () => {
       bot,
       googleSheetClient,
       config,
-      allCategories,
+      categoriesUC,
     })
   );
 };
