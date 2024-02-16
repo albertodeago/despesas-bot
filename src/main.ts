@@ -71,7 +71,7 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
-  const analytics = new Analytics(googleSheetClient, config, ENVIRONMENT);
+  const analytics = new Analytics(googleSheetClient, config);
 
   // TODO: create a UC also to write on google? this way we can just create one and pass down, avoiding the pass down the client everywhere
   const categoriesUC = new Categories(googleSheetClient, config);

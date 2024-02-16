@@ -13,16 +13,6 @@ export type SubCategory = {
 
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-// let cache: TTLCache<SheetId, Category[]> = new TTLCache({
-//   max: 100,
-//   ttl: CACHE_TTL,
-// });
-
-// // exported for testing, if we migrate this into a Class, we can have the cache per instance and bypass the testing problem
-// export const clearCache = () => {
-//   cache.clear();
-// };
-
 export interface CategoriesUseCase {
   get: (sheetId: SheetId) => Promise<Category[]>;
 }

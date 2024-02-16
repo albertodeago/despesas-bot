@@ -7,11 +7,7 @@ export class Analytics {
   client: sheets_v4.Sheets;
   config: CONFIG_TYPE['ANALYTICS'];
 
-  constructor(
-    googleSheetClient: sheets_v4.Sheets,
-    config: CONFIG_TYPE,
-    env: Environment
-  ) {
+  constructor(googleSheetClient: sheets_v4.Sheets, config: CONFIG_TYPE) {
     this.client = googleSheetClient;
     this.config = config.ANALYTICS;
   }
