@@ -31,8 +31,8 @@ if (
 
 /**
 MANDATORY
-- TODO: rendere il bot generico
-  - TODO: dobbiamo anche caricare le categorie per ogni messaggio in base alla chat dal sheet giusto (anche qui "cacheando un po'")
+- TODO: Cache on get chat config
+- TODO: Cache on get categories
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
   - quante spese aggiunte
@@ -76,6 +76,7 @@ const main = async () => {
 
   const analytics = new Analytics(googleSheetClient, config, ENVIRONMENT);
 
+  // TODO: should we create all use-cases here (as classes) and pass them down to commands?
   const categoriesUC = new Categories(googleSheetClient, config);
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);

@@ -5,13 +5,33 @@ import {
   updateGoogleSheet,
 } from '../google';
 import { CONFIG_TYPE } from '../config/config';
+import TTLCache from '@isaacs/ttlcache';
 
-// TODO: do we want to cache the result by default (by some minutes for example) and add a parameter to force the read?
+const CACHE_KEY = 'chat-configuration';
+const CACHE_TTL = 1000 * 60 * 5; // 5 min
+
+let cache: TTLCache<typeof CACHE_KEY, ChatConfig[]> = new TTLCache({
+  max: 1, // we just need 1 entry, the config itself
+  ttl: CACHE_TTL,
+});
+
+// exported for testing, if we migrate this into a Class, we can have the cache per instance and bypass the testing problem
+export const clearCache = () => {
+  cache.clear();
+};
+
 export const getChatsConfiguration = async (
   client: sheets_v4.Sheets,
   config: CONFIG_TYPE
 ): Promise<ChatConfig[] | undefined> => {
   try {
+    const isCached = cache.has(CACHE_KEY);
+    if (isCached) {
+      console.log('cached');
+      return cache.get(CACHE_KEY);
+    }
+
+    console.log('requesting');
     const chatsConfig = await readGoogleSheet({
       client,
       sheetId: config.CHATS_CONFIGURATION.SHEET_ID,
@@ -24,15 +44,17 @@ export const getChatsConfiguration = async (
       chatsConfig.shift();
 
       // remove every element that has a different length than 3, because it's not a valid chat configuration, may be dirty data
-      const validChatsConfig = chatsConfig.filter(
-        (chatConfig) => chatConfig.length === 3
-      );
+      const validChatsConfig = chatsConfig
+        .filter((chatConfig) => chatConfig.length === 3)
+        .map((chatConfig) => ({
+          chatId: chatConfig[0],
+          spreadsheetId: chatConfig[1],
+          isActive: chatConfig[2].toLowerCase() === 'true',
+        }));
 
-      return validChatsConfig.map((chatConfig) => ({
-        chatId: chatConfig[0],
-        spreadsheetId: chatConfig[1],
-        isActive: chatConfig[2].toLowerCase() === 'true',
-      }));
+      cache.set(CACHE_KEY, validChatsConfig);
+
+      return validChatsConfig;
     }
   } catch (e) {
     console.error(e);
@@ -81,6 +103,14 @@ export const addChatToConfiguration = async (
       ],
     });
 
+    // update cache
+    const currentCache = cache.get(CACHE_KEY);
+    if (currentCache) {
+      const newValue = currentCache.slice();
+      newValue.push(chatConfig);
+      cache.set(CACHE_KEY, newValue);
+    }
+
     return true;
   } catch (e) {
     console.error(e);
@@ -128,6 +158,14 @@ export const updateChatInConfiguration = async (
           ],
         ],
       });
+
+      // update cache
+      const currentCache = cache.get(CACHE_KEY);
+      if (currentCache) {
+        const newValue = currentCache.slice();
+        newValue[index] = newChatConfig;
+        cache.set(CACHE_KEY, newValue);
+      }
 
       return true;
     }

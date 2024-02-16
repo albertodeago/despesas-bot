@@ -6,6 +6,7 @@ import {
   updateChatInConfiguration,
   isChatActiveInConfiguration,
   getSpreadsheetIdFromChat,
+  clearCache,
 } from './chats-configuration';
 
 const spyGet = vi.fn(() =>
@@ -42,6 +43,7 @@ const mockConfig = {
 
 describe('USE-CASE: chats-configuration', () => {
   beforeEach(() => {
+    clearCache();
     spyGet.mockClear();
     spyAppend.mockClear();
     spyUpdate.mockClear();
@@ -123,6 +125,22 @@ describe('USE-CASE: chats-configuration', () => {
         },
       ]);
     });
+
+    it('should read values from cache if present', async () => {
+      await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+      expect(spyGet).toHaveBeenCalledOnce();
+
+      await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+      expect(spyGet).toHaveBeenCalledOnce();
+    });
   });
 
   describe('isChatInConfiguration', () => {
@@ -161,8 +179,8 @@ describe('USE-CASE: chats-configuration', () => {
 
   describe('addChatToConfiguration', () => {
     const mockChatConfig = {
-      chatId: 'chat-123',
-      spreadsheetId: 'spread-123',
+      chatId: 'chat-999',
+      spreadsheetId: 'spread-999',
       isActive: true,
     };
 
@@ -186,6 +204,33 @@ describe('USE-CASE: chats-configuration', () => {
         mockChatConfig
       );
       expect(res).toEqual(true);
+    });
+
+    it('should update the value in cache if present', async () => {
+      const currentCache = await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+
+      const res = await addChatToConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        mockChatConfig
+      );
+
+      const newCache = await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+
+      expect(currentCache).toHaveLength(3);
+      expect(newCache).toHaveLength(4);
+      const lastElement = newCache?.pop(); // remove last element, the newly added
+      expect(currentCache).toEqual(newCache);
+      expect(lastElement).toEqual(mockChatConfig);
     });
   });
 
@@ -218,6 +263,37 @@ describe('USE-CASE: chats-configuration', () => {
         mockChatConfig
       );
       expect(res).toEqual(true);
+    });
+
+    it('should update the value in cache if present', async () => {
+      const currentCache = await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+
+      await updateChatInConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-456',
+        mockChatConfig
+      );
+
+      const newCache = await getChatsConfiguration(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig
+      );
+
+      expect(currentCache).toHaveLength(3);
+      expect(newCache).toHaveLength(3);
+      expect(currentCache![1]).toEqual({
+        chatId: 'chat-456',
+        spreadsheetId: 'spread-456',
+        isActive: false,
+      });
+      expect(newCache![1]).toEqual(mockChatConfig);
     });
   });
 
