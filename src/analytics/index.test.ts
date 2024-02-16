@@ -22,10 +22,8 @@ const mockConfig = {
   ANALYTICS: {
     SHEET_ID: 'sheet-id',
     TAB_NAME: 'tab-name',
-    TRACKED_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
-    ACTIVE_CHATS_RANGE: 'A1:B1',
-    ACTIVE_CHATS_LABEL: 'Active chats',
   },
 };
 describe('Analytics', () => {
@@ -79,7 +77,7 @@ describe('Analytics', () => {
       await analytics.addTrackedExpense();
       expect(spyUpdate).toHaveBeenCalledWith({
         spreadsheetId: 'sheet-id',
-        range: 'tab-name!A2:B2',
+        range: 'tab-name!A1:B1',
         valueInputOption: 'RAW',
         requestBody: {
           majorDimension: 'ROWS',
