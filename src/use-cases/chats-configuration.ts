@@ -157,3 +157,20 @@ export const isChatActiveInConfiguration = async (
 
   return chat && chat.isActive;
 };
+
+export const getSpreadsheetIdFromChat = async (
+  client: sheets_v4.Sheets,
+  config: CONFIG_TYPE,
+  chatId: ChatId
+) => {
+  const chats = await getChatsConfiguration(client, config);
+  const chat = chats?.find((c) => c.chatId === chatId);
+
+  if (!chats || !chat) {
+    throw new Error(
+      `[getSpreadsheetIdFromChat]: error, chats not found or unable to match the chat ${chatId}`
+    );
+  }
+
+  return chat.spreadsheetId;
+};

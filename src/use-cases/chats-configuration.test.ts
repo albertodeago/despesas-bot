@@ -5,6 +5,7 @@ import {
   isChatInConfiguration,
   updateChatInConfiguration,
   isChatActiveInConfiguration,
+  getSpreadsheetIdFromChat,
 } from './chats-configuration';
 
 const spyGet = vi.fn(() =>
@@ -251,6 +252,30 @@ describe('USE-CASE: chats-configuration', () => {
       );
 
       expect(result).toBe(true);
+    });
+  });
+
+  describe('getSpreadsheetIdFromChat', () => {
+    it('should throw an error if the requested chat is not found', async () => {
+      await expect(() =>
+        getSpreadsheetIdFromChat(
+          // @ts-expect-error
+          mockGoogleSheetClient,
+          mockConfig,
+          'chat-666'
+        )
+      ).rejects.toThrowError('[getSpreadsheetIdFromChat]');
+    });
+
+    it('should return the spreadsheetId of the chatId', async () => {
+      const result = await getSpreadsheetIdFromChat(
+        // @ts-expect-error
+        mockGoogleSheetClient,
+        mockConfig,
+        'chat-789'
+      );
+
+      expect(result).toEqual('spread-789');
     });
   });
 });
