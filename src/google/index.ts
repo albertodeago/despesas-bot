@@ -82,7 +82,7 @@ export async function appendGoogleSheet({
   sheetId: SheetId;
   tabName: string;
   range: string;
-  data: any[]; // TODO: maybe this should be string[] | string[][]
+  data: any[] | any[][];
   valueInputOption?: 'RAW' | 'USER_ENTERED';
   insertDataOption?: 'INSERT_ROWS' | 'OVERWRITE';
 }) {
@@ -97,33 +97,6 @@ export async function appendGoogleSheet({
     },
   });
   return resp.data;
-}
-
-// TODO: we should move this into a use-case
-export type ExpenseRow = [string, number, string, string, string]; // TODO: type this better date, categories, subcategories
-export async function writeGoogleSheet({
-  client,
-  sheetId,
-  tabName,
-  range,
-  data,
-}: {
-  client: sheets_v4.Sheets;
-  sheetId: SheetId;
-  tabName: string;
-  range: string;
-  data: ExpenseRow[];
-}) {
-  return client.spreadsheets.values.append({
-    spreadsheetId: sheetId,
-    range: `${tabName}!${range}`,
-    valueInputOption: 'RAW',
-    insertDataOption: 'INSERT_ROWS',
-    requestBody: {
-      majorDimension: 'ROWS',
-      values: data,
-    },
-  });
 }
 
 /**

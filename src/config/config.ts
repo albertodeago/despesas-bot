@@ -2,8 +2,6 @@ export type CONFIG_TYPE = ReturnType<typeof getConfig>;
 
 const sharedConfigProps = {
   DEPLOY_CHAT_ID: '53084797',
-  sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs', // despesas -> TODO: to be removed when generic bot implemented
-  // sheetId: '17higBTMCC09k95Dr_ccw7BRClxdkdBwT3dk9xqnpiVg', // despesas-2
   tabName: 'Spese',
   range: 'A:E',
   CATEGORIES: {

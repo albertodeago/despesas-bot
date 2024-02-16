@@ -16,10 +16,10 @@ import {
 } from './fixture';
 
 const googleMocks = vi.hoisted(() => ({
-  spyWriteGoogleSheet: vi.fn(() => Promise.resolve()),
+  spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('../../google', () => ({
-  writeGoogleSheet: googleMocks.spyWriteGoogleSheet,
+  appendGoogleSheet: googleMocks.spyAppendGoogleSheet,
 }));
 const chatsConfigMocks = vi.hoisted(() => ({
   isChatActiveInConfiguration: () => Promise.resolve(true),
@@ -92,7 +92,7 @@ describe('AddExpenseCommand', () => {
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_3' });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -137,7 +137,7 @@ describe('AddExpenseCommand', () => {
     handler(defaultMsg);
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -157,7 +157,7 @@ describe('AddExpenseCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -219,7 +219,7 @@ describe('AddExpenseCommand', () => {
       await categoryHandler({ ...defaultMsg, text: 'Category_3' });
 
       await waitMessage(vi, mockBot);
-      expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+      expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
         client: mockGoogleSheetClient,
         sheetId: 'sheet-id',
         tabName: 'tab-name',
@@ -286,7 +286,7 @@ describe('AddExpenseCommand', () => {
       await subCategoryHandler({ ...defaultMsg, text: 'Subcategory_1' });
 
       await waitMessage(vi, mockBot);
-      expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+      expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
         client: mockGoogleSheetClient,
         sheetId: 'sheet-id',
         tabName: 'tab-name',

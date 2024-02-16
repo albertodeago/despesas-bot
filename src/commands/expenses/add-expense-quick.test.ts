@@ -1,12 +1,4 @@
-import {
-  describe,
-  expect,
-  vi,
-  it,
-  afterEach,
-  beforeEach,
-  VitestUtils,
-} from 'vitest';
+import { describe, expect, vi, it, afterEach, beforeEach } from 'vitest';
 import { AddExpenseQuickCommand } from './add-expense-quick';
 import TelegramBot from 'node-telegram-bot-api';
 import { UNCATEGORIZED_CATEGORY } from '../../config/config';
@@ -20,10 +12,10 @@ import {
 } from './fixture';
 
 const googleMocks = vi.hoisted(() => ({
-  spyWriteGoogleSheet: vi.fn(() => Promise.resolve()),
+  spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
 }));
 vi.mock('../../google', () => ({
-  writeGoogleSheet: googleMocks.spyWriteGoogleSheet,
+  appendGoogleSheet: googleMocks.spyAppendGoogleSheet,
 }));
 const chatsConfigMocks = vi.hoisted(() => ({
   isChatActiveInConfiguration: () => Promise.resolve(true),
@@ -95,7 +87,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -117,7 +109,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',
@@ -145,7 +137,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
       sheetId: 'sheet-id',
       tabName: 'tab-name',

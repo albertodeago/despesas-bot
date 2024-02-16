@@ -4,7 +4,7 @@ import {
   createExpenseRow,
   getDescriptionFromTokenizedMessage,
 } from '../../utils';
-import { writeGoogleSheet } from '../../google';
+import { appendGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
 import {
   getMsgExplanation,
@@ -54,7 +54,7 @@ const addExpense = async ({
     description,
   });
   try {
-    await writeGoogleSheet({
+    await appendGoogleSheet({
       client: googleSheetClient,
       sheetId: spreadSheetId,
       tabName: config.tabName,

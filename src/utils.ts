@@ -1,5 +1,13 @@
 import TelegramBot from 'node-telegram-bot-api';
-import type { ExpenseRow } from './google';
+import type { Category, SubCategory } from './use-cases/categories';
+
+type ExpenseRow = [
+  string,
+  number,
+  Category['name'],
+  SubCategory['name'],
+  string
+];
 
 export const fromMsg = (msg: TelegramBot.Message) => {
   const tokens = msg.text?.split(' ') ?? [];

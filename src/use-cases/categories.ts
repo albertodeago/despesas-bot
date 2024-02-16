@@ -7,7 +7,7 @@ export type Category = {
   name: string;
   subCategories: SubCategory[];
 };
-type SubCategory = {
+export type SubCategory = {
   name: string;
 };
 
