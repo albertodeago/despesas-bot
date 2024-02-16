@@ -1,10 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { readGoogleSheet } from '../../google';
 import { fromMsg } from '../../utils';
 import { CONFIG_TYPE } from '../../config/config';
 import { sheets_v4 } from 'googleapis';
 import {
-  addChatToConfiguration,
   getChatsConfiguration,
   isChatInConfiguration,
   updateChatInConfiguration,

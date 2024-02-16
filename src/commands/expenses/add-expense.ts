@@ -1,5 +1,4 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { Category } from '../categories/fetch';
 import {
   fromMsg,
   createExpenseRow,
@@ -14,12 +13,14 @@ import {
   getErrorMessage,
 } from './messages';
 import { Analytics } from '../../analytics';
-import type { CONFIG_TYPE } from '../../config/config';
 import {
   getSpreadsheetIdFromChat,
   isChatActiveInConfiguration,
 } from '../../use-cases/chats-configuration';
-import { Categories } from '../../use-cases/categories';
+
+import type { CONFIG_TYPE } from '../../config/config';
+import type { Categories } from '../../use-cases/categories';
+import type { Category } from '../../use-cases/categories';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
@@ -33,6 +34,7 @@ type AddExpenseParams = {
   categoryName: string;
   subCategoryName?: string;
   config: CONFIG_TYPE;
+  spreadSheetId: SheetId;
 };
 const addExpense = async ({
   googleSheetClient,
@@ -42,6 +44,7 @@ const addExpense = async ({
   categoryName,
   subCategoryName,
   config,
+  spreadSheetId,
 }: AddExpenseParams): Promise<undefined | unknown> => {
   const expense = createExpenseRow({
     date: formattedDate,
@@ -53,7 +56,7 @@ const addExpense = async ({
   try {
     await writeGoogleSheet({
       client: googleSheetClient,
-      sheetId: config.sheetId,
+      sheetId: spreadSheetId,
       tabName: config.tabName,
       range: config.range,
       data: expense,
@@ -73,6 +76,7 @@ type HandleGenericParams = {
   amount: number;
   analytics: Analytics;
   config: CONFIG_TYPE;
+  spreadSheetId: SheetId;
 };
 type HandleCategoryAndSubcategoryParams = HandleGenericParams & {
   allCategories: Category[];
@@ -91,6 +95,7 @@ export const getCategoryAndSubcategoryHandler =
     amount,
     analytics,
     config,
+    spreadSheetId,
   }: HandleCategoryAndSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const category = allCategories.find((c) => c.name === msg.text);
@@ -113,6 +118,7 @@ export const getCategoryAndSubcategoryHandler =
         description,
         categoryName: category.name,
         config,
+        spreadSheetId,
       });
       bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
       if (!err) {
@@ -140,6 +146,7 @@ export const getCategoryAndSubcategoryHandler =
         amount,
         analytics,
         config,
+        spreadSheetId,
       })
     );
     return;
@@ -156,6 +163,7 @@ export const getSubcategoryHandler =
     amount,
     analytics,
     config,
+    spreadSheetId,
   }: HandleSubcategoryParams) =>
   async (msg: TelegramBot.Message) => {
     const subCategory = category.subCategories.find(
@@ -179,6 +187,7 @@ export const getSubcategoryHandler =
       categoryName: category.name,
       subCategoryName: subCategory.name,
       config,
+      spreadSheetId,
     });
     bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
     if (!err) {
@@ -265,6 +274,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
               description,
               categoryName: category.name,
               config,
+              spreadSheetId,
             });
             bot.sendMessage(
               chatId,
@@ -302,6 +312,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
                 amount,
                 analytics,
                 config,
+                spreadSheetId,
               })
             );
             return;
@@ -336,6 +347,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
             categoryName: category.name,
             subCategoryName: subCategory.name,
             config,
+            spreadSheetId,
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
           if (!err) {
@@ -368,6 +380,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
               amount,
               analytics,
               config,
+              spreadSheetId,
             })
           );
           return;

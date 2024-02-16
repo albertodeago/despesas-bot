@@ -11,9 +11,13 @@ import {
   getWrongAmountMessageQuick,
   getOkMessage,
   getErrorMessage,
+  genericErrorMsg,
 } from './messages';
 import { Analytics } from '../../analytics';
-import { isChatActiveInConfiguration } from '../../use-cases/chats-configuration';
+import {
+  getSpreadsheetIdFromChat,
+  isChatActiveInConfiguration,
+} from '../../use-cases/chats-configuration';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
@@ -23,6 +27,7 @@ type AddExpenseQuickParams = {
   amount: number;
   description?: string;
   config: CONFIG_TYPE;
+  spreadSheetId: SheetId;
 };
 const addExpense = async ({
   googleSheetClient,
@@ -30,6 +35,7 @@ const addExpense = async ({
   amount,
   description,
   config,
+  spreadSheetId,
 }: AddExpenseQuickParams): Promise<undefined | unknown> => {
   const expense = createExpenseRow({
     date: formattedDate,
@@ -41,7 +47,7 @@ const addExpense = async ({
   try {
     await writeGoogleSheet({
       client: googleSheetClient,
-      sheetId: config.sheetId,
+      sheetId: spreadSheetId,
       tabName: config.tabName,
       range: config.range,
       data: expense,
@@ -51,9 +57,6 @@ const addExpense = async ({
     return e;
   }
 };
-
-// TODO: centralize somewhere the messages? (at least the shared ones)
-const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
 type AddExpenseQuickCommandHandlerProps = {
   bot: TelegramBot;
@@ -85,6 +88,13 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
             return;
           }
 
+          // get the spreadSheetId that we need to use to get the categories
+          const spreadSheetId = await getSpreadsheetIdFromChat(
+            googleSheetClient,
+            config,
+            strChatId
+          );
+
           let formattedDate = date.toLocaleDateString('it-IT');
           const amount = parseFloat(tokens[2]);
           if (isNaN(amount)) {
@@ -105,6 +115,7 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
             amount,
             description,
             config,
+            spreadSheetId,
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
 
@@ -118,7 +129,7 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
             'An error ocurred handling the add-expense-quick command',
             e
           );
-          bot.sendMessage(chatId, GENERIC_ERROR_MSG);
+          bot.sendMessage(chatId, genericErrorMsg);
         }
       },
   };

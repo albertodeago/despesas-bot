@@ -1,5 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { Categories, clearCache } from './categories';
+import {
+  Categories,
+  _googleResultToCategories,
+  clearCache,
+} from './categories';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -62,3 +66,113 @@ describe('USE-CASE: categories', () => {
     expect(spyGet.mock.calls).toHaveLength(1);
   });
 });
+
+describe('googleResultToCategories', () => {
+  describe('should map categories stored in a google sheet to Categories', () => {
+    expectations.forEach(({ text, input, output }) => {
+      it(text, () => {
+        expect(_googleResultToCategories(input)).toEqual(output);
+      });
+    });
+  });
+});
+
+const expectations = [
+  {
+    text: 'With a mix of categories with and without subcategories',
+    input: [
+      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
+      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
+      ['Category 3'],
+    ],
+    output: [
+      {
+        name: 'Category 1',
+        subCategories: [
+          {
+            name: 'Subcategory 1',
+          },
+          {
+            name: 'Subcategory 2',
+          },
+        ],
+      },
+      {
+        name: 'Category 2',
+        subCategories: [
+          {
+            name: 'Subcategory 3',
+          },
+          {
+            name: 'Subcategory 4',
+          },
+        ],
+      },
+      {
+        name: 'Category 3',
+        subCategories: [],
+      },
+    ],
+  },
+  {
+    text: 'With only categories without subcategories',
+    input: [['Category 1'], ['Category 2'], ['Category 3']],
+    output: [
+      {
+        name: 'Category 1',
+        subCategories: [],
+      },
+      {
+        name: 'Category 2',
+        subCategories: [],
+      },
+      {
+        name: 'Category 3',
+        subCategories: [],
+      },
+    ],
+  },
+  {
+    text: 'With only categories with subcategories',
+    input: [
+      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
+      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
+      ['Category 3', 'Subcategory 5', 'Subcategory 6'],
+    ],
+    output: [
+      {
+        name: 'Category 1',
+        subCategories: [
+          {
+            name: 'Subcategory 1',
+          },
+          {
+            name: 'Subcategory 2',
+          },
+        ],
+      },
+      {
+        name: 'Category 2',
+        subCategories: [
+          {
+            name: 'Subcategory 3',
+          },
+          {
+            name: 'Subcategory 4',
+          },
+        ],
+      },
+      {
+        name: 'Category 3',
+        subCategories: [
+          {
+            name: 'Subcategory 5',
+          },
+          {
+            name: 'Subcategory 6',
+          },
+        ],
+      },
+    ],
+  },
+];

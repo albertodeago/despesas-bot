@@ -1,6 +1,5 @@
 import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../config/config';
-import { googleResultToCategories } from '../commands/categories/fetch';
 import { readGoogleSheet } from '../google';
 import TTLCache from '@isaacs/ttlcache';
 
@@ -24,7 +23,11 @@ export const clearCache = () => {
   cache.clear();
 };
 
-export class Categories {
+export interface CategoriesUseCase {
+  get: (sheetId: SheetId) => Promise<Category[]>;
+}
+
+export class Categories implements CategoriesUseCase {
   config: CONFIG_TYPE;
   client: sheets_v4.Sheets;
 
@@ -74,5 +77,33 @@ export const fetchCategories = async (
   }
   // TODO: what happens if the tab is empty? we should throw an error, to be tested
 
-  return googleResultToCategories(result);
+  return _googleResultToCategories(result);
+};
+
+// Exported just for testing
+export const _googleResultToCategories = (
+  categoriesOnSheet: string[][]
+): Category[] => {
+  let categories: Category[] = [];
+  categoriesOnSheet.forEach((row: string[]) => {
+    // Every row contains the category name in the first cell and the
+    // subcategories in the following cells (if there are any)
+
+    let category: Category = {
+      name: '',
+      subCategories: [],
+    };
+
+    row.forEach((cell: string, index: number) => {
+      if (index === 0) {
+        category.name = cell;
+        categories.push(category);
+      } else {
+        category.subCategories.push({
+          name: cell,
+        });
+      }
+    });
+  });
+  return categories;
 };

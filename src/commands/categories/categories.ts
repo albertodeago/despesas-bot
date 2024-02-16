@@ -1,40 +1,22 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
-import { Category } from './fetch';
 import {
   isChatActiveInConfiguration,
   getSpreadsheetIdFromChat,
 } from '../../use-cases/chats-configuration';
-// import { getSpread } from '../../use-cases/categories';
 import { sheets_v4 } from 'googleapis';
-import { CONFIG_TYPE } from '../../config/config';
-import { Categories } from '../../use-cases/categories';
+import { getCategoriesAnswer } from './utils';
+
+import type { CategoriesUseCase } from '../../use-cases/categories';
+import type { CONFIG_TYPE } from '../../config/config';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
-
-// construct the message to send to the user from a list of categories
-const getCategoriesAnswer = (categories: Category[]) => {
-  let answer =
-    categories.length === 1
-      ? `Ecco le sottocategorie di *${categories[0].name}*`
-      : `Ecco le categorie\n`;
-  categories.forEach((category) => {
-    answer += categories.length === 1 ? '\n' : `- *${category.name}* \n`;
-    if (category.subCategories.length > 0) {
-      answer += `  - ${category.subCategories
-        .map((sc) => sc.name)
-        .join(', ')} \n`;
-    }
-  });
-  return answer;
-};
 
 type CategoriesCommandHandlerProps = {
   bot: TelegramBot;
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
-  // allCategories: Category[];
-  categoriesUC: Categories;
+  categoriesUC: CategoriesUseCase;
 };
 export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,

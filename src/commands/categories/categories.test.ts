@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
-import { googleResultToCategories } from './fetch';
-import { CategoriesCommand } from './categories';
 import TelegramBot from 'node-telegram-bot-api';
+import { CategoriesCommand } from './categories';
 
 const mocks = vi.hoisted(() => {
   return {
@@ -13,116 +12,6 @@ vi.mock('../../use-cases/chats-configuration', () => ({
   isChatActiveInConfiguration: mocks.isChatActiveInConfiguration,
   getSpreadsheetIdFromChat: mocks.getSpreadsheetIdFromChat,
 }));
-
-const expectations = [
-  {
-    text: 'With a mix of categories with and without subcategories',
-    input: [
-      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
-      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
-      ['Category 3'],
-    ],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [
-          {
-            name: 'Subcategory 1',
-          },
-          {
-            name: 'Subcategory 2',
-          },
-        ],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [
-          {
-            name: 'Subcategory 3',
-          },
-          {
-            name: 'Subcategory 4',
-          },
-        ],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [],
-      },
-    ],
-  },
-  {
-    text: 'With only categories without subcategories',
-    input: [['Category 1'], ['Category 2'], ['Category 3']],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [],
-      },
-    ],
-  },
-  {
-    text: 'With only categories with subcategories',
-    input: [
-      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
-      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
-      ['Category 3', 'Subcategory 5', 'Subcategory 6'],
-    ],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [
-          {
-            name: 'Subcategory 1',
-          },
-          {
-            name: 'Subcategory 2',
-          },
-        ],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [
-          {
-            name: 'Subcategory 3',
-          },
-          {
-            name: 'Subcategory 4',
-          },
-        ],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [
-          {
-            name: 'Subcategory 5',
-          },
-          {
-            name: 'Subcategory 6',
-          },
-        ],
-      },
-    ],
-  },
-];
-
-describe('googleResultToCategories', () => {
-  describe('should map categories stored in a google sheet to Categories', () => {
-    expectations.forEach(({ text, input, output }) => {
-      it(text, () => {
-        expect(googleResultToCategories(input)).toEqual(output);
-      });
-    });
-  });
-});
 
 const bot = {
   sendMessage: vi.fn(),
@@ -157,6 +46,7 @@ const defaultMsg: TelegramBot.Message = {
   date: new Date().getTime(),
   message_id: 987654321,
 };
+
 describe('CategoriesCommand', () => {
   let handler: ReturnType<typeof CategoriesCommand.getHandler>;
 
@@ -168,7 +58,6 @@ describe('CategoriesCommand', () => {
       googleSheetClient: mockGoogleSheetClient,
       // @ts-expect-error
       config: mockConfig,
-      // @ts-expect-error - TODO: we should create some interface type, so we just care that we receive something that have the 'get' method, not the entire class shape
       categoriesUC: mockCategoriesUC,
     });
   });

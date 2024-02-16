@@ -30,10 +30,10 @@ if (
 
 /**
 MANDATORY
-- TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: /help per capire come funziona (anche come condividere il sheet al bot)
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
+- TODO: test some actual failure (e.g. start with an invalid id - check others)
 
 FUTURE:
 - TODO: come gestiamo le spese ricorrenti?
