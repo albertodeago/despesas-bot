@@ -47,14 +47,14 @@ describe('Analytics', () => {
 
   describe('getTrackedExpenses', () => {
     it('should be able to get the tracked expenses', async () => {
-      const result = await analytics.getTrackedExpenses();
+      const result = await analytics._getTrackedExpenses();
       expect(result).toBe(5);
     });
 
     it('should return undefined if it s not able to get the tracked expenses', async () => {
       spyGet.mockImplementationOnce(() => Promise.reject('error'));
       console.error = vi.fn();
-      const result = await analytics.getTrackedExpenses();
+      const result = await analytics._getTrackedExpenses();
       expect(console.error).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
@@ -68,7 +68,7 @@ describe('Analytics', () => {
         })
       );
       console.error = vi.fn();
-      const result = await analytics.getTrackedExpenses();
+      const result = await analytics._getTrackedExpenses();
       expect(console.error).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
@@ -91,70 +91,6 @@ describe('Analytics', () => {
     it('should not update the value if it s not able to get the tracked expenses', async () => {
       spyGet.mockImplementationOnce(() => Promise.reject('error'));
       await analytics.addTrackedExpense();
-      expect(spyGet).toHaveBeenCalled();
-      expect(spyUpdate).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('getNumActiveChats', () => {
-    it('should be able to get the number of active chats', async () => {
-      const result = await analytics.getNumActiveChats();
-      expect(result).toBe(5);
-    });
-
-    it('should return undefined if it s not able to get the tracked expenses', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject('error'));
-      console.error = vi.fn();
-      const result = await analytics.getTrackedExpenses();
-      expect(console.error).toHaveBeenCalled();
-      expect(result).toBeUndefined();
-    });
-
-    it('should return undefined if the value is not a number', async () => {
-      spyGet.mockImplementationOnce(() =>
-        Promise.resolve({
-          data: {
-            values: [['Active chats', 'not a number']],
-          },
-        })
-      );
-      console.error = vi.fn();
-      const result = await analytics.getTrackedExpenses();
-      expect(console.error).toHaveBeenCalled();
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('changeNumActiveChats', () => {
-    it('should be able to increase the number of active chats', async () => {
-      await analytics.changeNumActiveChats('increase');
-      expect(spyUpdate).toHaveBeenCalledWith({
-        spreadsheetId: 'sheet-id',
-        range: 'tab-name!A1:B1',
-        valueInputOption: 'RAW',
-        requestBody: {
-          majorDimension: 'ROWS',
-          values: [['Active chats', 6]],
-        },
-      });
-    });
-
-    it('should be able to decrease the number of active chats', async () => {
-      await analytics.changeNumActiveChats('decrease');
-      expect(spyUpdate).toHaveBeenCalledWith({
-        spreadsheetId: 'sheet-id',
-        range: 'tab-name!A1:B1',
-        valueInputOption: 'RAW',
-        requestBody: {
-          majorDimension: 'ROWS',
-          values: [['Active chats', 4]],
-        },
-      });
-    });
-
-    it('should not update the value if it s not able to get the tracked expenses', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject('error'));
-      await analytics.changeNumActiveChats('increase');
       expect(spyGet).toHaveBeenCalled();
       expect(spyUpdate).not.toHaveBeenCalled();
     });

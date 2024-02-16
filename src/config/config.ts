@@ -16,10 +16,8 @@ const developmentConfig: typeof productionConfig = {
   ANALYTICS: {
     SHEET_ID: '18bmsNx-F-vK-NHavi_QCv2DisS6i7FKmTDPAa44Mdpk',
     TAB_NAME: 'analytics',
-    TRACKED_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
-    ACTIVE_CHATS_RANGE: 'A1:B1',
-    ACTIVE_CHATS_LABEL: 'Active chats',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '18bmsNx-F-vK-NHavi_QCv2DisS6i7FKmTDPAa44Mdpk',
@@ -31,10 +29,8 @@ const productionConfig = {
   ANALYTICS: {
     SHEET_ID: 'TODO:',
     TAB_NAME: 'analytics',
-    TRACKED_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
-    ACTIVE_CHATS_RANGE: 'A1:B1',
-    ACTIVE_CHATS_LABEL: 'Active chats',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: 'TODO:',

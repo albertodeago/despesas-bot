@@ -108,7 +108,9 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
           });
           bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
 
-          analytics.addTrackedExpense();
+          if (!err) {
+            analytics.addTrackedExpense();
+          }
 
           return;
         } catch (e) {

@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import { getGoogleSheetClient } from './google';
 import { CategoriesCommand } from './commands/categories/categories';
-import { fetchCategories } from './commands/categories/fetch';
 import { getConfig } from './config/config';
 import { getBot } from './telegram';
 import { StartCommand } from './commands/start/start';
@@ -32,9 +31,6 @@ if (
 /**
 MANDATORY
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: Analytics (apply it)
-  - quante spese aggiunte
-  - in quante chat attivo (da rimuovere)
 - TODO: /help per capire come funziona (anche come condividere il sheet al bot)
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
