@@ -2,7 +2,7 @@ import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../config/config';
 import { googleResultToCategories } from '../commands/categories/fetch';
 import { readGoogleSheet } from '../google';
-// const TTLCache = require('@isaacs/ttlcache')
+import TTLCache from '@isaacs/ttlcache';
 
 export type Category = {
   name: string;
@@ -12,18 +12,17 @@ type SubCategory = {
   name: string;
 };
 
-// const cache = new TTLCache({ max: 100, ttl: 1000 * 60 * 5 }) // 5 min by default
+const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-// // set some value
-// cache.set(1, 2)
+let cache: TTLCache<SheetId, Category[]> = new TTLCache({
+  max: 100,
+  ttl: CACHE_TTL,
+});
 
-// // 999 ms later
-// cache.has(1) // returns true
-// cache.get(1) // returns 2
-
-// // 1000 ms later
-// cache.get(1) // returns undefined
-// cache.has(1) // returns false
+// exported for testing, if we migrate this into a Class, we can have the cache per instance and bypass the testing problem
+export const clearCache = () => {
+  cache.clear();
+};
 
 export class Categories {
   config: CONFIG_TYPE;
@@ -34,20 +33,20 @@ export class Categories {
     this.config = config;
   }
 
-  async get(sheetId: SheetId) {
-    // see in the cache if we have already the chatId categories
-    // if yes, return it
-    // otherwise fetch it from google and store it in the cache
-    // TODO: check cache
-    // how do we get the sheetId?
+  async get(sheetId: SheetId): Promise<Category[]> {
+    if (cache.has(sheetId)) {
+      return cache.get(sheetId)!;
+    }
+
     const categories = await fetchCategories(
       this.client,
       sheetId,
       this.config.CATEGORIES.TAB_NAME,
       this.config.CATEGORIES.RANGE
     );
-    // TODO: error handling?
-    // TODO: set cache
+
+    cache.set(sheetId, categories);
+
     return categories;
   }
 

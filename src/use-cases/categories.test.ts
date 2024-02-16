@@ -1,5 +1,5 @@
-import { vi, describe, it, expect } from 'vitest';
-import { Categories } from './categories';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Categories, clearCache } from './categories';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -32,6 +32,11 @@ describe('USE-CASE: categories', () => {
   // @ts-expect-error
   const categories = new Categories(mockGoogleSheetClient, mockConfig);
 
+  beforeEach(() => {
+    clearCache();
+    vi.clearAllMocks();
+  });
+
   it('should return the categories from the specified sheetId', async () => {
     const result = await categories.get('sheet-id');
 
@@ -49,9 +54,11 @@ describe('USE-CASE: categories', () => {
     expect(result[2].subCategories).toHaveLength(4);
   });
 
-  it.todo(
-    'should cache the result and thus not refetching the categories if asked twice'
-  );
+  it('should cache the result and thus not refetching the categories if asked twice', async () => {
+    const result = await categories.get('sheet-id');
+    const cached = await categories.get('sheet-id');
 
-  it.todo('should refetch the categories if the cache TTL passed');
+    expect(result).toEqual(cached);
+    expect(spyGet.mock.calls).toHaveLength(1);
+  });
 });

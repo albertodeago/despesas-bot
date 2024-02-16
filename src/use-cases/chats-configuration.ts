@@ -27,11 +27,9 @@ export const getChatsConfiguration = async (
   try {
     const isCached = cache.has(CACHE_KEY);
     if (isCached) {
-      console.log('cached');
       return cache.get(CACHE_KEY);
     }
 
-    console.log('requesting');
     const chatsConfig = await readGoogleSheet({
       client,
       sheetId: config.CHATS_CONFIGURATION.SHEET_ID,

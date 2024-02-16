@@ -31,8 +31,6 @@ if (
 
 /**
 MANDATORY
-- TODO: Cache on get chat config
-- TODO: Cache on get categories
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Analytics (apply it)
   - quante spese aggiunte
