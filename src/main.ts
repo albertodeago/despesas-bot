@@ -104,7 +104,7 @@ const main = async () => {
     AddExpenseCommand.pattern,
     AddExpenseCommand.getHandler({
       bot,
-      allCategories,
+      categoriesUC,
       analytics,
       googleSheetClient,
       config: config,

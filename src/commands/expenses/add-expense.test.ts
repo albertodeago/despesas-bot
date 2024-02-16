@@ -5,6 +5,7 @@ import {
   getSubcategoryHandler,
 } from './add-expense';
 import TelegramBot from 'node-telegram-bot-api';
+import { Category } from '../../use-cases/categories';
 
 // TODO: in this file we probably should mock the sheetId, tabName, range, etc...
 // ^ is the above message still valid?
@@ -19,9 +20,11 @@ vi.mock('../../google', () => ({
 }));
 const chatsConfigMocks = vi.hoisted(() => ({
   isChatActiveInConfiguration: () => Promise.resolve(true),
+  getSpreadsheetIdFromChat: () => Promise.resolve(''),
 }));
 vi.mock('../../use-cases/chats-configuration', () => ({
   isChatActiveInConfiguration: chatsConfigMocks.isChatActiveInConfiguration,
+  getSpreadsheetIdFromChat: chatsConfigMocks.getSpreadsheetIdFromChat,
 }));
 
 const mockConfig = {
@@ -29,21 +32,6 @@ const mockConfig = {
   tabName: 'tab-name',
   range: 'A:Z',
 };
-
-const categories = [
-  {
-    name: 'Category_1',
-    subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
-  },
-  {
-    name: 'Category_2',
-    subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
-  },
-  {
-    name: 'Category_3',
-    subCategories: [],
-  },
-];
 const bot = {
   sendMessage: vi.fn(),
   once: vi.fn(),
@@ -61,6 +49,24 @@ const defaultMsg: TelegramBot.Message = {
 const mockAnalytics = {
   addTrackedExpense: vi.fn(),
 };
+const mockCategoriesUC = {
+  async get(): Promise<Category[]> {
+    return [
+      {
+        name: 'Category_1',
+        subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
+      },
+      {
+        name: 'Category_2',
+        subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
+      },
+      {
+        name: 'Category_3',
+        subCategories: [],
+      },
+    ];
+  },
+};
 
 const waitMessage = async () => {
   await vi.waitFor(() => {
@@ -76,7 +82,8 @@ describe('AddExpenseCommand', () => {
     handler = AddExpenseCommand.getHandler({
       // @ts-expect-error
       bot,
-      allCategories: categories,
+      // @ts-expect-error - TODO: we should create some interface type, so we just care that we receive something that have the 'get' method, not the entire class shape
+      categoriesUC: mockCategoriesUC,
       // @ts-expect-error
       analytics: mockAnalytics,
       // @ts-expect-error
@@ -215,13 +222,13 @@ describe('AddExpenseCommand', () => {
   });
 
   describe('getCategoryAndSubcategoryHandler', () => {
-    const getHandler = () =>
+    const getHandler = async () =>
       getCategoryAndSubcategoryHandler({
         // @ts-expect-error
         bot,
         // @ts-expect-error
         googleSheetClient: mockGoogleSheetClient,
-        allCategories: categories,
+        allCategories: await mockCategoriesUC.get(),
         chatId: 123,
         tokens: ['aggiungi', '20', 'descrizione', 'multi', 'token'],
         formattedDate: '15/12/2023',
@@ -233,7 +240,7 @@ describe('AddExpenseCommand', () => {
       });
 
     it("should send an error message if the category doesn't exist", async () => {
-      const categoryHandler = getHandler();
+      const categoryHandler = await getHandler();
       await categoryHandler({ ...defaultMsg, text: 'not-existing' });
 
       expect(bot.sendMessage).toHaveBeenCalledWith(
@@ -244,7 +251,7 @@ describe('AddExpenseCommand', () => {
     });
 
     it("should insert the expense if the selected category doesn't have subcategories", async () => {
-      const categoryHandler = getHandler();
+      const categoryHandler = await getHandler();
       await categoryHandler({ ...defaultMsg, text: 'Category_3' });
 
       await waitMessage();
@@ -262,7 +269,7 @@ describe('AddExpenseCommand', () => {
     });
 
     it('should ask for the subcategory if the selected category have subcategories', async () => {
-      const categoryHandler = getHandler();
+      const categoryHandler = await getHandler();
       await categoryHandler({ ...defaultMsg, text: 'Category_1' });
 
       const calledWith = bot.sendMessage.mock.calls[0];
@@ -274,13 +281,13 @@ describe('AddExpenseCommand', () => {
   });
 
   describe('getSubcategoryHandler', () => {
-    const getHandler = () =>
+    const getHandler = async () =>
       getSubcategoryHandler({
         // @ts-expect-error
         bot,
         // @ts-expect-error
         googleSheetClient: mockGoogleSheetClient,
-        category: categories[0],
+        category: (await mockCategoriesUC.get())[0],
         chatId: 123,
         tokens: [
           'aggiungi',
@@ -299,7 +306,7 @@ describe('AddExpenseCommand', () => {
       });
 
     it("should send an error message if the subcategory doesn't exist", async () => {
-      const subCategoryHandler = getHandler();
+      const subCategoryHandler = await getHandler();
       await subCategoryHandler({ ...defaultMsg, text: 'not-existing' });
 
       expect(bot.sendMessage).toHaveBeenCalledWith(
@@ -310,7 +317,7 @@ describe('AddExpenseCommand', () => {
     });
 
     it('should add the expense if the subcategory is correct', async () => {
-      const subCategoryHandler = getHandler();
+      const subCategoryHandler = await getHandler();
       await subCategoryHandler({ ...defaultMsg, text: 'Subcategory_1' });
 
       await waitMessage();

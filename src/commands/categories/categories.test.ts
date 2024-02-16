@@ -124,21 +124,6 @@ describe('googleResultToCategories', () => {
   });
 });
 
-const categories = [
-  {
-    name: 'Category_1',
-    subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
-  },
-  {
-    name: 'Category_2',
-    subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
-  },
-  {
-    name: 'Category_3',
-    subCategories: [],
-  },
-];
-
 const bot = {
   sendMessage: vi.fn(),
 };

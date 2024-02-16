@@ -15,7 +15,11 @@ import {
 } from './messages';
 import { Analytics } from '../../analytics';
 import type { CONFIG_TYPE } from '../../config/config';
-import { isChatActiveInConfiguration } from '../../use-cases/chats-configuration';
+import {
+  getSpreadsheetIdFromChat,
+  isChatActiveInConfiguration,
+} from '../../use-cases/chats-configuration';
+import { Categories } from '../../use-cases/categories';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
@@ -185,7 +189,7 @@ export const getSubcategoryHandler =
 
 type AddExpenseCommandHandlerProps = {
   bot: TelegramBot;
-  allCategories: Category[];
+  categoriesUC: Categories;
   analytics: Analytics;
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
@@ -193,7 +197,7 @@ type AddExpenseCommandHandlerProps = {
 export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
   pattern: /^aggiungi\s*((?!veloce).)*$/i,
   getHandler:
-    ({ bot, allCategories, analytics, googleSheetClient, config }) =>
+    ({ bot, categoriesUC, analytics, googleSheetClient, config }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens, date } = fromMsg(msg);
       console.log(
@@ -211,6 +215,16 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
         if (!_isChatActiveInConfiguration) {
           return;
         }
+
+        // get the spreadSheetId that we need to use to get the categories
+        const spreadSheetId = await getSpreadsheetIdFromChat(
+          googleSheetClient,
+          config,
+          strChatId
+        );
+
+        // get the categories of the current chat
+        const allCategories = await categoriesUC.get(spreadSheetId);
 
         const categoriesFlat = allCategories.map((c) => c.name);
 
