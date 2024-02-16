@@ -13,15 +13,15 @@ export type SubCategory = {
 
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-let cache: TTLCache<SheetId, Category[]> = new TTLCache({
-  max: 100,
-  ttl: CACHE_TTL,
-});
+// let cache: TTLCache<SheetId, Category[]> = new TTLCache({
+//   max: 100,
+//   ttl: CACHE_TTL,
+// });
 
-// exported for testing, if we migrate this into a Class, we can have the cache per instance and bypass the testing problem
-export const clearCache = () => {
-  cache.clear();
-};
+// // exported for testing, if we migrate this into a Class, we can have the cache per instance and bypass the testing problem
+// export const clearCache = () => {
+//   cache.clear();
+// };
 
 export interface CategoriesUseCase {
   get: (sheetId: SheetId) => Promise<Category[]>;
@@ -30,17 +30,24 @@ export interface CategoriesUseCase {
 export class Categories implements CategoriesUseCase {
   config: CONFIG_TYPE;
   client: sheets_v4.Sheets;
+  cache: TTLCache<SheetId, Category[]>;
 
   constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE) {
     this.client = client;
     this.config = config;
+    this.cache = new TTLCache({
+      max: 100,
+      ttl: CACHE_TTL,
+    });
   }
 
   async get(sheetId: SheetId): Promise<Category[]> {
-    if (cache.has(sheetId)) {
-      return cache.get(sheetId)!;
+    if (this.cache.has(sheetId)) {
+      console.debug('[UseCase][Categories][get] cache hit');
+      return this.cache.get(sheetId)!;
     }
 
+    console.debug('[UseCase][Categories][get] cache miss');
     const categories = await fetchCategories(
       this.client,
       sheetId,
@@ -48,7 +55,7 @@ export class Categories implements CategoriesUseCase {
       this.config.CATEGORIES.RANGE
     );
 
-    cache.set(sheetId, categories);
+    this.cache.set(sheetId, categories);
 
     return categories;
   }

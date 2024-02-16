@@ -14,10 +14,8 @@ import {
   genericErrorMsg,
 } from './messages';
 import { Analytics } from '../../analytics';
-import {
-  getSpreadsheetIdFromChat,
-  isChatActiveInConfiguration,
-} from '../../use-cases/chats-configuration';
+
+import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
@@ -63,12 +61,13 @@ type AddExpenseQuickCommandHandlerProps = {
   googleSheetClient: sheets_v4.Sheets;
   analytics: Analytics;
   config: CONFIG_TYPE;
+  chatsConfigUC: ChatsConfigurationUseCase;
 };
 export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerProps> =
   {
     pattern: /^aggiungi veloce/i,
     getHandler:
-      ({ bot, googleSheetClient, analytics, config }) =>
+      ({ bot, googleSheetClient, analytics, config, chatsConfigUC }) =>
       async (msg: TelegramBot.Message) => {
         const { chatId, strChatId, tokens, date } = fromMsg(msg);
         console.log(
@@ -79,19 +78,13 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
           // check, if it's a message in a inactive (on non existent) chat based on our
           // config, we can just skip it
           const _isChatActiveInConfiguration =
-            await isChatActiveInConfiguration(
-              googleSheetClient,
-              config,
-              strChatId
-            );
+            await chatsConfigUC.isChatActiveInConfiguration(strChatId);
           if (!_isChatActiveInConfiguration) {
             return;
           }
 
           // get the spreadSheetId that we need to use to get the categories
-          const spreadSheetId = await getSpreadsheetIdFromChat(
-            googleSheetClient,
-            config,
+          const spreadSheetId = await chatsConfigUC.getSpreadsheetIdFromChat(
             strChatId
           );
 

@@ -1,27 +1,21 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
-import {
-  isChatActiveInConfiguration,
-  getSpreadsheetIdFromChat,
-} from '../../use-cases/chats-configuration';
-import { sheets_v4 } from 'googleapis';
 import { getCategoriesAnswer } from './utils';
 
+import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import type { CategoriesUseCase } from '../../use-cases/categories';
-import type { CONFIG_TYPE } from '../../config/config';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
 type CategoriesCommandHandlerProps = {
   bot: TelegramBot;
-  googleSheetClient: sheets_v4.Sheets;
-  config: CONFIG_TYPE;
   categoriesUC: CategoriesUseCase;
+  chatsConfigUC: ChatsConfigurationUseCase;
 };
 export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
-    ({ bot, googleSheetClient, config, categoriesUC }) =>
+    ({ bot, categoriesUC, chatsConfigUC }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       console.log(
@@ -31,19 +25,14 @@ export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
       try {
         // check, if it's a message in a inactive (on non existent) chat based on our
         // config, we can just skip it
-        const _isChatActiveInConfiguration = await isChatActiveInConfiguration(
-          googleSheetClient,
-          config,
-          strChatId
-        );
+        const _isChatActiveInConfiguration =
+          await chatsConfigUC.isChatActiveInConfiguration(strChatId);
         if (!_isChatActiveInConfiguration) {
           return;
         }
 
         // get the spreadSheetId that we need to use to get the categories
-        const spreadSheetId = await getSpreadsheetIdFromChat(
-          googleSheetClient,
-          config,
+        const spreadSheetId = await chatsConfigUC.getSpreadsheetIdFromChat(
           strChatId
         );
 

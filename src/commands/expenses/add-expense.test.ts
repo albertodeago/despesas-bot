@@ -37,6 +37,29 @@ const defaultMsg: TelegramBot.Message = {
 
 const mockBot = getMockBot(vi);
 const mockAnalytics = getMockAnalytics(vi);
+const mockChatsConfigUC = {
+  isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
+  updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+    Promise.resolve(true)
+  ),
+  get: vi.fn(() =>
+    Promise.resolve([
+      {
+        chatId: '012',
+        spreadsheetId: 'sheet-0',
+        isActive: true,
+      },
+      {
+        chatId: '123',
+        spreadsheetId: 'sheet-1',
+        isActive: true,
+      },
+    ])
+  ),
+  addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
+  isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
+  getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve('sheet-id')),
+};
 
 describe('AddExpenseCommand', () => {
   let handler: (msg: TelegramBot.Message) => void;
@@ -53,6 +76,7 @@ describe('AddExpenseCommand', () => {
       googleSheetClient: mockGoogleSheetClient,
       // @ts-expect-error
       config: mockConfig,
+      chatsConfigUC: mockChatsConfigUC,
     });
   });
   afterEach(() => {

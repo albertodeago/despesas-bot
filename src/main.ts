@@ -10,6 +10,7 @@ import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { Analytics } from './analytics';
 import { version } from '../package.json';
 import { Categories } from './use-cases/categories';
+import { ChatsConfiguration } from './use-cases/chats-configuration';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -29,28 +30,30 @@ if (
 }
 
 /**
-MANDATORY
+MANDATORY TO RELEASE
 - TODO: /help per capire come funziona (anche come condividere il sheet al bot)
 - TODO: dire a botfather cosa può fare e cambiare icona al bot
-- TODO: vedere altri todo del progetto, tipo typo tolerant sarebbe figo
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
+- TODO: review todos inside project
 
 FUTURE:
-- TODO: come gestiamo le spese ricorrenti?
-  - TODO: posso farmi mandare dei reminder dal bot? per esempio per le spese ricorrenti?
-- TODO: messaggio ricorrente settimanale o mensile per un resoconto? (da attivare in chat)
-  - sarebbe fighissimo ricevere il resoconto anche in Grafico a torta tipo
-- TODO: possiamo anche parsare i vocali e rispondere a quelli?
+- TODO: [FEATURE] how do we handle recurrent expenses?
+  - TODO: [FEATURE] can I turn on some 'reminders' so that the bot help me track recurrent expenses (e.g. monthly bills) (activable in chats)
+  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas") -> but how do we let the user select when and how frequently?
+- TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary? (activable in chats)
+  - it would be pretty cool to send also a report/summary via some pie-charts
+- TODO: [FEATURE] can we parse vocals and answer/handle that too?
+- TODO: [FEATURE] typo tolerant?
 
 OPTIONAL:
-- TODO: funzione per aggiungere una categoria o sotto categoria ?
-- TODO: comando bot per aggiungere una categoria o sottocategoria (e aggiornare la lista corrente) -> ricordarsi che bisogna "scacheare" se si fa questo
-- TODO: - alias /a per "aggiungi"?
-- TODO: - alias /av per "aggiungi veloce"?
-- TODO: rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
-- TODO: better log management, .info sempre e .debug solo per dev?
-- TODO: create an "error tracker" that sends error to my chat?
-- TODO: better structure for project
+- [CODE_QUALITY] expose a fixture folder in each module with a mock version of the module?
+- [FEATURE] function to add a categoriy / subcateogory? Do we want to add this kind of "admin" features?
+- [FEATURE] alias /a for "aggiungi"?
+- [FEATURE] alias /av for "aggiungi veloce"?
+- [FEATURE] make answers rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
+- [MAINTENACE] better log management, add a logger with `.info` and `.debug` methods and add meaningful logs
+- [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
+- [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
 
 Probably a big refactor would make things easier.
 If we put just one listener for every message, in that listener we could:
@@ -70,8 +73,9 @@ const main = async () => {
 
   const analytics = new Analytics(googleSheetClient, config, ENVIRONMENT);
 
-  // TODO: should we create all use-cases here (as classes) and pass them down to commands?
+  // TODO: create a UC also to write on google? this way we can just create one and pass down, avoiding the pass down the client everywhere
   const categoriesUC = new Categories(googleSheetClient, config);
+  const chatsConfigUC = new ChatsConfiguration(googleSheetClient, config);
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
@@ -87,12 +91,12 @@ const main = async () => {
 
   bot.onText(
     StartCommand.pattern,
-    StartCommand.getHandler({ bot, googleSheetClient, config })
+    StartCommand.getHandler({ bot, googleSheetClient, config, chatsConfigUC })
   );
 
   bot.onText(
     StopCommand.pattern,
-    StopCommand.getHandler({ bot, googleSheetClient, config })
+    StopCommand.getHandler({ bot, googleSheetClient, config, chatsConfigUC })
   );
 
   bot.onText(
@@ -102,7 +106,8 @@ const main = async () => {
       categoriesUC,
       analytics,
       googleSheetClient,
-      config: config,
+      config,
+      chatsConfigUC,
     })
   );
 
@@ -113,6 +118,7 @@ const main = async () => {
       googleSheetClient,
       analytics,
       config,
+      chatsConfigUC,
     })
   );
 
@@ -120,9 +126,8 @@ const main = async () => {
     CategoriesCommand.pattern,
     CategoriesCommand.getHandler({
       bot,
-      googleSheetClient,
-      config,
       categoriesUC,
+      chatsConfigUC,
     })
   );
 };

@@ -3,11 +3,7 @@ import { readGoogleSheet } from '../../google';
 import { fromMsg } from '../../utils';
 import { CONFIG_TYPE } from '../../config/config';
 import { sheets_v4 } from 'googleapis';
-import {
-  addChatToConfiguration,
-  isChatInConfiguration,
-  updateChatInConfiguration,
-} from '../../use-cases/chats-configuration';
+import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 
 const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese e mi sono collegato al tuo foglio di calcolo.
 
@@ -37,10 +33,11 @@ type StartCommandHandlerProps = {
   bot: TelegramBot;
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
+  chatsConfigUC: ChatsConfigurationUseCase;
 };
 export const StartCommand: BotCommand<StartCommandHandlerProps> = {
   pattern: /\/start \S+$/,
-  getHandler({ bot, googleSheetClient, config }) {
+  getHandler({ bot, googleSheetClient, config, chatsConfigUC }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       console.log(`StartCommand handler. Chat ${strChatId}. Tokens ${tokens}`);
@@ -68,27 +65,17 @@ export const StartCommand: BotCommand<StartCommandHandlerProps> = {
         };
         // sheet is ok, check if we already have the chatId in the ChatConfig
         // if we do, update the row, otherwise add a new row
-        const isInConfig = await isChatInConfiguration(
-          googleSheetClient,
-          config,
-          strChatId
-        );
+        const isInConfig = await chatsConfigUC.isChatInConfiguration(strChatId);
 
         if (isInConfig) {
           // we need to update the row and set to active
-          await updateChatInConfiguration(
-            googleSheetClient,
-            config,
+          await chatsConfigUC.updateChatInConfiguration(
             `${chatId}`,
             newChatConfig
           );
         } else {
           // new chat, we need to add a row in the config
-          await addChatToConfiguration(
-            googleSheetClient,
-            config,
-            newChatConfig
-          );
+          await chatsConfigUC.addChatToConfiguration(newChatConfig);
         }
 
         bot.sendMessage(chatId, STARTED_MSG, { parse_mode: 'Markdown' });

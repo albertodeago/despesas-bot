@@ -1,9 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import {
-  Categories,
-  _googleResultToCategories,
-  clearCache,
-} from './categories';
+import { Categories, _googleResultToCategories } from './categories';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -33,11 +29,11 @@ const mockConfig = {
 };
 
 describe('USE-CASE: categories', () => {
-  // @ts-expect-error
-  const categories = new Categories(mockGoogleSheetClient, mockConfig);
+  let categories: Categories;
 
   beforeEach(() => {
-    clearCache();
+    // @ts-expect-error
+    categories = new Categories(mockGoogleSheetClient, mockConfig);
     vi.clearAllMocks();
   });
 

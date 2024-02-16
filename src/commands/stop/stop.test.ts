@@ -2,34 +2,11 @@ import { it, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StopCommand } from './stop';
 import TelegramBot from 'node-telegram-bot-api';
 
-const mocks = vi.hoisted(() => {
-  return {
-    spyReadGoogleSheet: vi.fn(() => Promise.resolve()), // just need to resolve
-    isChatInConfiguration: vi.fn(() => Promise.resolve(false)),
-    updateChatInConfiguration: vi.fn((p1, p2, p3, p4) => Promise.resolve()),
-    getChatsConfiguration: vi.fn((p1, p2, p3) =>
-      Promise.resolve([
-        {
-          chatId: '012',
-          spreadsheetId: 'sheet-0',
-          isActive: true,
-        },
-        {
-          chatId: '123',
-          spreadsheetId: 'sheet-1',
-          isActive: true,
-        },
-      ])
-    ),
-  };
-});
+const mocks = vi.hoisted(() => ({
+  spyReadGoogleSheet: vi.fn(() => Promise.resolve()), // just need to resolve
+}));
 vi.mock('../../google', () => ({
   readGoogleSheet: mocks.spyReadGoogleSheet,
-}));
-vi.mock('../../use-cases/chats-configuration', () => ({
-  isChatInConfiguration: mocks.isChatInConfiguration,
-  updateChatInConfiguration: mocks.updateChatInConfiguration,
-  getChatsConfiguration: mocks.getChatsConfiguration,
 }));
 
 const bot = {
@@ -48,6 +25,31 @@ const mockConfig = {
   tabName: 'tab-name',
 };
 const mockGoogleSheetClient = {};
+const mockChatsConfigUC = {
+  isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
+  updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+    Promise.resolve(true)
+  ),
+  get: vi.fn(() =>
+    Promise.resolve([
+      {
+        chatId: '012',
+        spreadsheetId: 'sheet-0',
+        isActive: true,
+      },
+      {
+        chatId: '123',
+        spreadsheetId: 'sheet-1',
+        isActive: true,
+      },
+    ])
+  ),
+  addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
+  isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
+  getSpreadsheetIdFromChat: vi.fn((p1: ChatId) =>
+    Promise.resolve('spread-123')
+  ),
+};
 
 describe('StopCommand', () => {
   let handler: ReturnType<typeof StopCommand.getHandler>;
@@ -60,6 +62,7 @@ describe('StopCommand', () => {
       googleSheetClient: mockGoogleSheetClient,
       // @ts-expect-error
       config: mockConfig,
+      chatsConfigUC: mockChatsConfigUC,
     });
   });
 
@@ -85,7 +88,9 @@ describe('StopCommand', () => {
   });
 
   it('should answer with an error message if he cannot read from the configuration', async () => {
-    mocks.isChatInConfiguration.mockImplementationOnce(() => Promise.reject());
+    mockChatsConfigUC.isChatInConfiguration.mockImplementationOnce(() =>
+      Promise.reject()
+    );
     handler(defaultMsg);
 
     await vi.waitFor(() => {
@@ -98,7 +103,7 @@ describe('StopCommand', () => {
   });
 
   it('should update the chat configuration setting the chat to inactive ', async () => {
-    mocks.isChatInConfiguration.mockImplementationOnce(() =>
+    mockChatsConfigUC.isChatInConfiguration.mockImplementationOnce(() =>
       Promise.resolve(true)
     );
     handler(defaultMsg);
@@ -107,9 +112,10 @@ describe('StopCommand', () => {
       if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
         throw 'Mock not called yet';
     });
-    const calledWith = mocks.updateChatInConfiguration.mock.calls[0];
-    expect(calledWith[2]).toEqual('123');
-    expect(calledWith[3]).toEqual({
+    const calledWith =
+      mockChatsConfigUC.updateChatInConfiguration.mock.calls[0];
+    expect(calledWith[0]).toEqual('123');
+    expect(calledWith[1]).toEqual({
       chatId: '123',
       spreadsheetId: 'sheet-1',
       isActive: false,

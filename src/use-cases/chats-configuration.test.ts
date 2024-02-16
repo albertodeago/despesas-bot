@@ -1,13 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  addChatToConfiguration,
-  getChatsConfiguration,
-  isChatInConfiguration,
-  updateChatInConfiguration,
-  isChatActiveInConfiguration,
-  getSpreadsheetIdFromChat,
-  clearCache,
-} from './chats-configuration';
+import { ChatsConfiguration } from './chats-configuration';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -42,8 +34,14 @@ const mockConfig = {
 };
 
 describe('USE-CASE: chats-configuration', () => {
+  let chatConfigurationUC: ChatsConfiguration;
   beforeEach(() => {
-    clearCache();
+    // clearCache();
+    chatConfigurationUC = new ChatsConfiguration(
+      // @ts-expect-error
+      mockGoogleSheetClient,
+      mockConfig
+    );
     spyGet.mockClear();
     spyAppend.mockClear();
     spyUpdate.mockClear();
@@ -55,31 +53,19 @@ describe('USE-CASE: chats-configuration', () => {
         Promise.resolve({ data: { values: [] } })
       );
 
-      const chatsConfig = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([]);
     });
 
-    it('should return undefined if an error happens while fetching the chats configuration', async () => {
+    it('should return an empty array if an error happens while fetching the chats configuration', async () => {
       spyGet.mockImplementationOnce(() => Promise.reject());
 
-      const chatsConfig = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
-      expect(chatsConfig).toBeUndefined();
+      const chatsConfig = await chatConfigurationUC.get();
+      expect(chatsConfig).toEqual([]);
     });
 
     it('should return the array of chat configurations (without the header row)', async () => {
-      const chatsConfig = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([
         {
           chatId: 'chat-123',
@@ -112,11 +98,7 @@ describe('USE-CASE: chats-configuration', () => {
           },
         })
       );
-      const chatsConfig = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([
         {
           chatId: 'chat-123',
@@ -127,52 +109,29 @@ describe('USE-CASE: chats-configuration', () => {
     });
 
     it('should read values from cache if present', async () => {
-      await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      await chatConfigurationUC.get();
       expect(spyGet).toHaveBeenCalledOnce();
 
-      await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      await chatConfigurationUC.get();
       expect(spyGet).toHaveBeenCalledOnce();
     });
   });
 
   describe('isChatInConfiguration', () => {
     it('should return true if the chat is in the configuration', async () => {
-      const res = await isChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
-        'chat-123'
-      );
+      const res = await chatConfigurationUC.isChatInConfiguration('chat-123');
       expect(res).toEqual(true);
     });
 
     it('should return false if the chat is not in the configuration', async () => {
-      const res = await isChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
-        'chat-000'
-      );
+      const res = await chatConfigurationUC.isChatInConfiguration('chat-000');
       expect(res).toEqual(false);
     });
 
     it('should return false if an error occurs while fetching the chats configuration', async () => {
       spyGet.mockImplementationOnce(() => Promise.reject());
 
-      const res = await isChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
-        'chat-123'
-      );
+      const res = await chatConfigurationUC.isChatInConfiguration('chat-123');
       expect(res).toEqual(false);
     });
   });
@@ -187,44 +146,25 @@ describe('USE-CASE: chats-configuration', () => {
     it('should return false if an error occurs while appending the item', async () => {
       spyAppend.mockImplementationOnce(() => Promise.reject());
 
-      const res = await addChatToConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const res = await chatConfigurationUC.addChatToConfiguration(
         mockChatConfig
       );
       expect(res).toEqual(false);
     });
 
     it('should return true if the append succeeds', async () => {
-      const res = await addChatToConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const res = await chatConfigurationUC.addChatToConfiguration(
         mockChatConfig
       );
       expect(res).toEqual(true);
     });
 
     it('should update the value in cache if present', async () => {
-      const currentCache = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const currentCache = await chatConfigurationUC.get();
 
-      const res = await addChatToConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
-        mockChatConfig
-      );
+      await chatConfigurationUC.addChatToConfiguration(mockChatConfig);
 
-      const newCache = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const newCache = await chatConfigurationUC.get();
 
       expect(currentCache).toHaveLength(3);
       expect(newCache).toHaveLength(4);
@@ -244,10 +184,7 @@ describe('USE-CASE: chats-configuration', () => {
     it('should return false if an error occurs while updating the value', async () => {
       spyUpdate.mockImplementationOnce(() => Promise.reject());
 
-      const res = await updateChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const res = await chatConfigurationUC.updateChatInConfiguration(
         'chat-456',
         mockChatConfig
       );
@@ -255,10 +192,7 @@ describe('USE-CASE: chats-configuration', () => {
     });
 
     it('should return true if the update succeeds', async () => {
-      const res = await updateChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const res = await chatConfigurationUC.updateChatInConfiguration(
         'chat-456',
         mockChatConfig
       );
@@ -266,25 +200,14 @@ describe('USE-CASE: chats-configuration', () => {
     });
 
     it('should update the value in cache if present', async () => {
-      const currentCache = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const currentCache = await chatConfigurationUC.get();
 
-      await updateChatInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      await chatConfigurationUC.updateChatInConfiguration(
         'chat-456',
         mockChatConfig
       );
 
-      const newCache = await getChatsConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig
-      );
+      const newCache = await chatConfigurationUC.get();
 
       expect(currentCache).toHaveLength(3);
       expect(newCache).toHaveLength(3);
@@ -299,34 +222,23 @@ describe('USE-CASE: chats-configuration', () => {
 
   describe('isChatActiveInConfiguration', () => {
     it('should return false if the chat is not found in the config', async () => {
-      const result = await isChatActiveInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const result = await chatConfigurationUC.isChatActiveInConfiguration(
         'chat-666'
       );
       expect(result).toBe(false);
     });
 
     it("should return false if the chat is in the config but it' inactive", async () => {
-      const result = await isChatActiveInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const result = await chatConfigurationUC.isChatActiveInConfiguration(
         'chat-456'
       );
-
       expect(result).toBe(false);
     });
 
     it("should return true if the chat is in the config and it's active", async () => {
-      const result = await isChatActiveInConfiguration(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const result = await chatConfigurationUC.isChatActiveInConfiguration(
         'chat-789'
       );
-
       expect(result).toBe(true);
     });
   });
@@ -334,23 +246,14 @@ describe('USE-CASE: chats-configuration', () => {
   describe('getSpreadsheetIdFromChat', () => {
     it('should throw an error if the requested chat is not found', async () => {
       await expect(() =>
-        getSpreadsheetIdFromChat(
-          // @ts-expect-error
-          mockGoogleSheetClient,
-          mockConfig,
-          'chat-666'
-        )
+        chatConfigurationUC.getSpreadsheetIdFromChat('chat-666')
       ).rejects.toThrowError('[getSpreadsheetIdFromChat]');
     });
 
     it('should return the spreadsheetId of the chatId', async () => {
-      const result = await getSpreadsheetIdFromChat(
-        // @ts-expect-error
-        mockGoogleSheetClient,
-        mockConfig,
+      const result = await chatConfigurationUC.getSpreadsheetIdFromChat(
         'chat-789'
       );
-
       expect(result).toEqual('spread-789');
     });
   });

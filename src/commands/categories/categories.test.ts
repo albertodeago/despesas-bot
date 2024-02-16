@@ -2,22 +2,9 @@ import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
 import TelegramBot from 'node-telegram-bot-api';
 import { CategoriesCommand } from './categories';
 
-const mocks = vi.hoisted(() => {
-  return {
-    isChatActiveInConfiguration: vi.fn(() => Promise.resolve(true)),
-    getSpreadsheetIdFromChat: vi.fn(() => Promise.resolve('')),
-  };
-});
-vi.mock('../../use-cases/chats-configuration', () => ({
-  isChatActiveInConfiguration: mocks.isChatActiveInConfiguration,
-  getSpreadsheetIdFromChat: mocks.getSpreadsheetIdFromChat,
-}));
-
 const bot = {
   sendMessage: vi.fn(),
 };
-const mockConfig = {};
-const mockGoogleSheetClient = {};
 const mockCategoriesUC = {
   async get() {
     return [
@@ -35,6 +22,31 @@ const mockCategoriesUC = {
       },
     ];
   },
+};
+const mockChatsConfigUC = {
+  isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
+  updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+    Promise.resolve(true)
+  ),
+  get: vi.fn(() =>
+    Promise.resolve([
+      {
+        chatId: '012',
+        spreadsheetId: 'sheet-0',
+        isActive: true,
+      },
+      {
+        chatId: '123',
+        spreadsheetId: 'sheet-1',
+        isActive: true,
+      },
+    ])
+  ),
+  addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
+  isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
+  getSpreadsheetIdFromChat: vi.fn((p1: ChatId) =>
+    Promise.resolve('spread-123')
+  ),
 };
 
 const defaultMsg: TelegramBot.Message = {
@@ -54,11 +66,8 @@ describe('CategoriesCommand', () => {
     handler = CategoriesCommand.getHandler({
       // @ts-expect-error
       bot,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
-      // @ts-expect-error
-      config: mockConfig,
       categoriesUC: mockCategoriesUC,
+      chatsConfigUC: mockChatsConfigUC,
     });
   });
   afterEach(() => {
