@@ -1,16 +1,19 @@
 import 'dotenv/config';
-import { getGoogleSheetClient } from './google';
-import { CategoriesCommand } from './commands/categories/categories';
-import { getConfig } from './config/config';
-import { getBot } from './telegram';
-import { StartCommand } from './commands/start/start';
-import { StopCommand } from './commands/stop/stop';
-import { AddExpenseCommand } from './commands/expenses/add-expense';
-import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
-import { Analytics } from './analytics';
 import { version } from '../package.json';
+import { getGoogleSheetClient } from './google';
+import { getBot } from './telegram';
+import { getConfig } from './config/config';
+import { Analytics } from './analytics';
+
 import { Categories } from './use-cases/categories';
 import { ChatsConfiguration } from './use-cases/chats-configuration';
+
+import { HelpCommand } from './commands/help/help';
+import { StartCommand } from './commands/start/start';
+import { StopCommand } from './commands/stop/stop';
+import { CategoriesCommand } from './commands/categories/categories';
+import { AddExpenseCommand } from './commands/expenses/add-expense';
+import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -31,10 +34,10 @@ if (
 
 /**
 MANDATORY TO RELEASE
-- TODO: /help per capire come funziona (anche come condividere il sheet al bot)
-- TODO: dire a botfather cosa può fare e cambiare icona al bot
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: review todos inside project
+- TODO: host in gh-pages the documentation and fix link in a TODO
+- TODO: readme progetto
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
@@ -73,7 +76,6 @@ const main = async () => {
 
   const analytics = new Analytics(googleSheetClient, config);
 
-  // TODO: create a UC also to write on google? this way we can just create one and pass down, avoiding the pass down the client everywhere
   const categoriesUC = new Categories(googleSheetClient, config);
   const chatsConfigUC = new ChatsConfiguration(googleSheetClient, config);
 
@@ -81,13 +83,14 @@ const main = async () => {
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
   // On startup we want to inform the admin that the bot is up
-  console.log(upAndRunningMsg);
+  console.info(upAndRunningMsg);
   bot.sendMessage(config.DEPLOY_CHAT_ID, upAndRunningMsg);
 
-  // TODO: do we want to attach a generic listener just to log incoming msg?
   bot.on('message', (msg) => {
-    console.log(`Received message on chat ${msg.chat.id}: ${msg.text}`);
+    console.info(`Received message on chat ${msg.chat.id}: ${msg.text}`);
   });
+
+  bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot }));
 
   bot.onText(
     StartCommand.pattern,
