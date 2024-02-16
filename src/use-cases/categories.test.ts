@@ -35,7 +35,12 @@ describe('USE-CASE: categories', () => {
   it('should return the categories from the specified sheetId', async () => {
     const result = await categories.get('sheet-id');
 
-    const calledParams = spyGet.mock.calls[0][0];
+    const tmp = spyGet.mock.calls[0];
+    // @ts-ignore - not sure why but this has a wrong type
+    const calledParams = spyGet.mock.calls[0][0] as unknown as {
+      range: string;
+      spreadsheetId: string;
+    };
     expect(calledParams!.range).toEqual('tab-name!range');
     expect(calledParams!.spreadsheetId).toEqual('sheet-id');
     expect(result.length).toEqual(3);
