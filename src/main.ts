@@ -35,8 +35,8 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: host in gh-pages the documentation and fix link in a TODO
-- TODO: readme progetto -> finire il com'è fatto
+- TODO: host in gh-pages the documentation and fix todo links (in readme and in command)
+- TODO: readme progetto -> finire il com'è fatto (diagramma in excalidraw per spiegare ad alto livello)
 - TODO: clean old stuff?
 
 FUTURE:
@@ -50,10 +50,10 @@ FUTURE:
 
 OPTIONAL:
 - [CODE_QUALITY] expose a fixture folder in each module with a mock version of the module?
-- [FEATURE] function to add a categoriy / subcateogory? Do we want to add this kind of "admin" features?
+- [FEATURE] function to add a category / subcateogory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
-- [FEATURE] make answers rendere le risposte un po' varie (fatto, spesa aggiunta, ho aggiunto la spesa x, etc...)
+- [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [MAINTENACE] better log management, add a logger with `.info` and `.debug` methods and add meaningful logs
 - [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
