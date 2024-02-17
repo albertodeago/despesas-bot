@@ -49,11 +49,6 @@ export class Categories implements CategoriesUseCase {
 
     return categories;
   }
-
-  // purge({ chatId: ChatId}) {
-  // implement this if we need it, purge the cache for the selected chatId
-  // would it be better to have a "set"?
-  // }
 }
 
 export const fetchCategories = async (

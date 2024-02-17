@@ -35,9 +35,9 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: review todos inside project
 - TODO: host in gh-pages the documentation and fix link in a TODO
-- TODO: readme progetto
+- TODO: readme progetto -> finire il com'è fatto
+- TODO: clean old stuff?
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?

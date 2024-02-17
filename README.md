@@ -1,6 +1,10 @@
-# Despesas Bot
+# DespesasBot
 
-A telegram bot to track expenses in a google sheet.
+<p align="center">
+   <img src="docs/despesas-bot-prod.jpeg" width="150"/>
+</p>
+
+A telegram bot to track expenses in a google sheet (owned by you).
 
 ## How to use this BOT
 
@@ -72,20 +76,12 @@ then, to deploy, run
 fly deploy
 ```
 
-## How it's done
+## Creating another instance of a bot like this
 
-TODO:
+This Bot leverages google service accounts to have a secure way to access the google sheet.
+A service account is like a user, but it's not a real person, it's a bot. It can be given permissions to access a google sheet and then it can be used to access it from a server.
 
-### How to create a new BOT like this one
+A guide that explain this process can be found [here](https://medium.com/@sakkeerhussainp/google-sheet-as-your-database-for-node-js-backend-a79fc5a6edd9).
 
-https://medium.com/@sakkeerhussainp/google-sheet-as-your-database-for-node-js-backend-a79fc5a6edd9
-
-Steps to make this:
-
-- create a telegram bot (see telegram docs)
-- setup google sheet permissions (see link above)
-- create an `.env` file based on the `.env.sample` file with the required info (taken from previous steps)
-- install deps with `npm i`
-- test the app with `npm run test`
-- run the app with `npm run dev`
-- build the app with `npm run build`
+Following that guide you can create a service account, you can then use the values to populate the `.env` file and then you can run another instance of the bot.
+You will also need to create a telegram bot (see telegram docs for that, it's excellent).
