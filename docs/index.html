@@ -87,12 +87,20 @@
     </style>
     <style>
       body {
-        /* background-color: black; */
+        background-color: black;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
+
+      .wrap {
+        overflow-wrap: anywhere;
+      }
+      .blue {
+        color: blue !important;
       }
 
       .stories {
         display: grid;
-        height: 100vmax;
+        height: 100dvh;
         border-radius: 1em;
 
         grid: 1fr / auto-flow 100%;
@@ -101,6 +109,9 @@
         scroll-snap-type: x mandatory;
         overscroll-behavior: contain;
         touch-action: pan-x;
+
+        max-width: 600px;
+        margin: auto;
       }
 
       .user {
@@ -111,13 +122,14 @@
       }
 
       .story {
+        position: relative;
         grid-area: story;
 
         background-size: cover;
         background-image: var(--bg),
           linear-gradient(to top, lch(98 0 0), lch(90 0 0));
 
-        user-select: none; /* TODO: do we want this? */
+        user-select: none;
         touch-action: manipulation;
 
         transition: opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
@@ -132,8 +144,66 @@
         position: absolute;
         inset: 0;
         text-align: center;
-        padding: 4em 2em;
+        padding: 4rem 2rem;
         overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+      }
+
+      .story-content {
+        p,
+        a {
+          font-size: 1.5rem;
+          padding: 0.5rem;
+        }
+      }
+      .story-content.mainly-black {
+        p,
+        a {
+          background-color: white;
+          color: black;
+        }
+      }
+      .story-content.mainly-white {
+        p,
+        a {
+          background-color: black;
+          color: white;
+        }
+      }
+      .story-content.content-heavy {
+        p,
+        a {
+          font-size: 1em;
+        }
+      }
+
+      .little-balls {
+        position: absolute;
+        bottom: 1rem;
+        left: 0;
+        right: 0;
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+      }
+      .little-ball {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 100%;
+        opacity: 0.5;
+        background-color: black;
+        border: 1px solid white;
+        transition: background-color .3s ease, border .3s ease, opacity .3s ease;
+
+        &.active {
+          opacity: 0.75;
+          background-color: white;
+          border: 1px solid black;
+        }
       }
     </style>
   </head>
@@ -146,9 +216,10 @@
           class="story active"
           style="--bg: url(backgrounds/bg-tacos.jpeg)"
         >
-          <div class="story-content">
+          <div class="story-content mainly-black">
             <p>
-              Segui questi semplici passi per iniziare ad utilizzare DespesasBot
+              Segui questi semplici passi per iniziare ad utilizzare
+              <b>DespesasBot</b>
             </p>
             <p>
               clicca a destra per andare al prossimo step, sinistra per tornare
@@ -159,7 +230,7 @@
 
         <!-- DUPLICATE SPREADSHEET -->
         <article class="story" style="--bg: url(backgrounds/bg-cactus.jpeg)">
-          <div class="story-content">
+          <div class="story-content mainly-white">
             <p>
               Per prima cosa devi duplicare questo foglio di calcolo. Questo ha
               già impostata la struttura che il bot si aspetta
@@ -179,7 +250,7 @@
 
         <!-- EXPLAIN SPREADSHEET -->
         <article class="story" style="--bg: url(backgrounds/bg-sombrero.jpeg)">
-          <div class="story-content">
+          <div class="story-content mainly-white content-heavy">
             <p>
               Bene, ora, sempre nel foglio di calcolo, puoi impostare le
               categorie, secondo le <b>tue</b> necessità (tab <b>Categorie</b>).
@@ -200,7 +271,7 @@
             </p>
             <p>
               Nelle colonne adiacenti (colonna B, C, D, ... e via dicendo) puoi
-              mettere delle sotto-categorie della categoria
+              mettere delle sotto-categorie della categoria di primo livello.
             </p>
             <p>
               Per esempio la categoria può essere "mangiare" e le sue sotto
@@ -222,13 +293,14 @@
 
         <!-- SHARE SPREADSHEET TO THE BOT -->
         <article class="story" style="--bg: url(backgrounds/bg-pinata.jpeg)">
-          <div class="story-content">
+          <div class="story-content mainly-white">
             <p>
               Ora devi condividere a DespesasBot il foglio di calcolo e dargli
               ruolo <b>editor</b>
               L'email di DespesasBot è 👇 (cliccaci sopra per copiarla)
             </p>
-            <p id="bot-email">
+            <br />
+            <p id="bot-email" class="wrap">
               despesasserviceaccount@despesasbot.iam.gserviceaccount.com
             </p>
           </div>
@@ -239,32 +311,52 @@
           class="story"
           style="--bg: url(backgrounds/bg-margaritas.jpeg)"
         >
-          <div class="story-content">
+          <div class="story-content mainly-black">
             <p>
               Abbiamo praticamente finito. Ora copiati l'<b>id</b> del foglio di
               calcolo.
             </p>
             <p>
               Se non sai qual'è, è la penultima parte dell'URL del foglio di
-              calcolo. Per esempio, se l'URL del tuo foglio di calcolo è
-              `https://docs.google.com/spreadsheets/d/1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps/edit#gid=0`
-              l'ID sarebbe `1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps`
-              (quindi la parte prima di `/edit#gid=0`).
+              calcolo. Per esempio, se l'URL del tuo foglio di calcolo fosse
+            </p>
+            
+            <br>
+            
+            <p class="wrap">
+                https://docs.google.com/spreadsheets/d/<span class="blue">1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps</span>/edit#gid=0
+            </p>
+            <br>
+            <p>
+              l'<b>id</b> sarebbe (la parte colorata di blu), quindi:
+              <p class="wrap blue">
+                1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps
+              </p>
             </p>
           </div>
         </article>
 
         <!-- START USING THE BOT -->
         <article class="story" style="--bg: url(backgrounds/bg-jalapeno.jpeg)">
-          <div class="story-content">
+          <div class="story-content mainly-black">
             <p>
               Ottimo, sei pronto ad iniziare a tracciare le spese. Ora apri una
-              chat con il bot e lancia il comando `/start spreadsheet_id`
+              chat con il bot e lancia il comando (al posto di spreadsheet_id devi usare l'<b>id</b>
+              trovato prima)
             </p>
+            
+            <br>
+            <p>
+              /start spreadsheet_id
+            </p>
+            <br>
+
             <p>
               Ricorda che questo bot è open source, puoi trovare il codice e
               segnalare malfunzionamenti nel suo repo
             </p>
+
+            <br>
             <a
               href="https://github.com/albertodeago/despesas-bot"
               target="_blank"
@@ -273,18 +365,22 @@
           </div>
         </article>
       </section>
+
+      <div class="little-balls">
+        <span class="little-ball active"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+      </div>
     </div>
 
-    <!-- 
-        TODO: tema dinamico in base a pref. utente
-        TODO: layout a "storie di instagram?" (orizzontale o verticale?)
-        TODO: desktop support
-        TODO: puntini sotto per far capire quanti step sono
-        TODO: tema messicano come colori e immagini
-        -->
     <script>
       const stories = document.querySelector('.stories');
       const storiesList = document.querySelectorAll('.story');
+      const littleBalls = document.querySelectorAll('.little-ball');
+      const botEmail = document.querySelector('#bot-email');
       const median = stories.offsetLeft + stories.clientWidth / 2;
 
       const state = {
@@ -294,12 +390,10 @@
 
       // NAVIGATION
       stories.addEventListener('click', (e) => {
-        // console.log(e.target.parentElement)
         const targetParent = e.target.parentElement ?? {};
-        if (
-          e.target.nodeName !== 'ARTICLE' &&
-          targetParent.nodeName !== 'ARTICLE'
-        ) {
+
+        // we don't want to navigate if it's a link or the bot-email to copy
+        if (e.target.id === 'bot-email' || e.target.nodeName.toLowerCase() === "a") {
           return;
         }
 
@@ -330,7 +424,42 @@
             story.classList.remove('active');
           }
         });
+        [...littleBalls].forEach((littleBall, index) => {
+          if (index === state.currentStoryIndex) {
+            littleBall.classList.add('active');
+          } else {
+            littleBall.classList.remove('active');
+          }
+        })
       };
+
+      // Bot email copy on click
+      botEmail.addEventListener('click', () => {
+        try {
+          const type = 'text/plain';
+          const blob = new Blob(
+            ['despesasserviceaccount@despesasbot.iam.gserviceaccount.com'],
+            { type }
+          );
+          const data = [new ClipboardItem({ [type]: blob })];
+
+          navigator.clipboard.write(data).then(
+            () => {
+              /* success */
+            },
+            () => {
+              /* failure */
+              alert(
+                'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
+              );
+            }
+          );
+        } catch (err) {
+          alert(
+            'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
+          );
+        }
+      });
     </script>
   </body>
 </html>
