@@ -30,8 +30,7 @@ describe('Analytics', () => {
   const analytics = new Analytics(
     // @ts-expect-error
     mockGoogleSheetClient,
-    mockConfig,
-    'development'
+    mockConfig
   );
 
   beforeEach(() => {
