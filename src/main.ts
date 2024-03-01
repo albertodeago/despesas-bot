@@ -34,8 +34,8 @@ if (
 
 /**
 MANDATORY TO RELEASE
+- TODO: fix TODOs in the code (e.g. in answers)
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: host in gh-pages the documentation
 - TODO: readme progetto -> finire il com'è fatto (diagramma in excalidraw per spiegare ad alto livello)
 - TODO: clean old stuff?
 

@@ -17,7 +17,7 @@ The steps to use this bot are:
 3. Open a chat with the bot in telegram and run `/start <spreadsheet_id>` where `<spreadsheet_id>` is the id of the google sheet. You can find it in the URL of the sheet. For example for this `https://docs.google.com/spreadsheets/d/1iKU8z1Oa6odHcjkiHCW1tfFLKNsi6SEb3Wgmcz_Twfk/edit?usp=sharing` the id is `1iKU8z1Oa6odHcjkiHCW1tfFLKNsi6SEb3Wgmcz_Twfk` (so last part of the URL before the `/edit...`)
    3.1 If everything went well, the bot will reply with a message saying that the sheet was successfully connected
 
-You can find this info also in the [DespesasBot how to page](TODO: gh pages link)
+You can find this info also in the [the docs](https://albertodeago.github.io/despesas-bot/)
 
 ## Run locally
 

@@ -24,7 +24,7 @@ Se vuoi smettere di tracciare le spese scrivi /stop
 `;
 
 const NO_SHEET_ID_MSG = `Devi specificare un id di foglio di calcolo. Esempio: /start sheet-id
-Se non sai come ottenerlo, leggi questa guida: [link](TODO:)`;
+Se non sai come ottenerlo, leggi [qui](https://albertodeago.github.io/despesas-bot/)`;
 
 const CANT_READ_SHEET_MSG = `Non riesco a leggere il foglio di calcolo.
 Assicurati che l'id sia corretto e che io abbia i permessi per leggerlo.`;

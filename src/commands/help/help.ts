@@ -4,12 +4,12 @@ import { fromMsg } from '../../utils';
 const HELP_MSG = `Ciao, sono 🌵DespesasBot🌮 e sarò il bot per gestire le tue spese
 Utilizzandomi potrai facilmente tracciare le tue spese e tenerle in un *tuo* google spreadsheet
 
-Tutto ciò che devi fare è scritto in [questa guida](TODO: link)
+Tutto ciò che devi fare è scritto in [questa guida](https://albertodeago.github.io/despesas-bot/)
 
 In pratica devi condividere alla mia email (che è \`despesasserviceaccount@despesasbot.iam.gserviceaccount.com\`) il tuo google spreadsheet (dandomi diritti di scrittura/editor altrimenti non potrò scriverci) e poi usare il comando \`/start <spreadsheet_id>\`
 Ricorda che lo spreadsheet deve avere una certa struttura, nel link sopra c'è scritto tutto
 
-Ricorda che sono opensource e puoi trovare tutto il codice [qui](TODO: link), quindi puoi verificare tu stesso che le spese che traccerai sono salvate *solo e soltando* nel tuo google spreadsheet
+Ricorda che sono opensource e puoi trovare tutto il codice [qui](https://github.com/albertodeago/despesas-bot), quindi puoi verificare tu stesso che le spese che traccerai sono salvate *solo e soltando* nel tuo google spreadsheet
 
 Se hai una richiesta di funzionalità o un dubbio, puoi aprire una issue, ma considera che il bot è stato fatto per come il mio gringo mi voleva, e il mio gringo lo mantiene nel tuo tempo libero, quindi non aspettarti per forza una risposta veloce o che tutto sia implementato
 
