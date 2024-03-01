@@ -52,7 +52,6 @@ OPTIONAL:
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
-- [MAINTENANCE] better log management, add a logger with `.info` and `.debug` methods and add meaningful logs everywhere
 - [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
 
@@ -75,7 +74,7 @@ const main = async () => {
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
-  const logger = initLogger({ bot, config });
+  const logger = initLogger({ bot, config, level: 1 });
   const analytics = new Analytics(googleSheetClient, config, logger);
 
   const categoriesUC = new Categories(googleSheetClient, config, logger);
@@ -109,8 +108,6 @@ const main = async () => {
     StopCommand.pattern,
     StopCommand.getHandler({
       bot,
-      googleSheetClient,
-      config,
       chatsConfigUC,
       logger,
     })

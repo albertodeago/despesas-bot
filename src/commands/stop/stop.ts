@@ -1,7 +1,5 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
-import { CONFIG_TYPE } from '../../config/config';
-import { sheets_v4 } from 'googleapis';
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import { Logger } from '../../logger';
 
@@ -14,14 +12,12 @@ const NO_SHEET_FOUND = `Non risulta esserci un foglio di calcolo associato a que
 
 type StopCommandHandlerProps = {
   bot: TelegramBot;
-  googleSheetClient: sheets_v4.Sheets;
-  config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
   logger: Logger;
 };
 export const StopCommand: BotCommand<StopCommandHandlerProps> = {
   pattern: /\/stop/,
-  getHandler({ bot, googleSheetClient, config, chatsConfigUC, logger }) {
+  getHandler({ bot, chatsConfigUC, logger }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       logger.info(`StopCommand handler. Tokens ${tokens}`, strChatId);

@@ -60,10 +60,6 @@ describe('StopCommand', () => {
     handler = StopCommand.getHandler({
       // @ts-expect-error
       bot,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
-      // @ts-expect-error
-      config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
       logger: mockLogger,
     });
