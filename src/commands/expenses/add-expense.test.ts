@@ -14,6 +14,7 @@ import {
   mockCategoriesUC,
   mockConfig,
 } from './fixture';
+import { getMockLogger } from '../../logger/mock';
 
 const googleMocks = vi.hoisted(() => ({
   spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
@@ -60,6 +61,7 @@ const mockChatsConfigUC = {
   isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
   getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve('sheet-id')),
 };
+const mockLogger = getMockLogger();
 
 describe('AddExpenseCommand', () => {
   let handler: (msg: TelegramBot.Message) => void;
@@ -77,6 +79,7 @@ describe('AddExpenseCommand', () => {
       // @ts-expect-error
       config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
+      logger: mockLogger,
     });
   });
   afterEach(() => {

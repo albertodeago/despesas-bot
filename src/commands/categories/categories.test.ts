@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
 import TelegramBot from 'node-telegram-bot-api';
 import { CategoriesCommand } from './categories';
+import { getMockLogger } from '../../logger/mock';
 
 const bot = {
   sendMessage: vi.fn(),
@@ -48,6 +49,7 @@ const mockChatsConfigUC = {
     Promise.resolve('spread-123')
   ),
 };
+const mockLogger = getMockLogger();
 
 const defaultMsg: TelegramBot.Message = {
   text: '/categorie',
@@ -68,6 +70,7 @@ describe('CategoriesCommand', () => {
       bot,
       categoriesUC: mockCategoriesUC,
       chatsConfigUC: mockChatsConfigUC,
+      logger: mockLogger,
     });
   });
   afterEach(() => {

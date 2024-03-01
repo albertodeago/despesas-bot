@@ -14,6 +14,7 @@ import { StopCommand } from './commands/stop/stop';
 import { CategoriesCommand } from './commands/categories/categories';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
+import { initLogger } from './logger';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -34,10 +35,7 @@ if (
 
 /**
 MANDATORY TO RELEASE
-- TODO: fix TODOs in the code (e.g. in answers)
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: readme progetto -> finire il com'è fatto (diagramma in excalidraw per spiegare ad alto livello)
-- TODO: clean old stuff?
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
@@ -49,12 +47,12 @@ FUTURE:
 - TODO: [FEATURE] typo tolerant?
 
 OPTIONAL:
-- [CODE_QUALITY] expose a fixture folder in each module with a mock version of the module?
+- [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
 - [FEATURE] function to add a category / subcateogory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
-- [MAINTENACE] better log management, add a logger with `.info` and `.debug` methods and add meaningful logs
+- [MAINTENANCE] better log management, add a logger with `.info` and `.debug` methods and add meaningful logs everywhere
 - [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
 
@@ -74,32 +72,48 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
-  const analytics = new Analytics(googleSheetClient, config);
-
-  const categoriesUC = new Categories(googleSheetClient, config);
-  const chatsConfigUC = new ChatsConfiguration(googleSheetClient, config);
-
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
-  // On startup we want to inform the admin that the bot is up
-  console.info(upAndRunningMsg);
-  bot.sendMessage(config.DEPLOY_CHAT_ID, upAndRunningMsg);
+  const logger = initLogger({ bot, config });
+  const analytics = new Analytics(googleSheetClient, config, logger);
 
-  bot.on('message', (msg) => {
-    console.info(`Received message on chat ${msg.chat.id}: ${msg.text}`);
+  const categoriesUC = new Categories(googleSheetClient, config, logger);
+  const chatsConfigUC = new ChatsConfiguration(
+    googleSheetClient,
+    config,
+    logger
+  );
+
+  // On startup we want to inform the admin that the bot is up
+  logger.sendInfo(upAndRunningMsg, 'NO_CHAT');
+
+  bot.on('message', (msg): void => {
+    logger.info(`Received message: ${msg.text}`, '' + msg.chat.id);
   });
 
-  bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot }));
+  bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
 
   bot.onText(
     StartCommand.pattern,
-    StartCommand.getHandler({ bot, googleSheetClient, config, chatsConfigUC })
+    StartCommand.getHandler({
+      bot,
+      googleSheetClient,
+      config,
+      chatsConfigUC,
+      logger,
+    })
   );
 
   bot.onText(
     StopCommand.pattern,
-    StopCommand.getHandler({ bot, googleSheetClient, config, chatsConfigUC })
+    StopCommand.getHandler({
+      bot,
+      googleSheetClient,
+      config,
+      chatsConfigUC,
+      logger,
+    })
   );
 
   bot.onText(
@@ -111,6 +125,7 @@ const main = async () => {
       googleSheetClient,
       config,
       chatsConfigUC,
+      logger,
     })
   );
 
@@ -122,6 +137,7 @@ const main = async () => {
       analytics,
       config,
       chatsConfigUC,
+      logger,
     })
   );
 
@@ -131,6 +147,7 @@ const main = async () => {
       bot,
       categoriesUC,
       chatsConfigUC,
+      logger,
     })
   );
 };

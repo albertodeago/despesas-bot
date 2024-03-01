@@ -4,6 +4,7 @@ import { getCategoriesAnswer } from './utils';
 
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import type { CategoriesUseCase } from '../../use-cases/categories';
+import type { Logger } from '../../logger';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
@@ -11,16 +12,15 @@ type CategoriesCommandHandlerProps = {
   bot: TelegramBot;
   categoriesUC: CategoriesUseCase;
   chatsConfigUC: ChatsConfigurationUseCase;
+  logger: Logger;
 };
 export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
   pattern: /\/categorie(\s|$)|\/c(\s|$)/,
   getHandler:
-    ({ bot, categoriesUC, chatsConfigUC }) =>
+    ({ bot, categoriesUC, chatsConfigUC, logger }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
-      console.log(
-        `CategoriesCommand handler. Chat ${chatId}. Tokens ${tokens}`
-      );
+      logger.info(`CategoriesCommand handler. Tokens ${tokens}`, strChatId);
 
       try {
         // check, if it's a message in a inactive (on non existent) chat based on our
@@ -67,7 +67,10 @@ export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
         }
         return;
       } catch (e) {
-        console.error('An error ocurred handling the categories command', e);
+        const err = new Error(
+          `Error while handling the categories command: ${e}`
+        );
+        logger.sendError(err, strChatId);
         bot.sendMessage(chatId, GENERIC_ERROR_MSG);
       }
     },

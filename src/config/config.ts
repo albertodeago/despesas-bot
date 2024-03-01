@@ -1,7 +1,7 @@
 export type CONFIG_TYPE = ReturnType<typeof getConfig>;
 
 const sharedConfigProps = {
-  DEPLOY_CHAT_ID: '53084797',
+  ADMINISTRATION_CHAT_ID: '53084797',
   tabName: 'Spese',
   range: 'A:E',
   CATEGORIES: {

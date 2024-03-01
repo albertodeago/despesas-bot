@@ -18,6 +18,7 @@ import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configurat
 import type { CONFIG_TYPE } from '../../config/config';
 import type { Categories } from '../../use-cases/categories';
 import type { Category } from '../../use-cases/categories';
+import { Logger } from '../../logger';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
@@ -200,6 +201,7 @@ type AddExpenseCommandHandlerProps = {
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
+  logger: Logger;
 };
 export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
   pattern: /^aggiungi\s*((?!veloce).)*$/i,
@@ -211,12 +213,11 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
       googleSheetClient,
       config,
       chatsConfigUC,
+      logger,
     }) =>
     async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens, date } = fromMsg(msg);
-      console.log(
-        `AddExpenseCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
-      );
+      logger.info(`AddExpenseCommand handler. Tokens ${tokens}`, strChatId);
 
       try {
         // check, if it's a message in a inactive (on non existent) chat based on our
@@ -385,7 +386,11 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           return;
         }
       } catch (e) {
-        console.error('An error ocurred handling the add-expense command', e);
+        const err = new Error(
+          `Error while handling the add-expense command: ${e}`
+        );
+        logger.sendError(err, strChatId);
+
         bot.sendMessage(chatId, GENERIC_ERROR_MSG);
       }
     },

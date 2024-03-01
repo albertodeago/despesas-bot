@@ -6,6 +6,7 @@ import {
 } from '../google';
 import { CONFIG_TYPE } from '../config/config';
 import TTLCache from '@isaacs/ttlcache';
+import { Logger } from '../logger';
 
 const CACHE_KEY = 'chat-configuration';
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
@@ -26,14 +27,16 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
   client: sheets_v4.Sheets;
   config: CONFIG_TYPE;
   cache: TTLCache<typeof CACHE_KEY, ChatConfig[]>;
+  logger: Logger;
 
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE) {
+  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
     this.client = client;
     this.config = config;
     this.cache = new TTLCache({
       max: 1, // we just need 1 entry, the config itself
       ttl: CACHE_TTL,
     });
+    this.logger = logger;
   }
 
   async get() {
@@ -68,7 +71,8 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         return validChatsConfig;
       }
     } catch (e) {
-      console.error(e);
+      const err = new Error(`ChatConfigurationUseCase - error in get: ${e}`);
+      this.logger.sendError(err, 'NO_CHAT');
     }
 
     return [];
@@ -86,10 +90,10 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         }
       }
     } catch (e) {
-      console.error(
-        'Error while checking if the bot is started in the chat',
-        e
+      const err = new Error(
+        `ChatConfigurationUseCase - error in isChatInConfiguration: ${e}`
       );
+      this.logger.sendError(err, 'NO_CHAT');
     }
 
     return false;
@@ -117,7 +121,10 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
 
       return true;
     } catch (e) {
-      console.error(e);
+      const err = new Error(
+        `ChatConfigurationUseCase - error in addChatToConfiguration: ${e}`
+      );
+      this.logger.sendError(err, 'NO_CHAT');
     }
     return false;
   }
@@ -166,7 +173,10 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         return true;
       }
     } catch (e) {
-      console.error(e);
+      const err = new Error(
+        `ChatConfigurationUseCase - error in updateChatInConfiguration: ${e}`
+      );
+      this.logger.sendError(err, 'NO_CHAT');
     }
 
     return false;
@@ -189,9 +199,11 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
     const chat = chats?.find((c) => c.chatId === chatId);
 
     if (!chats || !chat) {
-      throw new Error(
-        `[getSpreadsheetIdFromChat]: error, chats not found or unable to match the chat ${chatId}`
+      const err = new Error(
+        `ChatConfigurationUseCase - error in getSpreadsheetIdFromChat, chats not found or unable to match the chat ${chatId}`
       );
+      this.logger.sendError(err, 'NO_CHAT');
+      throw err;
     }
 
     return chat.spreadsheetId;
