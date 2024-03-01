@@ -6,6 +6,14 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>DespesasBot how to</title>
     <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+    <!-- Cronitor RUM -->
+    <script async src="https://rum.cronitor.io/script.js"></script>
+    <script>
+        window.cronitor = window.cronitor || function() { (window.cronitor.q = window.cronitor.q || []).push(arguments); };
+        cronitor('config', { clientKey: 'ced29f9355fe9098b0aa701f3680cff6' });
+    </script>
+
     <style>
       /*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
       html,
@@ -446,18 +454,21 @@
           navigator.clipboard.write(data).then(
             () => {
               /* success */
+              cronitor("track", "success-copy-bot-email")
             },
             () => {
               /* failure */
               alert(
                 'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
               );
+              cronitor("track", "error-copy-bot-email")
             }
           );
         } catch (err) {
           alert(
             'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
           );
+          cronitor("track", "error-copy-bot-email")
         }
       });
     </script>
