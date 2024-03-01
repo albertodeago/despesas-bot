@@ -22,10 +22,6 @@ const defaultMsg: TelegramBot.Message = {
   date: new Date().getTime(),
   message_id: 987654321,
 };
-const mockConfig = {
-  tabName: 'tab-name',
-};
-const mockGoogleSheetClient = {};
 const mockChatsConfigUC = {
   isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
   updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>

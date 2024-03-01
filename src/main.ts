@@ -54,6 +54,7 @@ OPTIONAL:
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
+- [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)
 
 Probably a big refactor would make things easier.
 If we put just one listener for every message, in that listener we could:

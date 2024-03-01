@@ -8,6 +8,9 @@ A telegram bot to track expenses in a google sheet (owned by you).
 
 ## How to use this BOT
 
+> [!CAUTION]
+> Use this at your own risk, I have created this bot for personal use and it is a Hobby Project, so no support or troubleshooting is guaranteed.
+
 The steps to use this bot are:
 
 1. Create a google sheet following the structure of [this one](https://docs.google.com/spreadsheets/d/1iKU8z1Oa6odHcjkiHCW1tfFLKNsi6SEb3Wgmcz_Twfk/edit?usp=sharing)(or duplicate it). ⚠️ Don't rename the tabs ⚠️
