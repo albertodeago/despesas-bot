@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Categories, _googleResultToCategories } from './categories';
+import { getMockLogger } from '../logger/mock';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -27,13 +28,14 @@ const mockConfig = {
     RANGE: 'range',
   },
 };
+const mockLogger = getMockLogger();
 
 describe('USE-CASE: categories', () => {
   let categories: Categories;
 
   beforeEach(() => {
     // @ts-expect-error
-    categories = new Categories(mockGoogleSheetClient, mockConfig);
+    categories = new Categories(mockGoogleSheetClient, mockConfig, mockLogger);
     vi.clearAllMocks();
   });
 

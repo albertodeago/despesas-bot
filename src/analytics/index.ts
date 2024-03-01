@@ -2,14 +2,21 @@ import { sheets_v4 } from 'googleapis';
 import { readGoogleSheet, updateGoogleSheet } from '../google';
 
 import type { CONFIG_TYPE } from '../config/config';
+import type { Logger } from '../logger';
 
 export class Analytics {
   client: sheets_v4.Sheets;
   config: CONFIG_TYPE['ANALYTICS'];
+  logger: Logger;
 
-  constructor(googleSheetClient: sheets_v4.Sheets, config: CONFIG_TYPE) {
+  constructor(
+    googleSheetClient: sheets_v4.Sheets,
+    config: CONFIG_TYPE,
+    logger: Logger
+  ) {
     this.client = googleSheetClient;
     this.config = config.ANALYTICS;
+    this.logger = logger;
   }
 
   /**
@@ -27,13 +34,17 @@ export class Analytics {
       const result = parseInt(resp?.[0]?.[1] ?? '');
 
       if (isNaN(result)) {
-        console.error(`Error: tracked expense found is ${result}`);
+        const err = new Error(
+          `Error: tracked expense found is ${result} (NaN)`
+        );
+        this.logger.sendError(err, 'NO_CHAT');
         return undefined; // something wrong happened
       }
 
       return result;
     } catch (e) {
-      console.error('Error while fetching tracked expenses', e);
+      const err = new Error(`Error while fetching tracked expenses: ${e}`);
+      this.logger.sendError(err, 'NO_CHAT');
       return undefined;
     }
   }
@@ -54,7 +65,8 @@ export class Analytics {
           data: [[this.config.TRACKED_EXPENSES_LABEL, currentValue + 1]],
         });
       } catch (e) {
-        console.error('Error while updating tracked expenses', e);
+        const err = new Error(`Error while updating tracked expenses: ${e}`);
+        this.logger.sendError(err, 'NO_CHAT');
         return undefined;
       }
     }

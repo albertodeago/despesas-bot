@@ -1,6 +1,7 @@
 import { it, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StartCommand } from './start';
 import TelegramBot from 'node-telegram-bot-api';
+import { getMockLogger } from '../../logger/mock';
 
 const mocks = vi.hoisted(() => ({
   spyReadGoogleSheet: vi.fn(() => Promise.resolve()), // just need to resolve
@@ -50,6 +51,7 @@ const mockChatsConfigUC = {
     Promise.resolve('spread-123')
   ),
 };
+const mockLogger = getMockLogger();
 
 describe('StartCommand', () => {
   let handler: ReturnType<typeof StartCommand.getHandler>;
@@ -63,6 +65,7 @@ describe('StartCommand', () => {
       // @ts-expect-error
       config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
+      logger: mockLogger,
     });
   });
 

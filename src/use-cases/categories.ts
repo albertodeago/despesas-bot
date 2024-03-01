@@ -2,6 +2,7 @@ import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../config/config';
 import { readGoogleSheet } from '../google';
 import TTLCache from '@isaacs/ttlcache';
+import type { Logger } from '../logger';
 
 export type Category = {
   name: string;
@@ -21,23 +22,25 @@ export class Categories implements CategoriesUseCase {
   config: CONFIG_TYPE;
   client: sheets_v4.Sheets;
   cache: TTLCache<SheetId, Category[]>;
+  logger: Logger;
 
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE) {
+  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
     this.client = client;
     this.config = config;
     this.cache = new TTLCache({
       max: 100,
       ttl: CACHE_TTL,
     });
+    this.logger = logger;
   }
 
   async get(sheetId: SheetId): Promise<Category[]> {
     if (this.cache.has(sheetId)) {
-      console.debug('[UseCase][Categories][get] cache hit');
+      this.logger.debug('CategoriesUseCase - get cache hit', 'NO_CHAT');
       return this.cache.get(sheetId)!;
     }
 
-    console.debug('[UseCase][Categories][get] cache miss');
+    this.logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
     const categories = await fetchCategories(
       this.client,
       sheetId,

@@ -1,5 +1,6 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
+import { Logger } from '../../logger';
 
 const HELP_MSG = `Ciao, sono 🌵DespesasBot🌮 e sarò il bot per gestire le tue spese
 Utilizzandomi potrai facilmente tracciare le tue spese e tenerle in un *tuo* google spreadsheet
@@ -24,13 +25,14 @@ Dopo che avrai lanciato il comando \`/start\`, puoi utilizzare gli altri comandi
 
 type HelpCommandHandlerProps = {
   bot: TelegramBot;
+  logger: Logger;
 };
 export const HelpCommand: BotCommand<HelpCommandHandlerProps> = {
   pattern: /\/help/,
-  getHandler({ bot }) {
+  getHandler({ bot, logger }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId } = fromMsg(msg);
-      console.log(`HelpCommand handler. Chat ${strChatId}`);
+      logger.info(`HelpCommand handler.`, strChatId);
 
       bot.sendMessage(chatId, HELP_MSG, { parse_mode: 'Markdown' });
     };

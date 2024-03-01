@@ -1,5 +1,6 @@
 import { expect, it, describe, vi, beforeEach } from 'vitest';
 import { Analytics } from './index';
+import { getMockLogger } from '../logger/mock';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -26,16 +27,17 @@ const mockConfig = {
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
   },
 };
+const mockLogger = getMockLogger();
 describe('Analytics', () => {
   const analytics = new Analytics(
     // @ts-expect-error
     mockGoogleSheetClient,
-    mockConfig
+    mockConfig,
+    mockLogger
   );
 
   beforeEach(() => {
-    spyGet.mockClear();
-    spyUpdate.mockClear();
+    vi.clearAllMocks();
   });
 
   it('should be created and defined', () => {
@@ -50,9 +52,8 @@ describe('Analytics', () => {
 
     it('should return undefined if it s not able to get the tracked expenses', async () => {
       spyGet.mockImplementationOnce(() => Promise.reject('error'));
-      console.error = vi.fn();
       const result = await analytics._getTrackedExpenses();
-      expect(console.error).toHaveBeenCalled();
+      expect(mockLogger.sendError).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -64,9 +65,8 @@ describe('Analytics', () => {
           },
         })
       );
-      console.error = vi.fn();
       const result = await analytics._getTrackedExpenses();
-      expect(console.error).toHaveBeenCalled();
+      expect(mockLogger.sendError).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
   });

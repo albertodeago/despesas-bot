@@ -1,6 +1,7 @@
 import { it, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StopCommand } from './stop';
 import TelegramBot from 'node-telegram-bot-api';
+import { getMockLogger } from '../../logger/mock';
 
 const mocks = vi.hoisted(() => ({
   spyReadGoogleSheet: vi.fn(() => Promise.resolve()), // just need to resolve
@@ -50,6 +51,7 @@ const mockChatsConfigUC = {
     Promise.resolve('spread-123')
   ),
 };
+const mockLogger = getMockLogger();
 
 describe('StopCommand', () => {
   let handler: ReturnType<typeof StopCommand.getHandler>;
@@ -58,11 +60,8 @@ describe('StopCommand', () => {
     handler = StopCommand.getHandler({
       // @ts-expect-error
       bot,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
-      // @ts-expect-error
-      config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
+      logger: mockLogger,
     });
   });
 

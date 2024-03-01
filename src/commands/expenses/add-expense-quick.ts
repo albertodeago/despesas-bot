@@ -16,6 +16,7 @@ import {
 import { Analytics } from '../../analytics';
 
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
+import { Logger } from '../../logger';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
@@ -62,16 +63,18 @@ type AddExpenseQuickCommandHandlerProps = {
   analytics: Analytics;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
+  logger: Logger;
 };
 export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerProps> =
   {
     pattern: /^aggiungi veloce/i,
     getHandler:
-      ({ bot, googleSheetClient, analytics, config, chatsConfigUC }) =>
+      ({ bot, googleSheetClient, analytics, config, chatsConfigUC, logger }) =>
       async (msg: TelegramBot.Message) => {
         const { chatId, strChatId, tokens, date } = fromMsg(msg);
-        console.log(
-          `AddExpenseQuickCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
+        logger.info(
+          `AddExpenseQuickCommand handler. Tokens ${tokens}`,
+          strChatId
         );
 
         try {
@@ -118,10 +121,11 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
 
           return;
         } catch (e) {
-          console.error(
-            'An error ocurred handling the add-expense-quick command',
-            e
+          const err = new Error(
+            `Error while handling the add-expense-quick command ${e}`
           );
+          logger.sendError(err, strChatId);
+
           bot.sendMessage(chatId, genericErrorMsg);
         }
       },

@@ -4,6 +4,7 @@ import { fromMsg } from '../../utils';
 import { CONFIG_TYPE } from '../../config/config';
 import { sheets_v4 } from 'googleapis';
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
+import { Logger } from '../../logger';
 
 const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese e mi sono collegato al tuo foglio di calcolo.
 
@@ -34,13 +35,14 @@ type StartCommandHandlerProps = {
   googleSheetClient: sheets_v4.Sheets;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
+  logger: Logger;
 };
 export const StartCommand: BotCommand<StartCommandHandlerProps> = {
   pattern: /\/start \S+$/,
-  getHandler({ bot, googleSheetClient, config, chatsConfigUC }) {
+  getHandler({ bot, googleSheetClient, config, chatsConfigUC, logger }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
-      console.log(`StartCommand handler. Chat ${strChatId}. Tokens ${tokens}`);
+      logger.info(`StartCommand handler. Tokens ${tokens}`, strChatId);
 
       if (tokens.length < 2) {
         bot.sendMessage(chatId, NO_SHEET_ID_MSG, { parse_mode: 'Markdown' });
@@ -81,7 +83,11 @@ export const StartCommand: BotCommand<StartCommandHandlerProps> = {
         bot.sendMessage(chatId, STARTED_MSG, { parse_mode: 'Markdown' });
         return;
       } catch (e) {
-        console.error(`Error starting the bot for ${sheetId}. Error: ${e}`);
+        const err = new Error(
+          `Error while handling the start command ${sheetId}: ${e}`
+        );
+        logger.sendError(err, strChatId);
+
         bot.sendMessage(chatId, CANT_READ_SHEET_MSG);
         return;
       }

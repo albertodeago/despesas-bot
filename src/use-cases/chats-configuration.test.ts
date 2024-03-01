@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatsConfiguration } from './chats-configuration';
+import { getMockLogger } from '../logger/mock';
 
 const spyGet = vi.fn(() =>
   Promise.resolve({
@@ -32,6 +33,7 @@ const mockConfig = {
     RANGE: 'A:Z',
   },
 };
+const mockLogger = getMockLogger();
 
 describe('USE-CASE: chats-configuration', () => {
   let chatConfigurationUC: ChatsConfiguration;
@@ -40,7 +42,8 @@ describe('USE-CASE: chats-configuration', () => {
     chatConfigurationUC = new ChatsConfiguration(
       // @ts-expect-error
       mockGoogleSheetClient,
-      mockConfig
+      mockConfig,
+      mockLogger
     );
     spyGet.mockClear();
     spyAppend.mockClear();
@@ -247,7 +250,7 @@ describe('USE-CASE: chats-configuration', () => {
     it('should throw an error if the requested chat is not found', async () => {
       await expect(() =>
         chatConfigurationUC.getSpreadsheetIdFromChat('chat-666')
-      ).rejects.toThrowError('[getSpreadsheetIdFromChat]');
+      ).rejects.toThrowError('ChatConfigurationUseCase');
     });
 
     it('should return the spreadsheetId of the chatId', async () => {

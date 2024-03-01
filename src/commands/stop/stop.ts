@@ -1,8 +1,7 @@
 import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
-import { CONFIG_TYPE } from '../../config/config';
-import { sheets_v4 } from 'googleapis';
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
+import { Logger } from '../../logger';
 
 const STOP_MSG = `Scollegato, non traccerò più spese.
 
@@ -13,16 +12,15 @@ const NO_SHEET_FOUND = `Non risulta esserci un foglio di calcolo associato a que
 
 type StopCommandHandlerProps = {
   bot: TelegramBot;
-  googleSheetClient: sheets_v4.Sheets;
-  config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
+  logger: Logger;
 };
 export const StopCommand: BotCommand<StopCommandHandlerProps> = {
   pattern: /\/stop/,
-  getHandler({ bot, googleSheetClient, config, chatsConfigUC }) {
+  getHandler({ bot, chatsConfigUC, logger }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
-      console.log(`StopCommand handler. Chat ${strChatId}. Tokens ${tokens}`);
+      logger.info(`StopCommand handler. Tokens ${tokens}`, strChatId);
 
       try {
         // check if we have the chatId in the ChatConfig
@@ -44,7 +42,9 @@ export const StopCommand: BotCommand<StopCommandHandlerProps> = {
 
         return;
       } catch (e) {
-        console.error(`Error stopping the bot for ${strChatId}. Error: ${e}`);
+        const err = new Error(`Error while handling the stop command: ${e}`);
+        logger.sendError(err, strChatId);
+
         bot.sendMessage(chatId, NO_SHEET_FOUND);
         return;
       }
