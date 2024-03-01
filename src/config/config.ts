@@ -25,13 +25,13 @@ const developmentConfig: typeof productionConfig = {
 };
 const productionConfig = {
   ANALYTICS: {
-    SHEET_ID: 'TODO:',
+    SHEET_ID: '12zLMygxscN3KeRnJcQ2YwhyZFuIhdyYOjYAKCtjjxkY',
     TAB_NAME: 'analytics',
     TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
   },
   CHATS_CONFIGURATION: {
-    SHEET_ID: 'TODO:',
+    SHEET_ID: '12zLMygxscN3KeRnJcQ2YwhyZFuIhdyYOjYAKCtjjxkY',
     TAB_NAME: 'chats-configuration',
     RANGE: 'A:C',
   },
