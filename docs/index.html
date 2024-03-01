@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>DespesasBot how to</title>
+    <link rel="icon" href="./favicon.ico" type="image/x-icon" />
+
+    <!-- Cronitor RUM -->
+    <script async src="https://rum.cronitor.io/script.js"></script>
+    <script>
+        window.cronitor = window.cronitor || function() { (window.cronitor.q = window.cronitor.q || []).push(arguments); };
+        cronitor('config', { clientKey: 'ced29f9355fe9098b0aa701f3680cff6' });
+    </script>
+
+    <style>
+      /*! minireset.css v0.0.6 | MIT License | github.com/jgthms/minireset.css */
+      html,
+      body,
+      p,
+      ol,
+      ul,
+      li,
+      dl,
+      dt,
+      dd,
+      blockquote,
+      figure,
+      fieldset,
+      legend,
+      textarea,
+      pre,
+      iframe,
+      hr,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        margin: 0;
+        padding: 0;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-size: 100%;
+        font-weight: normal;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      button,
+      input,
+      select {
+        margin: 0;
+      }
+
+      html {
+        box-sizing: border-box;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: inherit;
+      }
+
+      img,
+      video {
+        height: auto;
+        max-width: 100%;
+      }
+
+      iframe {
+        border: 0;
+      }
+
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+
+      td,
+      th {
+        padding: 0;
+      }
+    </style>
+    <style>
+      body {
+        background-color: black;
+        font-family: 'Trebuchet MS', sans-serif;
+      }
+
+      .wrap {
+        overflow-wrap: anywhere;
+      }
+      .blue {
+        color: blue !important;
+      }
+
+      .stories {
+        display: grid;
+        height: 100dvh;
+        border-radius: 1em;
+
+        grid: 1fr / auto-flow 100%;
+        gap: 1ch;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        overscroll-behavior: contain;
+        touch-action: pan-x;
+
+        max-width: 600px;
+        margin: auto;
+      }
+
+      .user {
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        display: grid;
+        grid: [story] 1fr / [story] 1fr;
+      }
+
+      .story {
+        position: relative;
+        grid-area: story;
+
+        background-size: cover;
+        background-image: var(--bg),
+          linear-gradient(to top, lch(98 0 0), lch(90 0 0));
+
+        user-select: none;
+        touch-action: manipulation;
+
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 1, 1);
+
+        &:not(.active) {
+          opacity: 0;
+          pointer-events: none;
+        }
+      }
+
+      .story-content {
+        position: absolute;
+        inset: 0;
+        text-align: center;
+        padding: 4rem 2rem;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        overflow-y: auto;
+      }
+
+      .story-content {
+        p,
+        a {
+          font-size: 1.5rem;
+          padding: 0.5rem;
+        }
+      }
+      .story-content.mainly-black {
+        p,
+        a {
+          background-color: white;
+          color: black;
+        }
+      }
+      .story-content.mainly-white {
+        p,
+        a {
+          background-color: black;
+          color: white;
+        }
+      }
+      .story-content.content-heavy {
+        p,
+        a {
+          font-size: 1em;
+        }
+      }
+
+      .little-balls {
+        position: absolute;
+        bottom: 1rem;
+        left: 0;
+        right: 0;
+        display: flex;
+        gap: 0.25rem;
+        justify-content: center;
+      }
+      .little-ball {
+        display: inline-block;
+        width: 1rem;
+        height: 1rem;
+        border-radius: 100%;
+        opacity: 0.5;
+        background-color: black;
+        border: 1px solid white;
+        transition: background-color .3s ease, border .3s ease, opacity .3s ease;
+
+        &.active {
+          opacity: 0.75;
+          background-color: white;
+          border: 1px solid black;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="stories">
+      <section class="user">
+        <!-- INTRO -->
+        <article
+          class="story active"
+          style="--bg: url(backgrounds/bg-tacos.jpeg)"
+        >
+          <div class="story-content mainly-black">
+            <p>
+              Segui questi semplici passi per iniziare ad utilizzare
+              <b>DespesasBot</b>
+            </p>
+            <p>
+              clicca a destra per andare al prossimo step, sinistra per tornare
+              indietro, come fossero instagram stories
+            </p>
+          </div>
+        </article>
+
+        <!-- DUPLICATE SPREADSHEET -->
+        <article class="story" style="--bg: url(backgrounds/bg-cactus.jpeg)">
+          <div class="story-content mainly-white">
+            <p>
+              Per prima cosa devi duplicare questo foglio di calcolo. Questo ha
+              già impostata la struttura che il bot si aspetta
+            </p>
+            <a
+              href="https://docs.google.com/spreadsheets/d/1iKU8z1Oa6odHcjkiHCW1tfFLKNsi6SEb3Wgmcz_Twfk/edit#gid=965953449"
+              target="_blank"
+            >
+              Link al foglio
+            </a>
+            <p>
+              Puoi dargli il nome che vuoi, ma non devi cambiare le tab e la
+              struttura delle pagine
+            </p>
+          </div>
+        </article>
+
+        <!-- EXPLAIN SPREADSHEET -->
+        <article class="story" style="--bg: url(backgrounds/bg-sombrero.jpeg)">
+          <div class="story-content mainly-white content-heavy">
+            <p>
+              Bene, ora, sempre nel foglio di calcolo, puoi impostare le
+              categorie, secondo le <b>tue</b> necessità (tab <b>Categorie</b>).
+            </p>
+            <p>
+              Nel foglio troverai degli esempi, puoi toglierle e mettere quelle
+              che vuoi tu.
+            </p>
+            <p>
+              L'importante è che dev'esserci almeno una categoria. Io ti
+              suggerisco di pensarci e di strutturarle come pensi sia meglio per
+              te, utilizzandole potrai poi crearti dei resoconti con le spese
+              suddivise per categoria.
+            </p>
+            <p>
+              Nella prima colonna (chiamata <b>Lista categorie</b>) puoi mettere
+              le categorie "di primo livello".
+            </p>
+            <p>
+              Nelle colonne adiacenti (colonna B, C, D, ... e via dicendo) puoi
+              mettere delle sotto-categorie della categoria di primo livello.
+            </p>
+            <p>
+              Per esempio la categoria può essere "mangiare" e le sue sotto
+              categorie potrebbero essere "ristorante" "spesa" e "aperitivi"
+            </p>
+            <p>
+              Non c'è un giusto o sbagliato qui, devi impostarle come credi sia
+              meglio per te
+            </p>
+            <p>
+              Ricorda che potrai sempre cambiarle, DespesasBot semplicemente le
+              andrà a leggere ogni volta che inserisci una spesa per
+              categorizzarla (quindi un eventuale cambiamento in futuro non è
+              retroattivo, ma il foglio è sempre tuo, potrai sistemarlo se credi
+              serva)
+            </p>
+          </div>
+        </article>
+
+        <!-- SHARE SPREADSHEET TO THE BOT -->
+        <article class="story" style="--bg: url(backgrounds/bg-pinata.jpeg)">
+          <div class="story-content mainly-white">
+            <p>
+              Ora devi condividere a DespesasBot il foglio di calcolo e dargli
+              ruolo <b>editor</b>
+              L'email di DespesasBot è 👇 (cliccaci sopra per copiarla)
+            </p>
+            <br />
+            <p id="bot-email" class="wrap">
+              despesasserviceaccount@despesasbot.iam.gserviceaccount.com
+            </p>
+          </div>
+        </article>
+
+        <!-- GET SPREADSHEET ID -->
+        <article
+          class="story"
+          style="--bg: url(backgrounds/bg-margaritas.jpeg)"
+        >
+          <div class="story-content mainly-black">
+            <p>
+              Abbiamo praticamente finito. Ora copiati l'<b>id</b> del foglio di
+              calcolo.
+            </p>
+            <p>
+              Se non sai qual'è, è la penultima parte dell'URL del foglio di
+              calcolo. Per esempio, se l'URL del tuo foglio di calcolo fosse
+            </p>
+            
+            <br>
+            
+            <p class="wrap">
+                https://docs.google.com/spreadsheets/d/<span class="blue">1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps</span>/edit#gid=0
+            </p>
+            <br>
+            <p>
+              l'<b>id</b> sarebbe (la parte colorata di blu), quindi:
+              <p class="wrap blue">
+                1qpyC0XzvTcKT6EISywvqESX3A0MwQoFDE8p-Bll4hps
+              </p>
+            </p>
+          </div>
+        </article>
+
+        <!-- START USING THE BOT -->
+        <article class="story" style="--bg: url(backgrounds/bg-jalapeno.jpeg)">
+          <div class="story-content mainly-black">
+            <p>
+              Ottimo, sei pronto ad iniziare a tracciare le spese. Ora apri una
+              chat con il bot e lancia il comando (al posto di spreadsheet_id devi usare l'<b>id</b>
+              trovato prima)
+            </p>
+            
+            <br>
+            <p>
+              /start spreadsheet_id
+            </p>
+            <br>
+
+            <p>
+              Ricorda che questo bot è open source, puoi trovare il codice e
+              segnalare malfunzionamenti nel suo repo
+            </p>
+
+            <br>
+            <a
+              href="https://github.com/albertodeago/despesas-bot"
+              target="_blank"
+              >Link</a
+            >
+          </div>
+        </article>
+      </section>
+
+      <div class="little-balls">
+        <span class="little-ball active"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+        <span class="little-ball"></span>
+      </div>
+    </div>
+
+    <script>
+      const stories = document.querySelector('.stories');
+      const storiesList = document.querySelectorAll('.story');
+      const littleBalls = document.querySelectorAll('.little-ball');
+      const botEmail = document.querySelector('#bot-email');
+      const median = stories.offsetLeft + stories.clientWidth / 2;
+
+      const state = {
+        current_story: stories.firstElementChild.lastElementChild,
+        currentStoryIndex: 0,
+      };
+
+      // NAVIGATION
+      stories.addEventListener('click', (e) => {
+        const targetParent = e.target.parentElement ?? {};
+
+        // we don't want to navigate if it's a link or the bot-email to copy
+        if (e.target.id === 'bot-email' || e.target.nodeName.toLowerCase() === "a") {
+          return;
+        }
+
+        navigateStories(e.clientX > median ? 'next' : 'prev');
+      });
+      document.addEventListener('keydown', ({ key }) => {
+        if (key !== 'ArrowDown' || key !== 'ArrowUp')
+          navigateStories(key === 'ArrowDown' ? 'next' : 'prev');
+      });
+
+      const navigateStories = (direction) => {
+        if (direction === 'next') {
+          if (state.currentStoryIndex + 1 >= storiesList.length) {
+            return;
+          }
+          state.currentStoryIndex++;
+        } else if (direction === 'prev') {
+          if (state.currentStoryIndex <= 0) {
+            return;
+          }
+          state.currentStoryIndex--;
+        }
+
+        [...storiesList].forEach((story, index) => {
+          if (index === state.currentStoryIndex) {
+            story.classList.add('active');
+          } else {
+            story.classList.remove('active');
+          }
+        });
+        [...littleBalls].forEach((littleBall, index) => {
+          if (index === state.currentStoryIndex) {
+            littleBall.classList.add('active');
+          } else {
+            littleBall.classList.remove('active');
+          }
+        })
+      };
+
+      // Bot email copy on click
+      botEmail.addEventListener('click', () => {
+        try {
+          const type = 'text/plain';
+          const blob = new Blob(
+            ['despesasserviceaccount@despesasbot.iam.gserviceaccount.com'],
+            { type }
+          );
+          const data = [new ClipboardItem({ [type]: blob })];
+
+          navigator.clipboard.write(data).then(
+            () => {
+              /* success */
+              cronitor("track", "success-copy-bot-email")
+            },
+            () => {
+              /* failure */
+              alert(
+                'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
+              );
+              cronitor("track", "error-copy-bot-email")
+            }
+          );
+        } catch (err) {
+          alert(
+            'Impossibile copiare la mail, putroppo dovrai copiarla a mano.'
+          );
+          cronitor("track", "error-copy-bot-email")
+        }
+      });
+    </script>
+  </body>
+</html>

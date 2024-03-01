@@ -17,3 +17,6 @@ export const getErrorMessage = (e?: unknown) => {
   const errMsg = e ? `\nErrore:\n${e}` : '';
   return `C\è stato un problema, reinserisci la spesa\n${errMsg}`;
 };
+
+export const genericErrorMsg =
+  'Si è verificato un errore, riprovare più tardi.';

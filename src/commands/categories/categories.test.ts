@@ -1,135 +1,54 @@
-import { describe, expect, vi, it } from 'vitest';
-import { googleResultToCategories } from './fetch';
-import { CategoriesCommand } from './categories';
+import { beforeEach, describe, expect, vi, it, afterEach } from 'vitest';
 import TelegramBot from 'node-telegram-bot-api';
+import { CategoriesCommand } from './categories';
 
-const expectations = [
-  {
-    text: 'With a mix of categories with and without subcategories',
-    input: [
-      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
-      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
-      ['Category 3'],
-    ],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [
-          {
-            name: 'Subcategory 1',
-          },
-          {
-            name: 'Subcategory 2',
-          },
-        ],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [
-          {
-            name: 'Subcategory 3',
-          },
-          {
-            name: 'Subcategory 4',
-          },
-        ],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [],
-      },
-    ],
-  },
-  {
-    text: 'With only categories without subcategories',
-    input: [['Category 1'], ['Category 2'], ['Category 3']],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [],
-      },
-    ],
-  },
-  {
-    text: 'With only categories with subcategories',
-    input: [
-      ['Category 1', 'Subcategory 1', 'Subcategory 2'],
-      ['Category 2', 'Subcategory 3', 'Subcategory 4'],
-      ['Category 3', 'Subcategory 5', 'Subcategory 6'],
-    ],
-    output: [
-      {
-        name: 'Category 1',
-        subCategories: [
-          {
-            name: 'Subcategory 1',
-          },
-          {
-            name: 'Subcategory 2',
-          },
-        ],
-      },
-      {
-        name: 'Category 2',
-        subCategories: [
-          {
-            name: 'Subcategory 3',
-          },
-          {
-            name: 'Subcategory 4',
-          },
-        ],
-      },
-      {
-        name: 'Category 3',
-        subCategories: [
-          {
-            name: 'Subcategory 5',
-          },
-          {
-            name: 'Subcategory 6',
-          },
-        ],
-      },
-    ],
-  },
-];
-
-describe('googleResultToCategories', () => {
-  describe('should map categories stored in a google sheet to Categories', () => {
-    expectations.forEach(({ text, input, output }) => {
-      it(text, () => {
-        expect(googleResultToCategories(input)).toEqual(output);
-      });
-    });
-  });
-});
-
-const categories = [
-  {
-    name: 'Category_1',
-    subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
-  },
-  {
-    name: 'Category_2',
-    subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
-  },
-  {
-    name: 'Category_3',
-    subCategories: [],
-  },
-];
 const bot = {
   sendMessage: vi.fn(),
 };
+const mockCategoriesUC = {
+  async get() {
+    return [
+      {
+        name: 'Category_1',
+        subCategories: [{ name: 'Subcategory_1' }, { name: 'Subcategory_2' }],
+      },
+      {
+        name: 'Category_2',
+        subCategories: [{ name: 'Subcategory_3' }, { name: 'Subcategory_4' }],
+      },
+      {
+        name: 'Category_3',
+        subCategories: [],
+      },
+    ];
+  },
+};
+const mockChatsConfigUC = {
+  isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
+  updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+    Promise.resolve(true)
+  ),
+  get: vi.fn(() =>
+    Promise.resolve([
+      {
+        chatId: '012',
+        spreadsheetId: 'sheet-0',
+        isActive: true,
+      },
+      {
+        chatId: '123',
+        spreadsheetId: 'sheet-1',
+        isActive: true,
+      },
+    ])
+  ),
+  addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
+  isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
+  getSpreadsheetIdFromChat: vi.fn((p1: ChatId) =>
+    Promise.resolve('spread-123')
+  ),
+};
+
 const defaultMsg: TelegramBot.Message = {
   text: '/categorie',
   chat: {
@@ -139,7 +58,22 @@ const defaultMsg: TelegramBot.Message = {
   date: new Date().getTime(),
   message_id: 987654321,
 };
+
 describe('CategoriesCommand', () => {
+  let handler: ReturnType<typeof CategoriesCommand.getHandler>;
+
+  beforeEach(() => {
+    handler = CategoriesCommand.getHandler({
+      // @ts-expect-error
+      bot,
+      categoriesUC: mockCategoriesUC,
+      chatsConfigUC: mockChatsConfigUC,
+    });
+  });
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should match /categorie and /c', () => {
     expect(CategoriesCommand.pattern.test('/categorie')).toBe(true);
     expect(CategoriesCommand.pattern.test('/categorie auto')).toBe(true);
@@ -150,10 +84,13 @@ describe('CategoriesCommand', () => {
     expect(CategoriesCommand.pattern.test('/citando Dante')).toBe(false);
   });
 
-  it('should answer with all the categories and subcategories', () => {
-    const handler = CategoriesCommand.getHandler(bot, categories);
+  it('should answer with all the categories and subcategories', async () => {
     handler(defaultMsg);
 
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
     expect(bot.sendMessage).toHaveBeenCalledWith(
       123,
       `Ecco le categorie
@@ -169,13 +106,16 @@ describe('CategoriesCommand', () => {
     );
   });
 
-  it('should answer with just the specified category, listing subcategories', () => {
-    const handler = CategoriesCommand.getHandler(bot, categories);
+  it('should answer with just the specified category, listing subcategories', async () => {
     handler({
       ...defaultMsg,
       text: '/categorie Category_1',
     });
 
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
     expect(bot.sendMessage).toHaveBeenCalledWith(
       123,
       `Ecco le sottocategorie di *Category_1*

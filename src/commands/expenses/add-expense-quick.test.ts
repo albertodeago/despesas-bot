@@ -1,38 +1,69 @@
-import { describe, expect, vi, it, afterEach } from 'vitest';
+import { describe, expect, vi, it, afterEach, beforeEach } from 'vitest';
 import { AddExpenseQuickCommand } from './add-expense-quick';
 import TelegramBot from 'node-telegram-bot-api';
 import { UNCATEGORIZED_CATEGORY } from '../../config/config';
+import {
+  waitMessage,
+  getMockAnalytics,
+  mockGoogleSheetClient,
+  mockConfig,
+  getMockBot,
+  getCommonMessageProperties,
+} from './fixture';
 
-// TODO: in this file we probably should mock the sheetId, tabName, range, etc...
-
-const mocks = vi.hoisted(() => {
-  return {
-    spyWriteGoogleSheet: vi.fn(() => Promise.resolve()),
-  };
-});
-vi.mock('../../google', () => ({
-  writeGoogleSheet: mocks.spyWriteGoogleSheet,
+const googleMocks = vi.hoisted(() => ({
+  spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
 }));
-
-const bot = {
-  sendMessage: vi.fn(),
-  once: vi.fn(),
-};
-const mockGoogleSheetClient = {};
+vi.mock('../../google', () => ({
+  appendGoogleSheet: googleMocks.spyAppendGoogleSheet,
+}));
 const defaultMsg: TelegramBot.Message = {
   text: 'aggiungi veloce 20 descrizione abbastanza lunga',
-  chat: {
-    id: 123,
-    type: 'private',
-  },
-  date: 1702637184, // telegram date is a bit weird, it's a timestamp / 1000
-  message_id: 987654321,
+  ...getCommonMessageProperties(),
 };
-const mockAnalytics = {
-  addTrackedExpense: vi.fn(),
+const mockBot = getMockBot(vi);
+const mockAnalytics = getMockAnalytics(vi);
+const mockChatsConfigUC = {
+  isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
+  updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+    Promise.resolve(true)
+  ),
+  get: vi.fn(() =>
+    Promise.resolve([
+      {
+        chatId: '012',
+        spreadsheetId: 'sheet-0',
+        isActive: true,
+      },
+      {
+        chatId: '123',
+        spreadsheetId: 'sheet-1',
+        isActive: true,
+      },
+    ])
+  ),
+  addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
+  isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
+  getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve('sheet-id')),
 };
 
 describe('AddExpenseQuickCommand', () => {
+  let handler: ReturnType<typeof AddExpenseQuickCommand.getHandler>;
+
+  beforeEach(() => {
+    handler = AddExpenseQuickCommand.getHandler({
+      // @ts-expect-error
+      bot: mockBot,
+      // @ts-expect-error
+      googleSheetClient: mockGoogleSheetClient,
+      // @ts-expect-error
+      analytics: mockAnalytics,
+      // @ts-expect-error
+      config: mockConfig,
+      chatsConfigUC: mockChatsConfigUC,
+    });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -54,66 +85,50 @@ describe('AddExpenseQuickCommand', () => {
     ).toBe(true);
   });
 
-  it('should send a explanation message if the amount is not a number', () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
+  it('should send a explanation message if the amount is not a number', async () => {
     handler({ ...defaultMsg, text: 'aggiungi veloce merda in salotto' });
 
-    const calledWith = bot.sendMessage.mock.calls[0];
+    await waitMessage(vi, mockBot);
+    const calledWith = mockBot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain("L'importo dev'essere un numero");
     expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
   });
 
   it("should add the expense also if the message doesn't have a description (uncategorized)", async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage(vi, mockBot);
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         ['15/12/2023', 20, UNCATEGORIZED_CATEGORY, UNCATEGORIZED_CATEGORY, ''],
       ],
     });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
-    });
-    const calledWith = bot.sendMessage.mock.calls[0];
+    const calledWith = mockBot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
     expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it('should add the expense with the provided description (uncategorized)', async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20 descrizione',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage(vi, mockBot);
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         [
           '15/12/2023',
@@ -124,32 +139,24 @@ describe('AddExpenseQuickCommand', () => {
         ],
       ],
     });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
-    });
-    const calledWith = bot.sendMessage.mock.calls[0];
+    const calledWith = mockBot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
     expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
   });
 
   it('should add the expense with the provided long description (uncategorized)', async () => {
-    const handler = AddExpenseQuickCommand.getHandler(
-      bot,
-      mockGoogleSheetClient,
-      mockAnalytics
-    );
     handler({
       ...defaultMsg,
       text: 'aggiungi veloce 20 descrizione incredibilmente verbosa',
     });
 
-    expect(mocks.spyWriteGoogleSheet).toHaveBeenCalledWith({
+    await waitMessage(vi, mockBot);
+    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
       client: mockGoogleSheetClient,
-      sheetId: '1ZwB1vymJf-YvSIPt-H0tHM1z4uWwradcrGNUDR_LeWs',
-      tabName: 'Spese',
-      range: 'A:E',
+      sheetId: 'sheet-id',
+      tabName: 'tab-name',
+      range: 'A:Z',
       data: [
         [
           '15/12/2023',
@@ -160,11 +167,7 @@ describe('AddExpenseQuickCommand', () => {
         ],
       ],
     });
-    await vi.waitFor(() => {
-      if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)
-        throw 'Mock not called yet';
-    });
-    const calledWith = bot.sendMessage.mock.calls[0];
+    const calledWith = mockBot.sendMessage.mock.calls[0];
     expect(calledWith[0]).toBe(123);
     expect(calledWith[1]).toContain('Fatto!');
     expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();

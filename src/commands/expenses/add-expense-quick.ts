@@ -4,15 +4,18 @@ import {
   createExpenseRow,
   getDescriptionFromTokenizedMessage,
 } from '../../utils';
-import { writeGoogleSheet } from '../../google';
+import { appendGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
-import { CONFIG, UNCATEGORIZED_CATEGORY } from '../../config/config';
+import { CONFIG_TYPE, UNCATEGORIZED_CATEGORY } from '../../config/config';
 import {
   getWrongAmountMessageQuick,
   getOkMessage,
   getErrorMessage,
+  genericErrorMsg,
 } from './messages';
 import { Analytics } from '../../analytics';
+
+import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
@@ -21,12 +24,16 @@ type AddExpenseQuickParams = {
   formattedDate: string;
   amount: number;
   description?: string;
+  config: CONFIG_TYPE;
+  spreadSheetId: SheetId;
 };
 const addExpense = async ({
   googleSheetClient,
   formattedDate,
   amount,
   description,
+  config,
+  spreadSheetId,
 }: AddExpenseQuickParams): Promise<undefined | unknown> => {
   const expense = createExpenseRow({
     date: formattedDate,
@@ -36,11 +43,11 @@ const addExpense = async ({
     description,
   });
   try {
-    await writeGoogleSheet({
+    await appendGoogleSheet({
       client: googleSheetClient,
-      sheetId: CONFIG.sheetId,
-      tabName: CONFIG.tabName,
-      range: CONFIG.range,
+      sheetId: spreadSheetId,
+      tabName: config.tabName,
+      range: config.range,
       data: expense,
     });
     return;
@@ -49,44 +56,73 @@ const addExpense = async ({
   }
 };
 
-export const AddExpenseQuickCommand: BotCommand = {
-  pattern: /^aggiungi veloce/i,
-  getHandler:
-    (
-      bot: TelegramBot,
-      googleSheetClient: sheets_v4.Sheets,
-      analytics: Analytics
-    ) =>
-    async (msg: TelegramBot.Message) => {
-      const { chatId, tokens, date } = fromMsg(msg);
-      console.log(
-        `AddExpenseQuickCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
-      );
-
-      let formattedDate = date.toLocaleDateString('it-IT');
-      const amount = parseFloat(tokens[2]);
-      if (isNaN(amount)) {
-        bot.sendMessage(chatId, getWrongAmountMessageQuick());
-        return;
-      }
-
-      const description =
-        tokens.length > 3
-          ? getDescriptionFromTokenizedMessage(tokens, 3, 0)
-          : undefined;
-
-      const err = await addExpense({
-        bot,
-        chatId,
-        googleSheetClient,
-        formattedDate,
-        amount,
-        description,
-      });
-      bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
-
-      analytics.addTrackedExpense();
-
-      return;
-    },
+type AddExpenseQuickCommandHandlerProps = {
+  bot: TelegramBot;
+  googleSheetClient: sheets_v4.Sheets;
+  analytics: Analytics;
+  config: CONFIG_TYPE;
+  chatsConfigUC: ChatsConfigurationUseCase;
 };
+export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerProps> =
+  {
+    pattern: /^aggiungi veloce/i,
+    getHandler:
+      ({ bot, googleSheetClient, analytics, config, chatsConfigUC }) =>
+      async (msg: TelegramBot.Message) => {
+        const { chatId, strChatId, tokens, date } = fromMsg(msg);
+        console.log(
+          `AddExpenseQuickCommand handler. Chat ${chatId}. Tokens ${tokens}. Date ${date}`
+        );
+
+        try {
+          // check, if it's a message in a inactive (on non existent) chat based on our
+          // config, we can just skip it
+          const _isChatActiveInConfiguration =
+            await chatsConfigUC.isChatActiveInConfiguration(strChatId);
+          if (!_isChatActiveInConfiguration) {
+            return;
+          }
+
+          // get the spreadSheetId that we need to use to get the categories
+          const spreadSheetId = await chatsConfigUC.getSpreadsheetIdFromChat(
+            strChatId
+          );
+
+          let formattedDate = date.toLocaleDateString('it-IT');
+          const amount = parseFloat(tokens[2]);
+          if (isNaN(amount)) {
+            bot.sendMessage(chatId, getWrongAmountMessageQuick());
+            return;
+          }
+
+          const description =
+            tokens.length > 3
+              ? getDescriptionFromTokenizedMessage(tokens, 3, 0)
+              : undefined;
+
+          const err = await addExpense({
+            bot,
+            chatId,
+            googleSheetClient,
+            formattedDate,
+            amount,
+            description,
+            config,
+            spreadSheetId,
+          });
+          bot.sendMessage(chatId, err ? getErrorMessage(err) : getOkMessage());
+
+          if (!err) {
+            analytics.addTrackedExpense();
+          }
+
+          return;
+        } catch (e) {
+          console.error(
+            'An error ocurred handling the add-expense-quick command',
+            e
+          );
+          bot.sendMessage(chatId, genericErrorMsg);
+        }
+      },
+  };
