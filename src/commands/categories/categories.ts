@@ -42,7 +42,6 @@ export const CategoriesCommand: BotCommand<CategoriesCommandHandlerProps> = {
         if (tokens.length > 1) {
           // We want to answer with just the specified category
           const categoryName = tokens[1].toLowerCase();
-          // TODO: can we make this more error friendly? (like typo tolerant)
           const category = allCategories.find(
             (c) => c.name.toLowerCase() === categoryName
           );

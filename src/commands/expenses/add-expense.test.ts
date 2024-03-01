@@ -68,7 +68,7 @@ describe('AddExpenseCommand', () => {
     handler = AddExpenseCommand.getHandler({
       // @ts-expect-error
       bot: mockBot,
-      // @ts-expect-error - TODO: we should create some interface type, so we just care that we receive something that have the 'get' method, not the entire class shape
+      // @ts-expect-error
       categoriesUC: mockCategoriesUC,
       // @ts-expect-error
       analytics: mockAnalytics,

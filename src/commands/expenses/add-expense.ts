@@ -325,7 +325,6 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           const subCategory = category.subCategories.find(
             (sc) => sc.name === lastToken
           );
-          // TODO: it would be nice to have some kind of tolerance to typos
           if (!subCategory) {
             // last token is not a subcategory, send an error message
             bot.sendMessage(
