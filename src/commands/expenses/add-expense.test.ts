@@ -280,14 +280,7 @@ describe('AddExpenseCommand', () => {
         googleSheetClient: mockGoogleSheetClient,
         category: (await mockCategoriesUC.get())[0],
         chatId: 123,
-        tokens: [
-          'aggiungi',
-          '20',
-          'descrizione',
-          'multi',
-          'token',
-          'Category_1',
-        ],
+        description: 'descrizione multi token',
         formattedDate: '15/12/2023',
         amount: 20,
         // @ts-expect-error
