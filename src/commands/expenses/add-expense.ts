@@ -3,6 +3,7 @@ import {
   fromMsg,
   createExpenseRow,
   getDescriptionFromTokenizedMessage,
+  formatDate,
 } from '../../utils';
 import { appendGoogleSheet } from '../../google';
 import { sheets_v4 } from 'googleapis';
@@ -245,7 +246,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           return;
         }
 
-        let formattedDate = date.toLocaleDateString('it-IT');
+        let formattedDate = formatDate(date);
         const amount = parseFloat(tokens[1]);
         if (isNaN(amount)) {
           bot.sendMessage(chatId, getWrongAmountMessage());

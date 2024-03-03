@@ -21,6 +21,14 @@ export const fromMsg = (msg: TelegramBot.Message) => {
   };
 };
 
+export const formatDate = (date: Date) => {
+  return date.toLocaleDateString('it-IT', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+};
+
 type CreateExpenseRowParams = {
   date: string;
   amount: number;
