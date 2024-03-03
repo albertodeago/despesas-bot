@@ -81,6 +81,7 @@ type HandleCategoryAndSubcategoryParams = HandleGenericParams & {
 };
 type HandleSubcategoryParams = HandleGenericParams & {
   category: Category;
+  description: string;
 };
 export const getCategoryAndSubcategoryHandler =
   ({
@@ -139,6 +140,7 @@ export const getCategoryAndSubcategoryHandler =
         category,
         chatId,
         tokens,
+        description,
         googleSheetClient,
         formattedDate,
         amount,
@@ -155,7 +157,7 @@ export const getSubcategoryHandler =
     bot,
     category,
     chatId,
-    tokens,
+    description,
     googleSheetClient,
     formattedDate,
     amount,
@@ -174,7 +176,6 @@ export const getSubcategoryHandler =
     }
 
     // we got everything, add the expense
-    const description = getDescriptionFromTokenizedMessage(tokens);
     const err = await addExpense({
       bot,
       chatId,
@@ -298,6 +299,8 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
               },
             });
 
+            const description = getDescriptionFromTokenizedMessage(tokens);
+
             // we add another listener to get the subcategory
             // TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
             // (maybe we can mitigate this with a check on the chatId, but not .once then)
@@ -307,6 +310,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
                 bot,
                 category,
                 chatId,
+                description,
                 tokens,
                 googleSheetClient,
                 formattedDate,
@@ -355,7 +359,6 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           }
           return;
         } else {
-          const description = getDescriptionFromTokenizedMessage(tokens, 2, 0);
           // the user wants to add the expense, but he didn't specify the category and subcategory
           // we need to show the category list (and after the subcategories based on his response)
           bot.sendMessage(chatId, 'Scegli una categoria', {

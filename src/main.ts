@@ -36,11 +36,19 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
+- TODO: Check chatId del mio gruppo...
+- TODO: [BUG] salvare data in yyyy/mm/dd e non dd/mm/yyyy
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
   - TODO: [FEATURE] can I turn on some 'reminders' so that the bot help me track recurrent expenses (e.g. monthly bills) (activable in chats)
   - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas") -> but how do we let the user select when and how frequently?
+  this above should be both doable, we can run a task every x min/hours to check if there are recurrent-expenses/reminders to add/send
+  reminders and recurrent-expenses can be saved in the configuration sheet (or in the user one??)
+    saving them in the user one would make the scan of these stuff slower (need to read multiple sheets), but flexible, the user is the owner of the data again, but we also get the benefit that scanning the chatConfig, we immediately see which chats are active, and ignore the others
+    saving them in the configuration sheet would make the scan of these stuff faster, but less flexible, the user cannot edit them
+  when the process scans, in the line of a recurrent-expense/reminder there will should be a column with the "last-added-date", and we can just check
+  if the current date is greater than the last-added-date + the frequency, then we add the expense/send the reminder -> easy peasy
 - TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary? (activable in chats)
   - it would be pretty cool to send also a report/summary via some pie-charts
 - TODO: [FEATURE] can we parse vocals and answer/handle that too?
@@ -75,7 +83,11 @@ const main = async () => {
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
-  const logger = initLogger({ bot, config, level: 1 });
+  const logger = initLogger({
+    bot,
+    config,
+    level: ENVIRONMENT === 'development' ? 2 : 1,
+  });
   const analytics = new Analytics(googleSheetClient, config, logger);
 
   const categoriesUC = new Categories(googleSheetClient, config, logger);
