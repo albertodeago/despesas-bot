@@ -36,7 +36,6 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: Check chatId del mio gruppo...
 - TODO: [BUG] salvare data in yyyy/mm/dd e non dd/mm/yyyy
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
 
@@ -103,7 +102,6 @@ const main = async () => {
   logger.sendInfo(upAndRunningMsg, 'NO_CHAT');
 
   bot.on('message', (msg): void => {
-    console.log(msg.chat.id);
     logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
   });
 
