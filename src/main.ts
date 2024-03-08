@@ -15,6 +15,7 @@ import { CategoriesCommand } from './commands/categories/categories';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { initLogger } from './logger';
+import { initRecurrentExpenses } from './recurrent/expenses';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -104,6 +105,13 @@ const main = async () => {
   bot.on('message', (msg): void => {
     logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
   });
+
+  const recurrentExpenseHandler = initRecurrentExpenses({
+    logger,
+    chatsConfigUC,
+    client: googleSheetClient,
+  });
+  recurrentExpenseHandler.start();
 
   bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
 
