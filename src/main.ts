@@ -38,6 +38,7 @@ MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: Check chatId del mio gruppo...
 - TODO: [BUG] salvare data in yyyy/mm/dd e non dd/mm/yyyy
+- TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
@@ -62,6 +63,7 @@ OPTIONAL:
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
+  - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
 - [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)
 
 Probably a big refactor would make things easier.
@@ -101,7 +103,8 @@ const main = async () => {
   logger.sendInfo(upAndRunningMsg, 'NO_CHAT');
 
   bot.on('message', (msg): void => {
-    logger.info(`Received message: ${msg.text}`, '' + msg.chat.id);
+    console.log(msg.chat.id);
+    logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
   });
 
   bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
