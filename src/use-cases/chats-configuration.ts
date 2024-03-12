@@ -1,12 +1,7 @@
-import { sheets_v4 } from 'googleapis';
-import {
-  readGoogleSheet,
-  appendGoogleSheet,
-  updateGoogleSheet,
-} from '../google';
 import { CONFIG_TYPE } from '../config/config';
 import TTLCache from '@isaacs/ttlcache';
 import { Logger } from '../logger';
+import { GoogleService } from '../services/google';
 
 const CACHE_KEY = 'chat-configuration';
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
@@ -23,20 +18,30 @@ export interface ChatsConfigurationUseCase {
   getSpreadsheetIdFromChat: (chatId: ChatId) => Promise<SheetId>;
 }
 
+type ConfigChatsConfig = Pick<CONFIG_TYPE, 'CHATS_CONFIGURATION'>;
+
 export class ChatsConfiguration implements ChatsConfigurationUseCase {
-  client: sheets_v4.Sheets;
-  config: CONFIG_TYPE;
+  config: ConfigChatsConfig;
   cache: TTLCache<typeof CACHE_KEY, ChatConfig[]>;
   logger: Logger;
+  googleService: GoogleService;
 
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
-    this.client = client;
+  constructor({
+    config,
+    logger,
+    googleService,
+  }: {
+    config: ConfigChatsConfig;
+    logger: Logger;
+    googleService: GoogleService;
+  }) {
     this.config = config;
     this.cache = new TTLCache({
       max: 1, // we just need 1 entry, the config itself
       ttl: CACHE_TTL,
     });
     this.logger = logger;
+    this.googleService = googleService;
   }
 
   async get() {
@@ -46,8 +51,7 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         return this.cache.get(CACHE_KEY)!;
       }
 
-      const chatsConfig = await readGoogleSheet({
-        client: this.client,
+      const chatsConfig = await this.googleService.readGoogleSheet({
         sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
         tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
         range: this.config.CHATS_CONFIGURATION.RANGE,
@@ -101,8 +105,7 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
 
   async addChatToConfiguration(chatConfig: ChatConfig) {
     try {
-      await appendGoogleSheet({
-        client: this.client,
+      await this.googleService.appendGoogleSheet({
         sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
         tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
         range: this.config.CHATS_CONFIGURATION.RANGE,
@@ -148,8 +151,7 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
           .map((v) => `${v}${correctIndex}`)
           .join(':');
 
-        await updateGoogleSheet({
-          client: this.client,
+        await this.googleService.updateGoogleSheet({
           sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
           tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
           range,

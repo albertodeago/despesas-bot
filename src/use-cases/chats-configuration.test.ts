@@ -1,31 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChatsConfiguration } from './chats-configuration';
 import { getMockLogger } from '../logger/mock';
+import { getMockGoogleService } from '../services/google/mock';
 
-const spyGet = vi.fn(() =>
-  Promise.resolve({
-    data: {
-      values: [
-        ['chatId', 'spreadsheetId', 'isActive'],
-        ['chat-123', 'spread-123', 'TRUE'],
-        ['chat-456', 'spread-456', 'FALSE'],
-        ['chat-789', 'spread-789', 'TRUE'],
-      ],
-    },
-  })
+const spyRead = vi.fn(() =>
+  Promise.resolve([
+    ['chatId', 'spreadsheetId', 'isActive'],
+    ['chat-123', 'spread-123', 'TRUE'],
+    ['chat-456', 'spread-456', 'FALSE'],
+    ['chat-789', 'spread-789', 'TRUE'],
+  ])
 );
 const spyAppend = vi.fn(() => Promise.resolve({ data: {} }));
 const spyUpdate = vi.fn(() => Promise.resolve({ data: {} }));
 
-const mockGoogleSheetClient = {
-  spreadsheets: {
-    values: {
-      get: spyGet,
-      append: spyAppend,
-      update: spyUpdate,
-    },
-  },
-};
+const mockGoogleService = getMockGoogleService({
+  spyRead,
+  // @ts-expect-error
+  spyAppend,
+  // @ts-expect-error
+  spyUpdate,
+});
+
 const mockConfig = {
   CHATS_CONFIGURATION: {
     SHEET_ID: 'sheet-id',
@@ -38,30 +34,24 @@ const mockLogger = getMockLogger();
 describe('USE-CASE: chats-configuration', () => {
   let chatConfigurationUC: ChatsConfiguration;
   beforeEach(() => {
-    // clearCache();
-    chatConfigurationUC = new ChatsConfiguration(
-      // @ts-expect-error
-      mockGoogleSheetClient,
-      mockConfig,
-      mockLogger
-    );
-    spyGet.mockClear();
-    spyAppend.mockClear();
-    spyUpdate.mockClear();
+    chatConfigurationUC = new ChatsConfiguration({
+      googleService: mockGoogleService,
+      config: mockConfig,
+      logger: mockLogger,
+    });
+    vi.clearAllMocks();
   });
 
   describe('getChatsConfiguration', () => {
     it('should return an empty array if there are no active chats', async () => {
-      spyGet.mockImplementationOnce(() =>
-        Promise.resolve({ data: { values: [] } })
-      );
+      spyRead.mockImplementationOnce(() => Promise.resolve([]));
 
       const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([]);
     });
 
     it('should return an empty array if an error happens while fetching the chats configuration', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject());
+      spyRead.mockImplementationOnce(() => Promise.reject());
 
       const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([]);
@@ -89,17 +79,13 @@ describe('USE-CASE: chats-configuration', () => {
     });
 
     it('should return the array of chat configurations removing any row with length !== 3', async () => {
-      spyGet.mockImplementationOnce(() =>
-        Promise.resolve({
-          data: {
-            values: [
-              ['chatId', 'spreadsheetId', 'isActive'],
-              ['chat-123', 'spread-123', 'TRUE'],
-              [''],
-              ['chat-456', 'spread-456', 'FALSE', 'madafacka'],
-            ],
-          },
-        })
+      spyRead.mockImplementationOnce(() =>
+        Promise.resolve([
+          ['chatId', 'spreadsheetId', 'isActive'],
+          ['chat-123', 'spread-123', 'TRUE'],
+          [''],
+          ['chat-456', 'spread-456', 'FALSE', 'madafacka'],
+        ])
       );
       const chatsConfig = await chatConfigurationUC.get();
       expect(chatsConfig).toEqual([
@@ -113,10 +99,10 @@ describe('USE-CASE: chats-configuration', () => {
 
     it('should read values from cache if present', async () => {
       await chatConfigurationUC.get();
-      expect(spyGet).toHaveBeenCalledOnce();
+      expect(spyRead).toHaveBeenCalledOnce();
 
       await chatConfigurationUC.get();
-      expect(spyGet).toHaveBeenCalledOnce();
+      expect(spyRead).toHaveBeenCalledOnce();
     });
   });
 
@@ -132,7 +118,7 @@ describe('USE-CASE: chats-configuration', () => {
     });
 
     it('should return false if an error occurs while fetching the chats configuration', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject());
+      spyRead.mockImplementationOnce(() => Promise.reject());
 
       const res = await chatConfigurationUC.isChatInConfiguration('chat-123');
       expect(res).toEqual(false);
