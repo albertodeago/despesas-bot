@@ -37,7 +37,6 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: [BUG] salvare data in yyyy/mm/dd e non dd/mm/yyyy
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
 
 FUTURE:
@@ -61,7 +60,6 @@ OPTIONAL:
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
-- [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
 - [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
 - [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)

@@ -8,6 +8,10 @@ const sharedConfigProps = {
     TAB_NAME: 'Categorie',
     RANGE: 'A2:Z100',
   },
+  RECURRENT_EXPENSES: {
+    TAB_NAME: 'Spese Ricorrenti',
+    RANGE: 'A1:G50', // TODO: document this limit, max 50 entries
+  },
 };
 
 const developmentConfig: typeof productionConfig = {
