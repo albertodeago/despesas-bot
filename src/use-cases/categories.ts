@@ -13,47 +13,35 @@ export type SubCategory = {
 
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-export interface CategoriesUseCase {
-  get: (sheetId: SheetId) => Promise<Category[]>;
-}
-
 type ConfigCategories = Pick<CONFIG_TYPE, 'CATEGORIES'>;
 
-export class Categories implements CategoriesUseCase {
+export type CategoriesUseCase = ReturnType<typeof initCategoriesUseCase>;
+
+export const initCategoriesUseCase = ({
+  config,
+  logger,
+  googleService,
+}: {
   config: ConfigCategories;
-  cache: TTLCache<SheetId, Category[]>;
   logger: Logger;
   googleService: GoogleService;
+}) => {
+  const cache = new TTLCache<SheetId, Category[]>({
+    max: 100,
+    ttl: CACHE_TTL,
+  });
 
-  constructor({
-    config,
-    logger,
-    googleService,
-  }: {
-    config: ConfigCategories;
-    logger: Logger;
-    googleService: GoogleService;
-  }) {
-    this.config = config;
-    this.cache = new TTLCache({
-      max: 100,
-      ttl: CACHE_TTL,
-    });
-    this.logger = logger;
-    this.googleService = googleService;
-  }
-
-  async get(sheetId: SheetId): Promise<Category[]> {
-    if (this.cache.has(sheetId)) {
-      this.logger.debug('CategoriesUseCase - get cache hit', 'NO_CHAT');
-      return this.cache.get(sheetId)!;
+  const get = async (sheetId: SheetId): Promise<Category[]> => {
+    if (cache.has(sheetId)) {
+      logger.debug('CategoriesUseCase - get cache hit', 'NO_CHAT');
+      return cache.get(sheetId)!;
     }
 
-    this.logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
-    const rawCategories = await this.googleService.readGoogleSheet({
+    logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
+    const rawCategories = await googleService.readGoogleSheet({
       sheetId,
-      tabName: this.config.CATEGORIES.TAB_NAME,
-      range: this.config.CATEGORIES.RANGE,
+      tabName: config.CATEGORIES.TAB_NAME,
+      range: config.CATEGORIES.RANGE,
     });
 
     if (!rawCategories) {
@@ -62,11 +50,15 @@ export class Categories implements CategoriesUseCase {
 
     const categories = _googleResultToCategories(rawCategories);
 
-    this.cache.set(sheetId, categories);
+    cache.set(sheetId, categories);
 
     return categories;
-  }
-}
+  };
+
+  return {
+    get,
+  };
+};
 
 // Exported just for testing
 export const _googleResultToCategories = (

@@ -1,5 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { Categories, _googleResultToCategories } from './categories';
+import {
+  initCategoriesUseCase,
+  _googleResultToCategories,
+  CategoriesUseCase,
+} from './categories';
 import { getMockLogger } from '../logger/mock';
 import { getMockGoogleService } from '../services/google/mock';
 
@@ -24,10 +28,10 @@ const mockConfig = {
 const mockLogger = getMockLogger();
 
 describe('USE-CASE: categories', () => {
-  let categories: Categories;
+  let categories: CategoriesUseCase;
 
   beforeEach(() => {
-    categories = new Categories({
+    categories = initCategoriesUseCase({
       config: mockConfig,
       logger: mockLogger,
       googleService: mockGoogleService,
