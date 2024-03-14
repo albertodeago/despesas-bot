@@ -3,7 +3,7 @@ import { version } from '../package.json';
 import { getGoogleSheetClient, initGoogleService } from './services/google';
 import { getBot } from './telegram';
 import { getConfig } from './config/config';
-import { Analytics } from './analytics';
+import { initAnalytics } from './analytics';
 
 import { initCategoriesUseCase } from './use-cases/categories';
 import { initChatsConfigurationUseCase } from './use-cases/chats-configuration';
@@ -90,7 +90,7 @@ const main = async () => {
     config,
     level: ENVIRONMENT === 'development' ? 2 : 1,
   });
-  const analytics = new Analytics(googleSheetClient, config, logger);
+  const analytics = initAnalytics({ googleService, config, logger });
 
   const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
   const chatsConfigUC = initChatsConfigurationUseCase({
@@ -141,7 +141,7 @@ const main = async () => {
       bot,
       categoriesUC,
       analytics,
-      googleSheetClient,
+      googleService,
       config,
       chatsConfigUC,
       logger,
@@ -152,7 +152,7 @@ const main = async () => {
     AddExpenseQuickCommand.pattern,
     AddExpenseQuickCommand.getHandler({
       bot,
-      googleSheetClient,
+      googleService,
       analytics,
       config,
       chatsConfigUC,

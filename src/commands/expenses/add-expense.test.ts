@@ -10,18 +10,17 @@ import {
   getMockBot,
   waitMessage,
   getMockAnalytics,
-  mockGoogleSheetClient,
   mockCategoriesUC,
   mockConfig,
 } from './fixture';
 import { getMockLogger } from '../../logger/mock';
+import { getMockGoogleService } from '../../services/google/mock';
 
-const googleMocks = vi.hoisted(() => ({
-  spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
-}));
-vi.mock('../../google', () => ({
-  appendGoogleSheet: googleMocks.spyAppendGoogleSheet,
-}));
+const spyAppend = vi.fn(() => Promise.resolve());
+const mockGoogleService = getMockGoogleService({
+  // @ts-expect-error
+  spyAppend,
+});
 const chatsConfigMocks = vi.hoisted(() => ({
   isChatActiveInConfiguration: () => Promise.resolve(true),
   getSpreadsheetIdFromChat: () => Promise.resolve('sheet-id'),
@@ -70,12 +69,10 @@ describe('AddExpenseCommand', () => {
     handler = AddExpenseCommand.getHandler({
       // @ts-expect-error
       bot: mockBot,
-      // @ts-expect-error
       categoriesUC: mockCategoriesUC,
       // @ts-expect-error
       analytics: mockAnalytics,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
+      googleService: mockGoogleService,
       // @ts-expect-error
       config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
@@ -119,8 +116,7 @@ describe('AddExpenseCommand', () => {
     handler({ ...defaultMsg, text: 'aggiungi 20 descrizione Category_3' });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
@@ -164,8 +160,7 @@ describe('AddExpenseCommand', () => {
     handler(defaultMsg);
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
@@ -184,8 +179,7 @@ describe('AddExpenseCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
@@ -216,8 +210,7 @@ describe('AddExpenseCommand', () => {
       getCategoryAndSubcategoryHandler({
         // @ts-expect-error
         bot: mockBot,
-        // @ts-expect-error
-        googleSheetClient: mockGoogleSheetClient,
+        googleService: mockGoogleService,
         allCategories: await mockCategoriesUC.get(),
         chatId: 123,
         tokens: ['aggiungi', '20', 'descrizione', 'multi', 'token'],
@@ -246,8 +239,7 @@ describe('AddExpenseCommand', () => {
       await categoryHandler({ ...defaultMsg, text: 'Category_3' });
 
       await waitMessage(vi, mockBot);
-      expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-        client: mockGoogleSheetClient,
+      expect(spyAppend).toHaveBeenCalledWith({
         sheetId: 'sheet-id',
         tabName: 'tab-name',
         range: 'A:Z',
@@ -276,8 +268,7 @@ describe('AddExpenseCommand', () => {
       getSubcategoryHandler({
         // @ts-expect-error
         bot: mockBot,
-        // @ts-expect-error
-        googleSheetClient: mockGoogleSheetClient,
+        googleService: mockGoogleService,
         category: (await mockCategoriesUC.get())[0],
         chatId: 123,
         description: 'descrizione multi token',
@@ -306,8 +297,7 @@ describe('AddExpenseCommand', () => {
       await subCategoryHandler({ ...defaultMsg, text: 'Subcategory_1' });
 
       await waitMessage(vi, mockBot);
-      expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-        client: mockGoogleSheetClient,
+      expect(spyAppend).toHaveBeenCalledWith({
         sheetId: 'sheet-id',
         tabName: 'tab-name',
         range: 'A:Z',

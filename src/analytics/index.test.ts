@@ -1,24 +1,16 @@
 import { expect, it, describe, vi, beforeEach } from 'vitest';
-import { Analytics } from './index';
+import { initAnalytics } from './index';
 import { getMockLogger } from '../logger/mock';
+import { getMockGoogleService } from '../services/google/mock';
 
-const spyGet = vi.fn(() =>
-  Promise.resolve({
-    data: {
-      values: [['label', '5']],
-    },
-  })
-);
-const spyUpdate = vi.fn(() => Promise.resolve({ data: {} }));
+const spyRead = vi.fn(() => Promise.resolve([['label', '5']]));
+const spyUpdate = vi.fn(() => Promise.resolve());
 
-const mockGoogleSheetClient = {
-  spreadsheets: {
-    values: {
-      get: spyGet,
-      update: spyUpdate,
-    },
-  },
-};
+const mockGoogleService = getMockGoogleService({
+  spyRead,
+  // @ts-expect-error
+  spyUpdate,
+});
 const mockConfig = {
   ANALYTICS: {
     SHEET_ID: 'sheet-id',
@@ -29,12 +21,11 @@ const mockConfig = {
 };
 const mockLogger = getMockLogger();
 describe('Analytics', () => {
-  const analytics = new Analytics(
-    // @ts-expect-error
-    mockGoogleSheetClient,
-    mockConfig,
-    mockLogger
-  );
+  const analytics = initAnalytics({
+    config: mockConfig,
+    logger: mockLogger,
+    googleService: mockGoogleService,
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -51,19 +42,15 @@ describe('Analytics', () => {
     });
 
     it('should return undefined if it s not able to get the tracked expenses', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject('error'));
+      spyRead.mockImplementationOnce(() => Promise.reject('error'));
       const result = await analytics._getTrackedExpenses();
       expect(mockLogger.sendError).toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
     it('should return undefined if the value is not a number', async () => {
-      spyGet.mockImplementationOnce(() =>
-        Promise.resolve({
-          data: {
-            values: [['Tracked expenses', 'not a number']],
-          },
-        })
+      spyRead.mockImplementationOnce(() =>
+        Promise.resolve([['Tracked expenses', 'not a number']])
       );
       const result = await analytics._getTrackedExpenses();
       expect(mockLogger.sendError).toHaveBeenCalled();
@@ -72,23 +59,20 @@ describe('Analytics', () => {
   });
 
   describe('addTrackedExpense', () => {
-    it('should be able to add a tracked expense', async () => {
+    it.only('should be able to add a tracked expense', async () => {
       await analytics.addTrackedExpense();
       expect(spyUpdate).toHaveBeenCalledWith({
-        spreadsheetId: 'sheet-id',
-        range: 'tab-name!A1:B1',
-        valueInputOption: 'RAW',
-        requestBody: {
-          majorDimension: 'ROWS',
-          values: [['Tracked expenses', 6]],
-        },
+        sheetId: 'sheet-id',
+        range: 'A1:B1',
+        tabName: 'tab-name',
+        data: [['Tracked expenses', 6]],
       });
     });
 
     it('should not update the value if it s not able to get the tracked expenses', async () => {
-      spyGet.mockImplementationOnce(() => Promise.reject('error'));
+      spyRead.mockImplementationOnce(() => Promise.reject('error'));
       await analytics.addTrackedExpense();
-      expect(spyGet).toHaveBeenCalled();
+      expect(spyRead).toHaveBeenCalled();
       expect(spyUpdate).not.toHaveBeenCalled();
     });
   });

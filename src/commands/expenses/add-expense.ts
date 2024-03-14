@@ -5,8 +5,6 @@ import {
   getDescriptionFromTokenizedMessage,
   formatDate,
 } from '../../utils';
-import { appendGoogleSheet } from '../../google';
-import { sheets_v4 } from 'googleapis';
 import {
   getMsgExplanation,
   getWrongAmountMessage,
@@ -17,16 +15,17 @@ import { Analytics } from '../../analytics';
 
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import type { CONFIG_TYPE } from '../../config/config';
-import type { Categories } from '../../use-cases/categories';
+import type { CategoriesUseCase } from '../../use-cases/categories';
 import type { Category } from '../../use-cases/categories';
-import { Logger } from '../../logger';
+import type { Logger } from '../../logger';
+import type { GoogleService } from '../../services/google';
 
 const GENERIC_ERROR_MSG = 'Si è verificato un errore, riprovare più tardi.';
 
 type AddExpenseParams = {
   bot: TelegramBot;
   chatId: number;
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   formattedDate: string;
   amount: number;
   description?: string;
@@ -36,7 +35,7 @@ type AddExpenseParams = {
   spreadSheetId: SheetId;
 };
 const addExpense = async ({
-  googleSheetClient,
+  googleService,
   formattedDate,
   amount,
   description,
@@ -53,8 +52,7 @@ const addExpense = async ({
     description,
   });
   try {
-    await appendGoogleSheet({
-      client: googleSheetClient,
+    await googleService.appendGoogleSheet({
       sheetId: spreadSheetId,
       tabName: config.tabName,
       range: config.range,
@@ -70,7 +68,7 @@ type HandleGenericParams = {
   bot: TelegramBot;
   chatId: number;
   tokens: string[];
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   formattedDate: string;
   amount: number;
   analytics: Analytics;
@@ -90,7 +88,7 @@ export const getCategoryAndSubcategoryHandler =
     allCategories,
     chatId,
     tokens,
-    googleSheetClient,
+    googleService,
     formattedDate,
     amount,
     analytics,
@@ -112,7 +110,7 @@ export const getCategoryAndSubcategoryHandler =
       const err = await addExpense({
         bot,
         chatId,
-        googleSheetClient,
+        googleService,
         formattedDate,
         amount,
         description,
@@ -142,7 +140,7 @@ export const getCategoryAndSubcategoryHandler =
         chatId,
         tokens,
         description,
-        googleSheetClient,
+        googleService,
         formattedDate,
         amount,
         analytics,
@@ -159,7 +157,7 @@ export const getSubcategoryHandler =
     category,
     chatId,
     description,
-    googleSheetClient,
+    googleService,
     formattedDate,
     amount,
     analytics,
@@ -180,7 +178,7 @@ export const getSubcategoryHandler =
     const err = await addExpense({
       bot,
       chatId,
-      googleSheetClient,
+      googleService,
       formattedDate,
       amount,
       description,
@@ -198,9 +196,9 @@ export const getSubcategoryHandler =
 
 type AddExpenseCommandHandlerProps = {
   bot: TelegramBot;
-  categoriesUC: Categories;
+  categoriesUC: CategoriesUseCase;
   analytics: Analytics;
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
   logger: Logger;
@@ -212,7 +210,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
       bot,
       categoriesUC,
       analytics,
-      googleSheetClient,
+      googleService,
       config,
       chatsConfigUC,
       logger,
@@ -271,7 +269,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
             const err = await addExpense({
               bot,
               chatId,
-              googleSheetClient,
+              googleService,
               formattedDate,
               amount,
               description,
@@ -313,7 +311,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
                 chatId,
                 description,
                 tokens,
-                googleSheetClient,
+                googleService,
                 formattedDate,
                 amount,
                 analytics,
@@ -345,7 +343,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
           const err = await addExpense({
             bot,
             chatId,
-            googleSheetClient,
+            googleService,
             formattedDate,
             amount,
             description,
@@ -379,7 +377,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
               allCategories,
               chatId,
               tokens,
-              googleSheetClient,
+              googleService,
               formattedDate,
               amount,
               analytics,

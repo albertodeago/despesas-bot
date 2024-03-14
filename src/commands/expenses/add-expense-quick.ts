@@ -5,8 +5,6 @@ import {
   getDescriptionFromTokenizedMessage,
   formatDate,
 } from '../../utils';
-import { appendGoogleSheet } from '../../google';
-import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE, UNCATEGORIZED_CATEGORY } from '../../config/config';
 import {
   getWrongAmountMessageQuick,
@@ -17,12 +15,13 @@ import {
 import { Analytics } from '../../analytics';
 
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
-import { Logger } from '../../logger';
+import type { Logger } from '../../logger';
+import type { GoogleService } from '../../services/google';
 
 type AddExpenseQuickParams = {
   bot: TelegramBot;
   chatId: number;
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   formattedDate: string;
   amount: number;
   description?: string;
@@ -30,7 +29,7 @@ type AddExpenseQuickParams = {
   spreadSheetId: SheetId;
 };
 const addExpense = async ({
-  googleSheetClient,
+  googleService,
   formattedDate,
   amount,
   description,
@@ -45,8 +44,7 @@ const addExpense = async ({
     description,
   });
   try {
-    await appendGoogleSheet({
-      client: googleSheetClient,
+    await googleService.appendGoogleSheet({
       sheetId: spreadSheetId,
       tabName: config.tabName,
       range: config.range,
@@ -60,7 +58,7 @@ const addExpense = async ({
 
 type AddExpenseQuickCommandHandlerProps = {
   bot: TelegramBot;
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   analytics: Analytics;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
@@ -70,7 +68,7 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
   {
     pattern: /^aggiungi veloce/i,
     getHandler:
-      ({ bot, googleSheetClient, analytics, config, chatsConfigUC, logger }) =>
+      ({ bot, googleService, analytics, config, chatsConfigUC, logger }) =>
       async (msg: TelegramBot.Message) => {
         const { chatId, strChatId, tokens, date } = fromMsg(msg);
         logger.info(
@@ -107,7 +105,7 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
           const err = await addExpense({
             bot,
             chatId,
-            googleSheetClient,
+            googleService,
             formattedDate,
             amount,
             description,

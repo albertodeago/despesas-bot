@@ -5,19 +5,16 @@ import { UNCATEGORIZED_CATEGORY } from '../../config/config';
 import {
   waitMessage,
   getMockAnalytics,
-  mockGoogleSheetClient,
   mockConfig,
   getMockBot,
   getCommonMessageProperties,
 } from './fixture';
 import { getMockLogger } from '../../logger/mock';
+import { getMockGoogleService } from '../../services/google/mock';
 
-const googleMocks = vi.hoisted(() => ({
-  spyAppendGoogleSheet: vi.fn(() => Promise.resolve()),
-}));
-vi.mock('../../google', () => ({
-  appendGoogleSheet: googleMocks.spyAppendGoogleSheet,
-}));
+const spyAppend = vi.fn(() => Promise.resolve());
+// @ts-expect-error
+const mockGoogleService = getMockGoogleService({ spyAppend });
 const defaultMsg: TelegramBot.Message = {
   text: 'aggiungi veloce 20 descrizione abbastanza lunga',
   ...getCommonMessageProperties(),
@@ -56,8 +53,7 @@ describe('AddExpenseQuickCommand', () => {
     handler = AddExpenseQuickCommand.getHandler({
       // @ts-expect-error
       bot: mockBot,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
+      googleService: mockGoogleService,
       // @ts-expect-error
       analytics: mockAnalytics,
       // @ts-expect-error
@@ -105,8 +101,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
@@ -127,8 +122,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
@@ -155,8 +149,7 @@ describe('AddExpenseQuickCommand', () => {
     });
 
     await waitMessage(vi, mockBot);
-    expect(googleMocks.spyAppendGoogleSheet).toHaveBeenCalledWith({
-      client: mockGoogleSheetClient,
+    expect(spyAppend).toHaveBeenCalledWith({
       sheetId: 'sheet-id',
       tabName: 'tab-name',
       range: 'A:Z',
