@@ -1,8 +1,7 @@
-import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../config/config';
-import { readGoogleSheet } from '../google';
 import TTLCache from '@isaacs/ttlcache';
 import type { Logger } from '../logger';
+import { GoogleService } from '../services/google';
 
 export type Category = {
   name: string;
@@ -18,20 +17,30 @@ export interface CategoriesUseCase {
   get: (sheetId: SheetId) => Promise<Category[]>;
 }
 
+type ConfigCategories = Pick<CONFIG_TYPE, 'CATEGORIES'>;
+
 export class Categories implements CategoriesUseCase {
-  config: CONFIG_TYPE;
-  client: sheets_v4.Sheets;
+  config: ConfigCategories;
   cache: TTLCache<SheetId, Category[]>;
   logger: Logger;
+  googleService: GoogleService;
 
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
-    this.client = client;
+  constructor({
+    config,
+    logger,
+    googleService,
+  }: {
+    config: ConfigCategories;
+    logger: Logger;
+    googleService: GoogleService;
+  }) {
     this.config = config;
     this.cache = new TTLCache({
       max: 100,
       ttl: CACHE_TTL,
     });
     this.logger = logger;
+    this.googleService = googleService;
   }
 
   async get(sheetId: SheetId): Promise<Category[]> {
@@ -41,39 +50,23 @@ export class Categories implements CategoriesUseCase {
     }
 
     this.logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
-    const categories = await fetchCategories(
-      this.client,
+    const rawCategories = await this.googleService.readGoogleSheet({
       sheetId,
-      this.config.CATEGORIES.TAB_NAME,
-      this.config.CATEGORIES.RANGE
-    );
+      tabName: this.config.CATEGORIES.TAB_NAME,
+      range: this.config.CATEGORIES.RANGE,
+    });
+
+    if (!rawCategories) {
+      throw new Error('Categories not found');
+    }
+
+    const categories = _googleResultToCategories(rawCategories);
 
     this.cache.set(sheetId, categories);
 
     return categories;
   }
 }
-
-export const fetchCategories = async (
-  client: sheets_v4.Sheets,
-  sheetId: SheetId,
-  tabName: string,
-  range: string
-): Promise<Category[]> => {
-  const result = await readGoogleSheet({
-    client,
-    sheetId,
-    tabName,
-    range,
-  });
-
-  if (!result) {
-    throw new Error('Categories not found');
-  }
-  // TODO: what happens if the tab is empty? we should throw an error, to be tested
-
-  return _googleResultToCategories(result);
-};
 
 // Exported just for testing
 export const _googleResultToCategories = (
