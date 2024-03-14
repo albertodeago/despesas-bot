@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { version } from '../package.json';
-import { getGoogleSheetClient } from './google';
+import { getGoogleSheetClient, initGoogleService } from './services/google';
 import { getBot } from './telegram';
 import { getConfig } from './config/config';
 import { Analytics } from './analytics';
@@ -79,6 +79,8 @@ const main = async () => {
     clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
+
+  const googleService = initGoogleService(googleSheetClient);
 
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
