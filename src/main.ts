@@ -6,7 +6,7 @@ import { getConfig } from './config/config';
 import { Analytics } from './analytics';
 
 import { initCategoriesUseCase } from './use-cases/categories';
-import { ChatsConfiguration } from './use-cases/chats-configuration';
+import { initChatsConfigurationUseCase } from './use-cases/chats-configuration';
 
 import { HelpCommand } from './commands/help/help';
 import { StartCommand } from './commands/start/start';
@@ -93,8 +93,8 @@ const main = async () => {
   const analytics = new Analytics(googleSheetClient, config, logger);
 
   const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
-  const chatsConfigUC = new ChatsConfiguration({
-    client: googleSheetClient,
+  const chatsConfigUC = initChatsConfigurationUseCase({
+    googleService,
     config,
     logger,
   });

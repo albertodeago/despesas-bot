@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { ChatsConfiguration } from './chats-configuration';
+import {
+  ChatsConfigurationUseCase,
+  initChatsConfigurationUseCase,
+} from './chats-configuration';
 import { getMockLogger } from '../logger/mock';
 import { getMockGoogleService } from '../services/google/mock';
 
@@ -32,9 +35,9 @@ const mockConfig = {
 const mockLogger = getMockLogger();
 
 describe('USE-CASE: chats-configuration', () => {
-  let chatConfigurationUC: ChatsConfiguration;
+  let chatConfigurationUC: ChatsConfigurationUseCase;
   beforeEach(() => {
-    chatConfigurationUC = new ChatsConfiguration({
+    chatConfigurationUC = initChatsConfigurationUseCase({
       googleService: mockGoogleService,
       config: mockConfig,
       logger: mockLogger,
