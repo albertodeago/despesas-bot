@@ -1,10 +1,9 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { readGoogleSheet } from '../../google';
 import { fromMsg } from '../../utils';
 import { CONFIG_TYPE } from '../../config/config';
-import { sheets_v4 } from 'googleapis';
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import { Logger } from '../../logger';
+import { GoogleService } from '../../services/google';
 
 const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese e mi sono collegato al tuo foglio di calcolo.
 
@@ -32,14 +31,14 @@ Assicurati che l'id sia corretto e che io abbia i permessi per leggerlo.`;
 
 type StartCommandHandlerProps = {
   bot: TelegramBot;
-  googleSheetClient: sheets_v4.Sheets;
+  googleService: GoogleService;
   config: CONFIG_TYPE;
   chatsConfigUC: ChatsConfigurationUseCase;
   logger: Logger;
 };
 export const StartCommand: BotCommand<StartCommandHandlerProps> = {
   pattern: /\/start \S+$/,
-  getHandler({ bot, googleSheetClient, config, chatsConfigUC, logger }) {
+  getHandler({ bot, googleService, config, chatsConfigUC, logger }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       logger.info(`StartCommand handler. Tokens ${tokens}`, strChatId);
@@ -53,8 +52,7 @@ export const StartCommand: BotCommand<StartCommandHandlerProps> = {
       // attempt to read something from the sheet to validate it
       // if it fails, we should inform the user and return
       try {
-        await readGoogleSheet({
-          client: googleSheetClient,
+        await googleService.readGoogleSheet({
           sheetId,
           tabName: config.tabName,
           range: 'A1',

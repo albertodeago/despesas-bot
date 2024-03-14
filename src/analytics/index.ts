@@ -2,6 +2,8 @@ import type { CONFIG_TYPE } from '../config/config';
 import type { Logger } from '../logger';
 import type { GoogleService } from '../services/google';
 
+export type Analytics = ReturnType<typeof initAnalytics>;
+
 export const initAnalytics = ({
   config,
   logger,

@@ -119,7 +119,7 @@ const main = async () => {
     StartCommand.pattern,
     StartCommand.getHandler({
       bot,
-      googleSheetClient,
+      googleService,
       config,
       chatsConfigUC,
       logger,

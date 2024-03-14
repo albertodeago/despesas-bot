@@ -2,13 +2,14 @@ import { it, describe, expect, vi, beforeEach, afterEach } from 'vitest';
 import { StartCommand } from './start';
 import TelegramBot from 'node-telegram-bot-api';
 import { getMockLogger } from '../../logger/mock';
+import { getMockGoogleService } from '../../services/google/mock';
 
-const mocks = vi.hoisted(() => ({
-  spyReadGoogleSheet: vi.fn(() => Promise.resolve()), // just need to resolve
-}));
-vi.mock('../../google', () => ({
-  readGoogleSheet: mocks.spyReadGoogleSheet,
-}));
+const spyRead = vi.fn(() => Promise.resolve()); // just need to resolve
+
+const mockGoogleService = getMockGoogleService({
+  // @ts-expect-error
+  spyRead,
+});
 
 const bot = {
   sendMessage: vi.fn(),
@@ -25,7 +26,6 @@ const defaultMsg: TelegramBot.Message = {
 const mockConfig = {
   tabName: 'tab-name',
 };
-const mockGoogleSheetClient = {};
 const mockChatsConfigUC = {
   isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
   updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
@@ -60,8 +60,7 @@ describe('StartCommand', () => {
     handler = StartCommand.getHandler({
       // @ts-expect-error
       bot,
-      // @ts-expect-error
-      googleSheetClient: mockGoogleSheetClient,
+      googleService: mockGoogleService,
       // @ts-expect-error
       config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
@@ -82,7 +81,7 @@ describe('StartCommand', () => {
   });
 
   it("should answer with an error message if he can't read from the provided sheet", async () => {
-    mocks.spyReadGoogleSheet.mockImplementationOnce(() => Promise.reject());
+    spyRead.mockImplementationOnce(() => Promise.reject());
     handler(defaultMsg);
 
     await vi.waitFor(() => {
