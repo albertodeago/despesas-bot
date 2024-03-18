@@ -1,9 +1,8 @@
-import { readGoogleSheet, updateGoogleSheet } from '../google';
-
 import type { sheets_v4 } from 'googleapis';
 import type { CONFIG_TYPE } from '../config/config';
 import type { Logger } from '../logger';
 import TelegramBot from 'node-telegram-bot-api';
+import { GoogleService } from './google';
 
 type RecurrentExpenseFrequency = 'daily' | 'weekly' | 'monthly';
 export type RecurrentExpense = {
@@ -21,13 +20,13 @@ export type RecurrentExpenseService = ReturnType<
 >;
 
 type RecurrentExpenseServiceParams = {
-  client: sheets_v4.Sheets;
+  googleService: GoogleService;
   config: Pick<CONFIG_TYPE, 'RECURRENT_EXPENSES' | 'ADMINISTRATION_CHAT_ID'>;
   logger: Logger;
   bot: TelegramBot;
 };
 export const initRecurrentExpenseService = ({
-  client,
+  googleService,
   config,
   logger,
   bot,
@@ -42,8 +41,7 @@ export const initRecurrentExpenseService = ({
 
   const get = async (chatId: ChatId, spreadsheetId: SheetId) => {
     try {
-      const recurrentExpenses = await readGoogleSheet({
-        client,
+      const recurrentExpenses = await googleService.readGoogleSheet({
         sheetId: spreadsheetId,
         tabName: config.RECURRENT_EXPENSES.TAB_NAME,
         range: config.RECURRENT_EXPENSES.RANGE,
@@ -115,8 +113,7 @@ export const initRecurrentExpenseService = ({
       const expenseIndex = expense.index + 2; // +2 because the first row is the header and google sheets is 1-based
       const range = `A${expenseIndex}:F${expenseIndex}`;
 
-      await updateGoogleSheet({
-        client,
+      await googleService.updateGoogleSheet({
         sheetId,
         tabName: config.RECURRENT_EXPENSES.TAB_NAME,
         range,

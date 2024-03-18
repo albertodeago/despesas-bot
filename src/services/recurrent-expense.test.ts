@@ -3,58 +3,38 @@ import {
   RecurrentExpense,
   initRecurrentExpenseService,
 } from './recurrent-expense';
-import { sheets_v4 } from 'googleapis';
 import { getMockLogger } from '../logger/mock';
+import { getMockGoogleService } from './google/mock';
 
-const mocks = vi.hoisted(() => ({
-  readGoogleSheet: vi.fn(async () => [
-    [
-      'category',
-      'subCategory',
-      'message',
-      'amount',
-      'frequency',
-      'lastAddedDate',
-    ],
-    [
-      'category',
-      'subCategory',
-      'recurrent expense message 1',
-      '10',
-      'daily',
-      '',
-    ],
-    [
-      'category',
-      'subCategory',
-      'recurrent expense message 2',
-      '20',
-      'wrong',
-      '',
-    ],
-    [
-      'category',
-      'subCategory',
-      'recurrent expense message 3',
-      '30',
-      'monthly',
-      '',
-    ],
-    [
-      'category',
-      'subCategory',
-      'recurrent expense message 4',
-      '40',
-      'weekly',
-      '',
-    ],
-  ]),
-  updateGoogleSheet: vi.fn(),
-}));
-vi.mock('../google', () => ({
-  readGoogleSheet: mocks.readGoogleSheet,
-  updateGoogleSheet: mocks.updateGoogleSheet,
-}));
+const spyRead = vi.fn(async () => [
+  [
+    'category',
+    'subCategory',
+    'message',
+    'amount',
+    'frequency',
+    'lastAddedDate',
+  ],
+  ['category', 'subCategory', 'recurrent expense message 1', '10', 'daily', ''],
+  ['category', 'subCategory', 'recurrent expense message 2', '20', 'wrong', ''],
+  [
+    'category',
+    'subCategory',
+    'recurrent expense message 3',
+    '30',
+    'monthly',
+    '',
+  ],
+  [
+    'category',
+    'subCategory',
+    'recurrent expense message 4',
+    '40',
+    'weekly',
+    '',
+  ],
+]);
+const spyUpdate = vi.fn();
 
 const mockConfig = {
   RECURRENT_EXPENSES: {
@@ -63,13 +43,16 @@ const mockConfig = {
   },
   ADMINISTRATION_CHAT_ID: 'admin-chat-id',
 };
-const mockClient = {} as sheets_v4.Sheets;
 const mockLogger = getMockLogger();
 const mockBot = { sendMessage: vi.fn() } as any;
+const mockGoogleService = getMockGoogleService({
+  spyRead,
+  spyUpdate,
+});
 
 describe('RecurrentExpenseService', () => {
   const recurrentExpenseService = initRecurrentExpenseService({
-    client: mockClient,
+    googleService: mockGoogleService,
     config: mockConfig,
     logger: mockLogger,
     bot: mockBot,
@@ -81,7 +64,7 @@ describe('RecurrentExpenseService', () => {
 
   describe('get', () => {
     it('should return an empty array if there are no recurrent expenses', async () => {
-      mocks.readGoogleSheet.mockImplementationOnce(() => Promise.resolve([]));
+      spyRead.mockImplementationOnce(() => Promise.resolve([]));
       const result = await recurrentExpenseService.get(
         'chatId',
         'spreadsheetId'
@@ -126,10 +109,7 @@ describe('RecurrentExpenseService', () => {
     });
 
     it('should alert the user if an entry have something invalid', async () => {
-      const result = await recurrentExpenseService.get(
-        'chat-123',
-        'spreadsheetId'
-      );
+      await recurrentExpenseService.get('chat-123', 'spreadsheetId');
       expect(mockBot.sendMessage).toHaveBeenCalledWith(
         'chat-123',
         expect.stringContaining('Frequency is required')
@@ -152,8 +132,7 @@ describe('RecurrentExpenseService', () => {
         'spreadsheetId',
         newExpense
       );
-      expect(mocks.updateGoogleSheet).toHaveBeenCalledWith({
-        client: mockClient,
+      expect(spyUpdate).toHaveBeenCalledWith({
         sheetId: 'spreadsheetId',
         tabName: 'tab',
         range: 'A4:F4',
