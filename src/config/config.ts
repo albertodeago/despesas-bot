@@ -22,6 +22,8 @@ const developmentConfig: typeof productionConfig = {
     TAB_NAME: 'analytics',
     TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
+    TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '18bmsNx-F-vK-NHavi_QCv2DisS6i7FKmTDPAa44Mdpk',
@@ -35,6 +37,8 @@ const productionConfig = {
     TAB_NAME: 'analytics',
     TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
+    TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '12zLMygxscN3KeRnJcQ2YwhyZFuIhdyYOjYAKCtjjxkY',

@@ -3,6 +3,7 @@ import { getMockLogger } from '../logger/mock';
 import { initRecurrentExpenses } from './expenses';
 import TelegramBot from 'node-telegram-bot-api';
 import { RecurrentExpense } from '../services/recurrent-expense';
+import { getMockAnalytics } from '../analytics/mock';
 
 const setIntervalMock = vi.fn();
 vi.stubGlobal('setInterval', setIntervalMock);
@@ -78,6 +79,7 @@ const recurrentExpenseServiceMock = {
   updateRecurrentExpense: vi.fn(() => Promise.resolve()),
   addExpense: vi.fn(() => Promise.resolve()),
 };
+const mockAnalytics = getMockAnalytics();
 
 describe('RecurrentExpenses', () => {
   afterEach(() => {
@@ -91,6 +93,7 @@ describe('RecurrentExpenses', () => {
         chatsConfigUC: chatsConfigUCMock,
         bot: mockBot,
         recurrentExpenseService: recurrentExpenseServiceMock,
+        analytics: mockAnalytics,
       });
       recurrentExpenseHandler.start();
 
@@ -107,10 +110,10 @@ describe('RecurrentExpenses', () => {
       chatsConfigUC: chatsConfigUCMock,
       bot: mockBot,
       recurrentExpenseService: recurrentExpenseServiceMock,
+      analytics: mockAnalytics,
     });
 
     it('should check all the recurrent expense, update the due ones and send the message for them', async () => {
-      // TODO: check that the expense is also added in the user spreadsheet
       await recurrentExpenseHandler.check();
       expect(chatsConfigUCMock.get).toHaveBeenCalled();
       expect(recurrentExpenseServiceMock.get).toHaveBeenCalled();
@@ -125,10 +128,28 @@ describe('RecurrentExpenses', () => {
         frequency: 'daily',
         lastAddedDate: expect.any(Date),
       });
+      expect(mockAnalytics.addTrackedRecurrentExpense).toHaveBeenCalled();
       expect(mockBot.sendMessage).toHaveBeenCalledWith(
         '-321',
         expect.any(String)
       );
+    });
+
+    it('should not track the expense nor add the analytics if an error occurs', async () => {
+      recurrentExpenseServiceMock.addExpense.mockImplementationOnce(
+        async () => {
+          throw new Error('Error');
+        }
+      );
+      await recurrentExpenseHandler.check();
+      expect(chatsConfigUCMock.get).toHaveBeenCalled();
+      expect(recurrentExpenseServiceMock.get).toHaveBeenCalled();
+      expect(recurrentExpenseServiceMock.addExpense).toHaveBeenCalled();
+      expect(
+        recurrentExpenseServiceMock.updateRecurrentExpense
+      ).not.toHaveBeenCalled();
+      expect(mockAnalytics.addTrackedRecurrentExpense).not.toHaveBeenCalled();
+      expect(mockBot.sendMessage).not.toHaveBeenCalled();
     });
 
     it('should not check the recurrent expenses for inactive chats', async () => {

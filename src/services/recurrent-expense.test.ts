@@ -5,6 +5,7 @@ import {
 } from './recurrent-expense';
 import { getMockLogger } from '../logger/mock';
 import { getMockGoogleService } from './google/mock';
+import { formatDate } from '../utils';
 
 const spyRead = vi.fn(async () => [
   [
@@ -35,6 +36,7 @@ const spyRead = vi.fn(async () => [
   ],
 ]);
 const spyUpdate = vi.fn();
+const spyAppend = vi.fn();
 
 const mockConfig = {
   RECURRENT_EXPENSES: {
@@ -42,13 +44,28 @@ const mockConfig = {
     RANGE: 'range',
   },
   ADMINISTRATION_CHAT_ID: 'admin-chat-id',
+  EXPENSES: {
+    TAB_NAME: 'expense-tab',
+    RANGE: 'expense-range',
+  },
 };
 const mockLogger = getMockLogger();
 const mockBot = { sendMessage: vi.fn() } as any;
 const mockGoogleService = getMockGoogleService({
   spyRead,
   spyUpdate,
+  spyAppend,
 });
+
+const newExpense = {
+  index: 2,
+  category: 'category',
+  subCategory: 'subCategory',
+  message: 'recurrent expense message 1',
+  amount: 10,
+  frequency: 'daily',
+  lastAddedDate: new Date('2024-01-01T00:00:00.000Z'),
+} as RecurrentExpense;
 
 describe('RecurrentExpenseService', () => {
   const recurrentExpenseService = initRecurrentExpenseService({
@@ -119,15 +136,6 @@ describe('RecurrentExpenseService', () => {
 
   describe('updateRecurrentExpense', () => {
     it('should update the last added date for the expense', async () => {
-      const newExpense = {
-        index: 2,
-        category: 'category',
-        subCategory: 'subCategory',
-        message: 'recurrent expense message 1',
-        amount: 10,
-        frequency: 'daily',
-        lastAddedDate: new Date(),
-      } as RecurrentExpense;
       await recurrentExpenseService.updateRecurrentExpense(
         'spreadsheetId',
         newExpense
@@ -144,6 +152,27 @@ describe('RecurrentExpenseService', () => {
             10,
             'daily',
             newExpense.lastAddedDate,
+          ],
+        ],
+      });
+    });
+  });
+
+  describe('addExpense', () => {
+    it('should add the expense in the provided spreadsheet', async () => {
+      const todayFormatted = formatDate(new Date());
+      await recurrentExpenseService.addExpense(newExpense, 'spreadsheetId');
+      expect(mockGoogleService.appendGoogleSheet).toHaveBeenCalledWith({
+        sheetId: 'spreadsheetId',
+        tabName: 'expense-tab',
+        range: 'expense-range',
+        data: [
+          [
+            todayFormatted,
+            newExpense.amount,
+            newExpense.category,
+            newExpense.subCategory,
+            newExpense.message,
           ],
         ],
       });

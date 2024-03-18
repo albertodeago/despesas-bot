@@ -1,16 +1,19 @@
 import TelegramBot from 'node-telegram-bot-api';
-import { Logger } from '../logger';
-import { ChatsConfigurationUseCase } from '../use-cases/chats-configuration';
+
+import type { Logger } from '../logger';
+import type { ChatsConfigurationUseCase } from '../use-cases/chats-configuration';
 import type {
   RecurrentExpense,
   RecurrentExpenseService,
 } from '../services/recurrent-expense';
+import type { Analytics } from '../analytics';
 
 type InitRecurrentExpensesParams = {
   logger: Logger;
   bot: TelegramBot;
   chatsConfigUC: ChatsConfigurationUseCase;
   recurrentExpenseService: RecurrentExpenseService;
+  analytics: Analytics;
 };
 
 const CHECK_INTERVAL = 1000 * 60 * 60; // 60 minutes
@@ -20,17 +23,18 @@ export const initRecurrentExpenses = ({
   bot,
   chatsConfigUC,
   recurrentExpenseService,
+  analytics,
 }: InitRecurrentExpensesParams) => {
   let interval: NodeJS.Timeout | null = null;
 
   // Check recurrent expenses
   const check = async () => {
-    // 2. read the chatConfiguration
-    // 3. for each *active* chat, read the google sheet "spese-ricorrenti" tab
-    // 4. for each expense, check if the expense is due
-    // 5. if the expense is due, add the expense to the "spese" tab
-    // 6. update the "last-added-date" column in the "spese-ricorrenti" tab
-    // 7. send a message to the chat
+    // 1. read the chatConfiguration
+    // 2. for each *active* chat, read the google sheet "spese-ricorrenti" tab
+    // 3. for each expense, check if the expense is due
+    // 4. if the expense is due, add the expense to the "spese" tab
+    // 5. update the "last-added-date" column in the "spese-ricorrenti" tab
+    // 6. send a message to the chat
     logger.debug('Checking recurrent expenses', 'NO_CHAT');
 
     try {
@@ -49,27 +53,31 @@ export const initRecurrentExpenses = ({
           chat.spreadsheetId
         );
 
-        for (const expense of recurrentExpenses) {
+        for (const recurrentExp of recurrentExpenses) {
           // Check if the expense is due
-          if (isRecurrentExpenseDue(expense)) {
+          if (isRecurrentExpenseDue(recurrentExp)) {
             logger.info(
-              `Expense ${expense.index} ${expense.category} ${expense.message} ${expense.lastAddedDate} is due (frequency ${expense.frequency})`,
+              `Expense ${recurrentExp.index} ${recurrentExp.category} ${recurrentExp.message} ${recurrentExp.lastAddedDate} is due (frequency ${recurrentExp.frequency})`,
               'NO_CHAT'
             );
 
             // add the expense to the "spese" tab
-            // TODO: ExpenseService.addExpense(expense, chat.spreadsheetId); or something like this? to add the expense
+            await recurrentExpenseService.addExpense(
+              recurrentExp,
+              chat.spreadsheetId
+            );
+            analytics.addTrackedRecurrentExpense();
 
             // update the "last-added-date" column in the "spese-ricorrenti" tab
             await recurrentExpenseService.updateRecurrentExpense(
               chat.spreadsheetId,
               {
-                ...expense,
+                ...recurrentExp,
                 lastAddedDate: new Date(),
               }
             );
 
-            const message = createMessage(expense);
+            const message = createMessage(recurrentExp);
             bot.sendMessage(chat.chatId, message);
           }
         }

@@ -3,6 +3,7 @@ import type { CONFIG_TYPE } from '../config/config';
 import type { Logger } from '../logger';
 import TelegramBot from 'node-telegram-bot-api';
 import { GoogleService } from './google';
+import { createExpenseRow, formatDate } from '../utils';
 
 type RecurrentExpenseFrequency = 'daily' | 'weekly' | 'monthly';
 export type RecurrentExpense = {
@@ -21,7 +22,10 @@ export type RecurrentExpenseService = ReturnType<
 
 type RecurrentExpenseServiceParams = {
   googleService: GoogleService;
-  config: Pick<CONFIG_TYPE, 'RECURRENT_EXPENSES' | 'ADMINISTRATION_CHAT_ID'>;
+  config: Pick<
+    CONFIG_TYPE,
+    'RECURRENT_EXPENSES' | 'EXPENSES' | 'ADMINISTRATION_CHAT_ID'
+  >;
   logger: Logger;
   bot: TelegramBot;
 };
@@ -33,10 +37,7 @@ export const initRecurrentExpenseService = ({
 }: RecurrentExpenseServiceParams) => {
   const onError = (e: Error) => {
     logger.error(e, 'NO_CHAT');
-    bot.sendMessage(
-      config.ADMINISTRATION_CHAT_ID,
-      `C'è stato un errore nel leggere le spese ricorrenti: ${e}`
-    );
+    bot.sendMessage(config.ADMINISTRATION_CHAT_ID, `${e.message}: ${e}`);
   };
 
   const get = async (chatId: ChatId, spreadsheetId: SheetId) => {
@@ -137,9 +138,38 @@ export const initRecurrentExpenseService = ({
     }
   };
 
+  const addExpense = async (
+    recurrentExpense: RecurrentExpense,
+    spreadSheetId: SheetId
+  ) => {
+    const formattedDate = formatDate(new Date());
+    const expenseRow = createExpenseRow({
+      date: formattedDate,
+      amount: recurrentExpense.amount,
+      categoryName: recurrentExpense.category,
+      subCategoryName: recurrentExpense.subCategory ?? '',
+      description: recurrentExpense.message ?? '',
+    });
+    try {
+      await googleService.appendGoogleSheet({
+        sheetId: spreadSheetId,
+        tabName: config.EXPENSES.TAB_NAME,
+        range: config.EXPENSES.RANGE,
+        data: expenseRow,
+      });
+    } catch (e) {
+      onError(
+        new Error(
+          `Error while add an expense in the recurrentExpense Service: ${e}`
+        )
+      );
+    }
+  };
+
   return {
     get,
     updateRecurrentExpense,
+    addExpense,
   };
 };
 
