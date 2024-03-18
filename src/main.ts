@@ -42,16 +42,12 @@ MANDATORY TO RELEASE
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
   - TODO: [FEATURE] can I turn on some 'reminders' so that the bot help me track recurrent expenses (e.g. monthly bills) (activable in chats)
-  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas") -> but how do we let the user select when and how frequently?
-  this above should be both doable, we can run a task every x min/hours to check if there are recurrent-expenses/reminders to add/send
-  reminders and recurrent-expenses can be saved in the configuration sheet (or in the user one??)
-    saving them in the user one would make the scan of these stuff slower (need to read multiple sheets), but flexible, the user is the owner of the data again, but we also get the benefit that scanning the chatConfig, we immediately see which chats are active, and ignore the others
-    saving them in the configuration sheet would make the scan of these stuff faster, but less flexible, the user cannot edit them
-  when the process scans, in the line of a recurrent-expense/reminder there will should be a column with the "last-added-date", and we can just check
-  if the current date is greater than the last-added-date + the frequency, then we add the expense/send the reminder -> easy peasy
+  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas")
+    - TODO: do we want to provide a command to add this kind of expenses?
+    - TODO: do we want to enable the add only in certain hours?
 - TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary? (activable in chats)
-  - it would be pretty cool to send also a report/summary via some pie-charts
-- TODO: [FEATURE] can we parse vocals and answer/handle that too?
+  - TODO: [FEATURE] it would be pretty cool to send also a report/summary via some pie-charts
+- TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] typo tolerant?
 
 OPTIONAL:
@@ -60,7 +56,7 @@ OPTIONAL:
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
-- [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
+- [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
 - [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)
 

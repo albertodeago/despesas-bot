@@ -18,8 +18,10 @@ export const getMockBot = (vi: VitestUtils) => ({
 });
 
 export const mockConfig = {
-  tabName: 'tab-name',
-  range: 'A:Z',
+  EXPENSES: {
+    TAB_NAME: 'tab-name',
+    RANGE: 'A:Z',
+  },
 };
 
 export const getCommonMessageProperties = (): {

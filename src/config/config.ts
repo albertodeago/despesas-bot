@@ -2,8 +2,10 @@ export type CONFIG_TYPE = ReturnType<typeof getConfig>;
 
 const sharedConfigProps = {
   ADMINISTRATION_CHAT_ID: '53084797',
-  tabName: 'Spese',
-  range: 'A:E',
+  EXPENSES: {
+    TAB_NAME: 'Spese',
+    RANGE: 'A:E',
+  },
   CATEGORIES: {
     TAB_NAME: 'Categorie',
     RANGE: 'A2:Z100',

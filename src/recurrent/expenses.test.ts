@@ -76,6 +76,7 @@ const recurrentExpenseServiceMock = {
     )
   ),
   updateRecurrentExpense: vi.fn(() => Promise.resolve()),
+  addExpense: vi.fn(() => Promise.resolve()),
 };
 
 describe('RecurrentExpenses', () => {
@@ -109,6 +110,7 @@ describe('RecurrentExpenses', () => {
     });
 
     it('should check all the recurrent expense, update the due ones and send the message for them', async () => {
+      // TODO: check that the expense is also added in the user spreadsheet
       await recurrentExpenseHandler.check();
       expect(chatsConfigUCMock.get).toHaveBeenCalled();
       expect(recurrentExpenseServiceMock.get).toHaveBeenCalled();

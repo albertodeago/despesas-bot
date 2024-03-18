@@ -54,7 +54,7 @@ export const StartCommand: BotCommand<StartCommandHandlerProps> = {
       try {
         await googleService.readGoogleSheet({
           sheetId,
-          tabName: config.tabName,
+          tabName: config.EXPENSES.TAB_NAME,
           range: 'A1',
         });
 

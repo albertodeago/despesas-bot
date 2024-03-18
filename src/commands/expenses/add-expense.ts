@@ -54,8 +54,8 @@ const addExpense = async ({
   try {
     await googleService.appendGoogleSheet({
       sheetId: spreadSheetId,
-      tabName: config.tabName,
-      range: config.range,
+      tabName: config.EXPENSES.TAB_NAME,
+      range: config.EXPENSES.RANGE,
       data: expense,
     });
     return;

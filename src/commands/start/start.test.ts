@@ -24,7 +24,9 @@ const defaultMsg: TelegramBot.Message = {
   message_id: 987654321,
 };
 const mockConfig = {
-  tabName: 'tab-name',
+  EXPENSES: {
+    TAB_NAME: 'tab-name',
+  },
 };
 const mockChatsConfigUC = {
   isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
