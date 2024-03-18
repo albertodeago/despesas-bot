@@ -79,6 +79,11 @@ export const initRecurrentExpenses = ({
 
             const message = createMessage(recurrentExp);
             bot.sendMessage(chat.chatId, message);
+          } else {
+            logger.debug(
+              `Checked ${recurrentExp.index}-${recurrentExp.category} - not due ${recurrentExp.frequency} - ${recurrentExp.lastAddedDate}`,
+              'NO_CHAT'
+            );
           }
         }
       }
