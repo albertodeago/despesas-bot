@@ -50,9 +50,9 @@ const recurrentExpenseServiceMock = {
               subCategory: 'subcat1',
               message: 'msg1',
               amount: 10,
-              frequency: 'daily',
+              frequency: 'settimanale',
               lastAddedDate: new Date(
-                new Date().setDate(new Date().getDate() - 2)
+                new Date().setDate(new Date().getDate() - 10) // due because 10 days ago
               ),
             },
             {
@@ -61,7 +61,7 @@ const recurrentExpenseServiceMock = {
               subCategory: 'subcat2',
               message: 'msg2',
               amount: 20,
-              frequency: 'monthly',
+              frequency: 'mensile',
               lastAddedDate: new Date(),
             },
             {
@@ -70,7 +70,7 @@ const recurrentExpenseServiceMock = {
               subCategory: 'subcat3',
               message: 'msg3',
               amount: 30,
-              frequency: 'daily',
+              frequency: 'settimanale',
               lastAddedDate: new Date(),
             },
           ] as RecurrentExpense[])
@@ -125,7 +125,7 @@ describe('RecurrentExpenses', () => {
         subCategory: 'subcat1',
         message: 'msg1',
         amount: 10,
-        frequency: 'daily',
+        frequency: 'settimanale',
         lastAddedDate: expect.any(Date),
       });
       expect(mockAnalytics.addTrackedRecurrentExpense).toHaveBeenCalled();

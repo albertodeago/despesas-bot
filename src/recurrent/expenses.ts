@@ -112,12 +112,14 @@ const isRecurrentExpenseDue = (expense: RecurrentExpense) => {
 
   // Check if the expense is due
   switch (frequency) {
-    case 'daily':
-      return now > lastAddedTs + 1000 * 60 * 60 * 24;
-    case 'weekly':
+    case 'settimanale':
       return now > lastAddedTs + 1000 * 60 * 60 * 24 * 7;
-    case 'monthly':
+    case 'mensile':
       return now > lastAddedTs + 1000 * 60 * 60 * 24 * 30;
+    case 'bimestrale':
+      return now > lastAddedTs + 1000 * 60 * 60 * 24 * 30 * 2;
+    case 'trimestrale':
+      return now > lastAddedTs + 1000 * 60 * 60 * 24 * 30 * 3;
     default:
       return false;
   }

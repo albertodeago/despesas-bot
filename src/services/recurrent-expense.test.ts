@@ -16,14 +16,14 @@ const spyRead = vi.fn(async () => [
     'frequency',
     'lastAddedDate',
   ],
-  ['category', 'subCategory', 'recurrent expense message 1', '10', 'daily', ''],
+  ['category', 'subCategory', 'recurrent expense message 1', '10', 'settimanale', ''],
   ['category', 'subCategory', 'recurrent expense message 2', '20', 'wrong', ''],
   [
     'category',
     'subCategory',
     'recurrent expense message 3',
     '30',
-    'monthly',
+    'mensile',
     '',
   ],
   [
@@ -31,7 +31,7 @@ const spyRead = vi.fn(async () => [
     'subCategory',
     'recurrent expense message 4',
     '40',
-    'weekly',
+    'bimestrale',
     '',
   ],
 ]);
@@ -63,7 +63,7 @@ const newExpense = {
   subCategory: 'subCategory',
   message: 'recurrent expense message 1',
   amount: 10,
-  frequency: 'daily',
+  frequency: 'settimanale',
   lastAddedDate: new Date('2024-01-01T00:00:00.000Z'),
 } as RecurrentExpense;
 
@@ -101,7 +101,7 @@ describe('RecurrentExpenseService', () => {
           subCategory: 'subCategory',
           message: 'recurrent expense message 1',
           amount: 10,
-          frequency: 'daily',
+          frequency: 'settimanale',
           lastAddedDate: expect.any(Date),
         },
         {
@@ -110,7 +110,7 @@ describe('RecurrentExpenseService', () => {
           subCategory: 'subCategory',
           message: 'recurrent expense message 3',
           amount: 30,
-          frequency: 'monthly',
+          frequency: 'mensile',
           lastAddedDate: expect.any(Date),
         },
         {
@@ -119,7 +119,7 @@ describe('RecurrentExpenseService', () => {
           subCategory: 'subCategory',
           message: 'recurrent expense message 4',
           amount: 40,
-          frequency: 'weekly',
+          frequency: 'bimestrale',
           lastAddedDate: expect.any(Date),
         },
       ]);
@@ -150,7 +150,7 @@ describe('RecurrentExpenseService', () => {
             'subCategory',
             'recurrent expense message 1',
             10,
-            'daily',
+            'settimanale',
             newExpense.lastAddedDate,
           ],
         ],

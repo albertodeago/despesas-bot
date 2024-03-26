@@ -5,7 +5,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { GoogleService } from './google';
 import { createExpenseRow, formatDate } from '../utils';
 
-type RecurrentExpenseFrequency = 'daily' | 'weekly' | 'monthly';
+export type RecurrentExpenseFrequency = 'settimanale' | 'mensile' | 'bimestrale' | 'trimestrale';
 export type RecurrentExpense = {
   index: number; // this is the row number in the google sheet, we use it as an identifier
   category: string;
@@ -94,7 +94,7 @@ export const initRecurrentExpenseService = ({
             };
           })
           .filter((expense) =>
-            ['daily', 'weekly', 'monthly'].includes(expense.frequency)
+            ['settimanale', 'mensile', 'bimestrale', 'trimestrale'].includes(expense.frequency)
           );
 
         return validRecurrentExpenses;
@@ -185,9 +185,9 @@ const checkRecurrentExpense = (expenseRow: ExpenseRow): string | undefined => {
     errorMsg = 'Amount is required';
   } else if (
     !frequency ||
-    ['daily', 'weekly', 'monthly'].includes(frequency) === false
+    ['settimanale', 'mensile', 'bimestrale', 'trimestrale'].includes(frequency) === false
   ) {
-    errorMsg = 'Frequency is required and must be daily, weekly or monthly';
+    errorMsg = 'Frequency is required and must be settimanale, mensile, bimestrale o trimestrale';
   }
 
   return errorMsg;
