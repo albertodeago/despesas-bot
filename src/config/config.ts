@@ -12,11 +12,11 @@ const sharedConfigProps = {
   },
   RECURRENT_EXPENSES: {
     TAB_NAME: 'Spese Ricorrenti',
-    RANGE: 'A1:G50', // TODO: document this limit, max 50 entries
+    RANGE: 'A1:G50',
   },
   REMINDERS: {
     TAB_NAME: 'Promemoria',
-    RANGE: 'A1:C50', // TODO: document this limit, max 50 entries
+    RANGE: 'A1:C50',
   }
 };
 
