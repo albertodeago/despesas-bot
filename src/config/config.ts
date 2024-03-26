@@ -8,7 +8,7 @@ const sharedConfigProps = {
   },
   CATEGORIES: {
     TAB_NAME: 'Categorie',
-    RANGE: 'A2:Z100',
+    RANGE: 'A2:K100',
   },
   RECURRENT_EXPENSES: {
     TAB_NAME: 'Spese Ricorrenti',

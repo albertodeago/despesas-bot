@@ -41,6 +41,7 @@ if (
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
+- TODO: send me a msg when someone "start" or "stop" the bot
 
 FUTURE:
 - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
