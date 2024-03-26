@@ -43,12 +43,10 @@ MANDATORY TO RELEASE
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
 
 FUTURE:
-- TODO: [FEATURE] how do we handle recurrent expenses?
-  - TODO: [FEATURE] can I turn on some 'reminders' so that the bot help me track recurrent expenses (e.g. monthly bills) (activable in chats)
-  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas")
-    - TODO: do we want to provide a command to add this kind of expenses?
-    - TODO: do we want to enable the add only in certain hours?
-- TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary? (activable in chats)
+- TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
+- TODO: [FEATURE] add command to add reminders? (e.g. "promemoria settimanale bolletta gas")
+  - TODO: do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
+- TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary?
   - TODO: [FEATURE] it would be pretty cool to send also a report/summary via some pie-charts
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] typo tolerant?
