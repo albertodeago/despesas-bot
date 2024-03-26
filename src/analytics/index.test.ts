@@ -61,7 +61,7 @@ describe('Analytics', () => {
   });
 
   describe('addTrackedExpense', () => {
-    it.only('should be able to add a tracked expense', async () => {
+    it('should be able to add a tracked expense', async () => {
       await analytics.addTrackedExpense();
       expect(spyUpdate).toHaveBeenCalledWith({
         sheetId: 'sheet-id',
@@ -103,7 +103,7 @@ describe('Analytics', () => {
   });
 
   describe('addTrackedRecurrentExpense', () => {
-    it.only('should be able to add a tracked expense', async () => {
+    it('should be able to add a tracked expense', async () => {
       await analytics.addTrackedRecurrentExpense();
       expect(spyUpdate).toHaveBeenCalledWith({
         sheetId: 'sheet-id',

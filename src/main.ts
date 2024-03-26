@@ -167,13 +167,13 @@ const main = async () => {
     })
   );
 
-  // const recurrentExpenseHandler = initRecurrentExpenses({
-  //   logger,
-  //   chatsConfigUC,
-  //   recurrentExpenseService,
-  //   analytics,
-  //   bot,
-  // });
-  // recurrentExpenseHandler.start();
+  const recurrentExpenseHandler = initRecurrentExpenses({
+    logger,
+    chatsConfigUC,
+    recurrentExpenseService,
+    analytics,
+    bot,
+  });
+  recurrentExpenseHandler.start();
 };
 main();
