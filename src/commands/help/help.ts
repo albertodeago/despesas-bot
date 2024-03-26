@@ -1,6 +1,6 @@
-import TelegramBot from 'node-telegram-bot-api';
-import { fromMsg } from '../../utils';
-import { Logger } from '../../logger';
+import type TelegramBot from "node-telegram-bot-api";
+import type { Logger } from "../../logger";
+import { fromMsg } from "../../utils";
 
 const HELP_MSG = `Ciao, sono 🌵DespesasBot🌮 e sarò il bot per gestire le tue spese
 Utilizzandomi potrai facilmente tracciare le tue spese e tenerle in un *tuo* google spreadsheet
@@ -24,17 +24,17 @@ Dopo che avrai lanciato il comando \`/start\`, puoi utilizzare gli altri comandi
 `;
 
 type HelpCommandHandlerProps = {
-  bot: TelegramBot;
-  logger: Logger;
+	bot: TelegramBot;
+	logger: Logger;
 };
 export const HelpCommand: BotCommand<HelpCommandHandlerProps> = {
-  pattern: /\/help/,
-  getHandler({ bot, logger }) {
-    return async (msg: TelegramBot.Message) => {
-      const { chatId, strChatId } = fromMsg(msg);
-      logger.info(`HelpCommand handler.`, strChatId);
+	pattern: /\/help/,
+	getHandler({ bot, logger }) {
+		return async (msg: TelegramBot.Message) => {
+			const { chatId, strChatId } = fromMsg(msg);
+			logger.info(`HelpCommand handler.`, strChatId);
 
-      bot.sendMessage(chatId, HELP_MSG, { parse_mode: 'Markdown' });
-    };
-  },
+			bot.sendMessage(chatId, HELP_MSG, { parse_mode: "Markdown" });
+		};
+	},
 };
