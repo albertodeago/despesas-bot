@@ -245,7 +245,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 
 				const formattedDate = formatDate(date);
 				const amount = Number.parseFloat(tokens[1]);
-				if (isNaN(amount)) {
+				if (Number.isNaN(amount)) {
 					bot.sendMessage(chatId, getWrongAmountMessage());
 					return;
 				}
@@ -258,7 +258,12 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 					// last token is a category. if that category have no subcategories, we can add
 					// the expense, otherwise we need to show the subcategories
 
-					const category = allCategories.find((c) => c.name === lastToken)!;
+					const category = allCategories.find((c) => c.name === lastToken);
+					if (!category) {
+						throw new Error(
+							`Category not found, should've found a category ${lastToken}, but didn't happen`,
+						);
+					}
 					if (category.subCategories.length === 0) {
 						// the category doesn't have any subcategories, we can add the expense
 
@@ -284,47 +289,55 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 							analytics.addTrackedExpense();
 						}
 						return;
-					} else {
-						// we have the category, but we need to understand the subcategory
-						// show the subcategories and then add the expense
-						const subCategories = category.subCategories.map((sc) => [
-							{ text: sc.name },
-						]);
-						bot.sendMessage(chatId, "Scegli una sottocategoria", {
-							reply_markup: {
-								keyboard: subCategories,
-								one_time_keyboard: true,
-							},
-						});
-
-						const description = getDescriptionFromTokenizedMessage(tokens);
-
-						// we add another listener to get the subcategory
-						// TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
-						// (maybe we can mitigate this with a check on the chatId, but not .once then)
-						bot.once(
-							"message",
-							getSubcategoryHandler({
-								bot,
-								category,
-								chatId,
-								description,
-								tokens,
-								googleService,
-								formattedDate,
-								amount,
-								analytics,
-								config,
-								spreadSheetId,
-							}),
-						);
-						return;
 					}
-				} else if (categoriesFlat.includes(secondLastToken)) {
+
+					// we have the category, but we need to understand the subcategory
+					// show the subcategories and then add the expense
+					const subCategories = category.subCategories.map((sc) => [
+						{ text: sc.name },
+					]);
+					bot.sendMessage(chatId, "Scegli una sottocategoria", {
+						reply_markup: {
+							keyboard: subCategories,
+							one_time_keyboard: true,
+						},
+					});
+
+					const description = getDescriptionFromTokenizedMessage(tokens);
+
+					// we add another listener to get the subcategory
+					// TODO: this is actually not so correct, if another message comes meanwhile, it screw this up :(
+					// (maybe we can mitigate this with a check on the chatId, but not .once then)
+					bot.once(
+						"message",
+						getSubcategoryHandler({
+							bot,
+							category,
+							chatId,
+							description,
+							tokens,
+							googleService,
+							formattedDate,
+							amount,
+							analytics,
+							config,
+							spreadSheetId,
+						}),
+					);
+					return;
+				}
+
+				if (categoriesFlat.includes(secondLastToken)) {
 					// second last token is a category, need to check if last token is a (correct) subcategory
 					const category = allCategories.find(
 						(c) => c.name === secondLastToken,
-					)!;
+					);
+					if (!category) {
+						throw new Error(
+							`Category not found, should've found a category ${lastToken}, but didn't happen`,
+						);
+					}
+
 					const subCategory = category.subCategories.find(
 						(sc) => sc.name === lastToken,
 					);
@@ -332,7 +345,7 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 						// last token is not a subcategory, send an error message
 						bot.sendMessage(
 							chatId,
-							`Non sono riuscito ad individuare la categoria e sotto categoria, reinserisci la spesa`,
+							"Non sono riuscito ad individuare la categoria e sotto categoria, reinserisci la spesa",
 						);
 						return;
 					}
@@ -356,36 +369,36 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 						analytics.addTrackedExpense();
 					}
 					return;
-				} else {
-					// the user wants to add the expense, but he didn't specify the category and subcategory
-					// we need to show the category list (and after the subcategories based on his response)
-					bot.sendMessage(chatId, "Scegli una categoria", {
-						reply_markup: {
-							keyboard: allCategories.map((c) => [{ text: c.name }]),
-							one_time_keyboard: true,
-						},
-					});
-
-					// we need to wait for both the category and the subcategory (if exists)
-					// TODO: this is error prone too, another message could screw this up
-					// (maybe we can mitigate this with a check on the chatId, but not .once then)
-					bot.once(
-						"message",
-						getCategoryAndSubcategoryHandler({
-							bot,
-							allCategories,
-							chatId,
-							tokens,
-							googleService,
-							formattedDate,
-							amount,
-							analytics,
-							config,
-							spreadSheetId,
-						}),
-					);
-					return;
 				}
+
+				// the user wants to add the expense, but he didn't specify the category and subcategory
+				// we need to show the category list (and after the subcategories based on his response)
+				bot.sendMessage(chatId, "Scegli una categoria", {
+					reply_markup: {
+						keyboard: allCategories.map((c) => [{ text: c.name }]),
+						one_time_keyboard: true,
+					},
+				});
+
+				// we need to wait for both the category and the subcategory (if exists)
+				// TODO: this is error prone too, another message could screw this up
+				// (maybe we can mitigate this with a check on the chatId, but not .once then)
+				bot.once(
+					"message",
+					getCategoryAndSubcategoryHandler({
+						bot,
+						allCategories,
+						chatId,
+						tokens,
+						googleService,
+						formattedDate,
+						amount,
+						analytics,
+						config,
+						spreadSheetId,
+					}),
+				);
+				return;
 			} catch (e) {
 				const err = new Error(
 					`Error while handling the add-expense command: ${e}`,

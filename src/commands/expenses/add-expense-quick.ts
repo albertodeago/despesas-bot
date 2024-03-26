@@ -91,7 +91,7 @@ export const AddExpenseQuickCommand: BotCommand<AddExpenseQuickCommandHandlerPro
 
 					const formattedDate = formatDate(date);
 					const amount = Number.parseFloat(tokens[2]);
-					if (isNaN(amount)) {
+					if (Number.isNaN(amount)) {
 						bot.sendMessage(chatId, getWrongAmountMessageQuick());
 						return;
 					}

@@ -30,6 +30,7 @@ export const initChatsConfigurationUseCase = ({
 		try {
 			const isCached = cache.has(CACHE_KEY);
 			if (isCached) {
+				// biome-ignore lint/style/noNonNullAssertion: it must be there
 				return cache.get(CACHE_KEY)!;
 			}
 
@@ -178,7 +179,7 @@ export const initChatsConfigurationUseCase = ({
 		const chats = await get();
 		const chat = chats?.find((c) => c.chatId === chatId);
 
-		return (chat && chat.isActive) || false;
+		return chat?.isActive || false;
 	};
 
 	const getSpreadsheetIdFromChat = async (chatId: ChatId) => {

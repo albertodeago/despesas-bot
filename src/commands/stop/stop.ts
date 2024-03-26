@@ -9,7 +9,8 @@ const STOP_MSG = `Scollegato, non traccerò più spese.
 Se vuoi re-iniziare a tracciarle, utilizza di nuovo il comando /start <sheet-id>
 `;
 
-const NO_SHEET_FOUND = `Non risulta esserci un foglio di calcolo associato a questa chat.`;
+const NO_SHEET_FOUND =
+	"Non risulta esserci un foglio di calcolo associato a questa chat.";
 
 type StopCommandHandlerProps = {
 	bot: TelegramBot;
@@ -32,8 +33,13 @@ export const StopCommand: BotCommand<StopCommandHandlerProps> = {
 					// get the chatConfiguration and then update the value setting it to not active
 					const chats = await chatsConfigUC.get();
 					const chatConfig = chats?.find((c) => c.chatId === strChatId);
+					if (!chatConfig) {
+						throw new Error(
+							`Chat configuration not found for chat ${strChatId}`,
+						);
+					}
 					await chatsConfigUC.updateChatInConfiguration(`${chatId}`, {
-						...chatConfig!,
+						...chatConfig,
 						isActive: false,
 					});
 

@@ -4,6 +4,8 @@ import { formatDate } from "../../utils";
 import { getMockGoogleService } from "../google/mock";
 import { type RecurrentExpense, initRecurrentExpenseService } from "./expense";
 
+import type TelegramBot from "node-telegram-bot-api";
+
 const spyRead = vi.fn(async () => [
 	[
 		"category",
@@ -54,7 +56,7 @@ const mockConfig = {
 	},
 };
 const mockLogger = getMockLogger();
-const mockBot = { sendMessage: vi.fn() } as any;
+const mockBot = { sendMessage: vi.fn() } as unknown as TelegramBot;
 const mockGoogleService = getMockGoogleService({
 	spyRead,
 	spyUpdate,

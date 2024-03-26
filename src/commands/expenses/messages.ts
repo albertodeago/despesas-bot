@@ -9,7 +9,7 @@ aggiungi 7.50 aperitivo`;
 export const getWrongAmountMessageQuick = () => `L'importo dev'essere un numero. Un esempio per inserire una spesa è:\n
 aggiungi veloce 7.50 aperitivo`;
 
-export const getOkMessage = () => `Fatto!`;
+export const getOkMessage = () => "Fatto!";
 
 export const getErrorMessage = (e?: unknown) => {
 	const errMsg = e ? `\nErrore:\n${e}` : "";

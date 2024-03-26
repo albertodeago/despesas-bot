@@ -32,7 +32,7 @@ export const HelpCommand: BotCommand<HelpCommandHandlerProps> = {
 	getHandler({ bot, logger }) {
 		return async (msg: TelegramBot.Message) => {
 			const { chatId, strChatId } = fromMsg(msg);
-			logger.info(`HelpCommand handler.`, strChatId);
+			logger.info("HelpCommand handler.", strChatId);
 
 			bot.sendMessage(chatId, HELP_MSG, { parse_mode: "Markdown" });
 		};

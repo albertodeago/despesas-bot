@@ -34,6 +34,7 @@ export const initCategoriesUseCase = ({
 	const get = async (sheetId: SheetId): Promise<Category[]> => {
 		if (cache.has(sheetId)) {
 			logger.debug("CategoriesUseCase - get cache hit", "NO_CHAT");
+			// biome-ignore lint/style/noNonNullAssertion: it must be there
 			return cache.get(sheetId)!;
 		}
 
@@ -65,7 +66,7 @@ export const _googleResultToCategories = (
 	categoriesOnSheet: string[][],
 ): Category[] => {
 	const categories: Category[] = [];
-	categoriesOnSheet.forEach((row: string[]) => {
+	for (const row of categoriesOnSheet) {
 		// Every row contains the category name in the first cell and the
 		// subcategories in the following cells (if there are any)
 
@@ -74,7 +75,7 @@ export const _googleResultToCategories = (
 			subCategories: [],
 		};
 
-		row.forEach((cell: string, index: number) => {
+		for (const [index, cell] of row.entries()) {
 			if (index === 0) {
 				category.name = cell;
 				categories.push(category);
@@ -83,7 +84,8 @@ export const _googleResultToCategories = (
 					name: cell,
 				});
 			}
-		});
-	});
+		}
+	}
+
 	return categories;
 };

@@ -5,14 +5,16 @@ export const getCategoriesAnswer = (categories: Category[]) => {
 	let answer =
 		categories.length === 1
 			? `Ecco le sottocategorie di *${categories[0].name}*`
-			: `Ecco le categorie\n`;
-	categories.forEach((category) => {
+			: "Ecco le categorie\n";
+
+	for (const category of categories) {
 		answer += categories.length === 1 ? "\n" : `- *${category.name}* \n`;
 		if (category.subCategories.length > 0) {
 			answer += `  - ${category.subCategories
 				.map((sc) => sc.name)
 				.join(", ")} \n`;
 		}
-	});
+	}
+
 	return answer;
 };

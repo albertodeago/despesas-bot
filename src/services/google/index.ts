@@ -83,6 +83,7 @@ export const initGoogleService = (client: sheets_v4.Sheets) => {
 		sheetId: SheetId;
 		tabName: string;
 		range: string;
+		// biome-ignore lint/suspicious/noExplicitAny: we can't know the type of the data
 		data: any[] | any[][];
 		valueInputOption?: "RAW" | "USER_ENTERED";
 		insertDataOption?: "INSERT_ROWS" | "OVERWRITE";
@@ -121,6 +122,7 @@ export const initGoogleService = (client: sheets_v4.Sheets) => {
 		sheetId: string;
 		tabName: string;
 		range: string;
+		// biome-ignore lint/suspicious/noExplicitAny: we can't know the type of the data
 		data: any[];
 	}) => {
 		const resp = await client.spreadsheets.values.update({

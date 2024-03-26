@@ -201,12 +201,12 @@ describe("USE-CASE: chats-configuration", () => {
 
 			expect(currentCache).toHaveLength(3);
 			expect(newCache).toHaveLength(3);
-			expect(currentCache![1]).toEqual({
+			expect(currentCache?.[1]).toEqual({
 				chatId: "chat-456",
 				spreadsheetId: "spread-456",
 				isActive: false,
 			});
-			expect(newCache![1]).toEqual(mockChatConfig);
+			expect(newCache?.[1]).toEqual(mockChatConfig);
 		});
 	});
 

@@ -8,9 +8,9 @@ export type RecurrentFrequency =
 export const getDateWithFallback = (date: string): Date => {
 	if (date) {
 		return new Date(date);
-	} else {
-		const lastAddedDate = new Date();
-		lastAddedDate.setFullYear(lastAddedDate.getFullYear() - 1);
-		return lastAddedDate;
 	}
+
+	const lastAddedDate = new Date();
+	lastAddedDate.setFullYear(lastAddedDate.getFullYear() - 1);
+	return lastAddedDate;
 };

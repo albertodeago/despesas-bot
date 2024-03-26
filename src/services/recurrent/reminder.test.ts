@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../../logger/mock";
-import { formatDate } from "../../utils";
 import { getMockGoogleService } from "../google/mock";
+import { initReminderService } from "./reminder";
+
+import type TelegramBot from "node-telegram-bot-api";
 import type { RecurrentFrequency } from "./common";
-import { Reminder, initReminderService } from "./reminder";
 
 const spyRead = vi.fn(async () => [
 	["message", "frequency", "lastAddedDate"],
@@ -23,7 +24,7 @@ const mockConfig = {
 	ADMINISTRATION_CHAT_ID: "admin-chat-id",
 };
 const mockLogger = getMockLogger();
-const mockBot = { sendMessage: vi.fn() } as any;
+const mockBot = { sendMessage: vi.fn() } as unknown as TelegramBot;
 const mockGoogleService = getMockGoogleService({
 	spyRead,
 	spyUpdate,

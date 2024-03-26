@@ -1,6 +1,7 @@
 import type { VitestUtils } from "vitest";
 import type { Category } from "../../use-cases/categories";
 
+// biome-ignore lint/suspicious/noExplicitAny: any is fine here
 export const waitMessage = async (vi: VitestUtils, bot: any) => {
 	await vi.waitFor(() => {
 		if (bot.sendMessage.mock.calls?.[0]?.[0] === undefined)

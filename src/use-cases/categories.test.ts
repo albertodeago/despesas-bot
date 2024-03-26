@@ -68,11 +68,13 @@ describe("USE-CASE: categories", () => {
 
 describe("googleResultToCategories", () => {
 	describe("should map categories stored in a google sheet to Categories", () => {
-		expectations.forEach(({ text, input, output }) => {
-			it(text, () => {
-				expect(_googleResultToCategories(input)).toEqual(output);
+		for (const expectation of expectations) {
+			it(expectation.text, () => {
+				expect(_googleResultToCategories(expectation.input)).toEqual(
+					expectation.output,
+				);
 			});
-		});
+		}
 	});
 });
 

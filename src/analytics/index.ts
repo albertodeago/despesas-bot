@@ -27,7 +27,7 @@ export const initAnalytics = ({
 			});
 			const result = Number.parseInt(resp?.[0]?.[1] ?? "");
 
-			if (isNaN(result)) {
+			if (global.isNaN(result)) {
 				const err = new Error(
 					`Error: tracked expense found is ${result} (NaN)`,
 				);
@@ -80,7 +80,7 @@ export const initAnalytics = ({
 			});
 			const result = Number.parseInt(resp?.[0]?.[1] ?? "");
 
-			if (isNaN(result)) {
+			if (global.isNaN(result)) {
 				const err = new Error(
 					`Error: tracked expense found is ${result} (NaN)`,
 				);
@@ -138,7 +138,7 @@ export const initAnalytics = ({
 			});
 			const result = Number.parseInt(resp?.[0]?.[1] ?? "");
 
-			if (isNaN(result)) {
+			if (global.isNaN(result)) {
 				const err = new Error(
 					`Error: tracked expense found is ${result} (NaN)`,
 				);
