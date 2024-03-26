@@ -41,7 +41,6 @@ if (
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
-- TODO: send me a msg when someone "start" or "stop" the bot
 
 FUTURE:
 - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
@@ -54,7 +53,7 @@ FUTURE:
 
 OPTIONAL:
 - [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
-- [FEATURE] function to add a category / subcateogory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
+- [FEATURE] function to add a category / subcategory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
@@ -134,6 +133,7 @@ const main = async () => {
     StopCommand.pattern,
     StopCommand.getHandler({
       bot,
+      config,
       chatsConfigUC,
       logger,
     })

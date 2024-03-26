@@ -32,7 +32,7 @@ Assicurati che l'id sia corretto e che io abbia i permessi per leggerlo.`;
 type StartCommandHandlerProps = {
   bot: TelegramBot;
   googleService: GoogleService;
-  config: CONFIG_TYPE;
+  config: Pick<CONFIG_TYPE, "ADMINISTRATION_CHAT_ID" | "EXPENSES">;
   chatsConfigUC: ChatsConfigurationUseCase;
   logger: Logger;
 };
@@ -79,6 +79,7 @@ export const StartCommand: BotCommand<StartCommandHandlerProps> = {
         }
 
         bot.sendMessage(chatId, STARTED_MSG, { parse_mode: 'Markdown' });
+        bot.sendMessage(config.ADMINISTRATION_CHAT_ID, `Bot started for chat ${strChatId}`);
         return;
       } catch (e) {
         const err = new Error(

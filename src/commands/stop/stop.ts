@@ -2,6 +2,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import { fromMsg } from '../../utils';
 import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
 import { Logger } from '../../logger';
+import { CONFIG_TYPE } from '../../config/config';
 
 const STOP_MSG = `Scollegato, non traccerò più spese.
 
@@ -14,10 +15,11 @@ type StopCommandHandlerProps = {
   bot: TelegramBot;
   chatsConfigUC: ChatsConfigurationUseCase;
   logger: Logger;
+  config: Pick<CONFIG_TYPE, "ADMINISTRATION_CHAT_ID">;
 };
 export const StopCommand: BotCommand<StopCommandHandlerProps> = {
   pattern: /\/stop/,
-  getHandler({ bot, chatsConfigUC, logger }) {
+  getHandler({ bot, chatsConfigUC, logger, config }) {
     return async (msg: TelegramBot.Message) => {
       const { chatId, strChatId, tokens } = fromMsg(msg);
       logger.info(`StopCommand handler. Tokens ${tokens}`, strChatId);
@@ -36,6 +38,7 @@ export const StopCommand: BotCommand<StopCommandHandlerProps> = {
           });
 
           bot.sendMessage(chatId, STOP_MSG, { parse_mode: 'Markdown' });
+          bot.sendMessage(config.ADMINISTRATION_CHAT_ID, `Bot stopped for chat ${strChatId}`);
         } else {
           bot.sendMessage(chatId, NO_SHEET_FOUND, { parse_mode: 'Markdown' });
         }

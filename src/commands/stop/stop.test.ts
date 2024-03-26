@@ -48,6 +48,9 @@ const mockChatsConfigUC = {
   ),
 };
 const mockLogger = getMockLogger();
+const mockConfig = {
+  ADMINISTRATION_CHAT_ID: 'admin-chat-id',
+};
 
 describe('StopCommand', () => {
   let handler: ReturnType<typeof StopCommand.getHandler>;
@@ -58,6 +61,7 @@ describe('StopCommand', () => {
       bot,
       chatsConfigUC: mockChatsConfigUC,
       logger: mockLogger,
+      config: mockConfig,
     });
   });
 
@@ -115,5 +119,20 @@ describe('StopCommand', () => {
       spreadsheetId: 'sheet-1',
       isActive: false,
     });
+  });
+
+  it('should send a msg to the admin when successful', async () => {
+    mockChatsConfigUC.isChatInConfiguration.mockImplementationOnce(() =>
+      Promise.resolve(true)
+    );
+    handler(defaultMsg);
+
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[1]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
+    const adminMsg = bot.sendMessage.mock.calls[1];
+    expect(adminMsg[0]).toEqual("admin-chat-id");
+    expect(adminMsg[1]).toContain('Bot stopped for chat 123');
   });
 });

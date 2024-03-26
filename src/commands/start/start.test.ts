@@ -26,7 +26,9 @@ const defaultMsg: TelegramBot.Message = {
 const mockConfig = {
   EXPENSES: {
     TAB_NAME: 'tab-name',
+    RANGE: 'range',
   },
+  ADMINISTRATION_CHAT_ID: 'admin-chat-id',
 };
 const mockChatsConfigUC = {
   isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
@@ -63,7 +65,6 @@ describe('StartCommand', () => {
       // @ts-expect-error
       bot,
       googleService: mockGoogleService,
-      // @ts-expect-error
       config: mockConfig,
       chatsConfigUC: mockChatsConfigUC,
       logger: mockLogger,
@@ -127,5 +128,20 @@ describe('StartCommand', () => {
       isActive: true,
     });
     expect(mockChatsConfigUC.updateChatInConfiguration).not.toHaveBeenCalled();
+  });
+
+  it('should send a msg to the admin when successful', async () => {
+    mockChatsConfigUC.isChatInConfiguration.mockImplementationOnce(() =>
+      Promise.resolve(true)
+    );
+    handler(defaultMsg);
+
+    await vi.waitFor(() => {
+      if (bot.sendMessage.mock.calls?.[1]?.[0] === undefined)
+        throw 'Mock not called yet';
+    });
+    const adminMsg = bot.sendMessage.mock.calls[1];
+    expect(adminMsg[0]).toEqual("admin-chat-id");
+    expect(adminMsg[1]).toContain('Bot started for chat 123');
   });
 });
