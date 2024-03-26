@@ -51,7 +51,7 @@ export const initReminders = ({
           chat.chatId,
           chat.spreadsheetId
         );
-console.log(reminders)
+
         for (const reminder of reminders) {
           // Check if the reminder is due
           if (isReminderDue(reminder)) {
@@ -108,8 +108,7 @@ const isReminderDue = (reminder: Reminder) => {
   switch (frequency) {
     case 'settimanale':
       return now > lastAddedTs + 1000 * 60 * 60 * 24 * 7;
-      case 'mensile':
-      console.log(now, "\n",lastAddedTs)
+    case 'mensile':
       return now > lastAddedTs + 1000 * 60 * 60 * 24 * 30;
     case 'bimestrale':
       return now > lastAddedTs + 1000 * 60 * 60 * 24 * 30 * 2;
