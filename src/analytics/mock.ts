@@ -7,5 +7,7 @@ export const getMockAnalytics = (): Analytics => {
     addTrackedExpense: vi.fn(),
     _getTrackedRecurrentExpenses: vi.fn(),
     addTrackedRecurrentExpense: vi.fn(),
+    _getTrackedReminders: vi.fn(),
+    addTrackedReminder: vi.fn(),
   };
 };

@@ -19,6 +19,8 @@ const mockConfig = {
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
     TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
     TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
+    TRACKED_REMINDERS_RANGE: 'A3:B3',
+    TRACKED_REMINDERS_LABEL: 'Tracked reminders',
   },
 };
 const mockLogger = getMockLogger();
@@ -116,6 +118,48 @@ describe('Analytics', () => {
     it('should not update the value if it s not able to get the tracked expenses', async () => {
       spyRead.mockImplementationOnce(() => Promise.reject('error'));
       await analytics.addTrackedRecurrentExpense();
+      expect(spyRead).toHaveBeenCalled();
+      expect(spyUpdate).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getTrackedReminders', () => {
+    it('should be able to get the tracked expenses', async () => {
+      const result = await analytics._getTrackedReminders();
+      expect(result).toBe(5);
+    });
+
+    it('should return undefined if it s not able to get the tracked expenses', async () => {
+      spyRead.mockImplementationOnce(() => Promise.reject('error'));
+      const result = await analytics._getTrackedReminders();
+      expect(mockLogger.sendError).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined if the value is not a number', async () => {
+      spyRead.mockImplementationOnce(() =>
+        Promise.resolve([['Tracked expenses', 'not a number']])
+      );
+      const result = await analytics._getTrackedReminders();
+      expect(mockLogger.sendError).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('addTrackedReminder', () => {
+    it('should be able to add a tracked expense', async () => {
+      await analytics.addTrackedReminder();
+      expect(spyUpdate).toHaveBeenCalledWith({
+        sheetId: 'sheet-id',
+        range: 'A3:B3',
+        tabName: 'tab-name',
+        data: [['Tracked reminders', 6]],
+      });
+    });
+
+    it('should not update the value if it s not able to get the tracked expenses', async () => {
+      spyRead.mockImplementationOnce(() => Promise.reject('error'));
+      await analytics.addTrackedReminder();
       expect(spyRead).toHaveBeenCalled();
       expect(spyUpdate).not.toHaveBeenCalled();
     });
