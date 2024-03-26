@@ -52,16 +52,12 @@ export const initRecurrentExpenseService = ({
         // first element is the header, we can skip it
         recurrentExpenses.shift();
 
-        // FIXME: Considering that we can have recurrent daily minimum, we can strip the time from the date (just keep yyyy-mm-dd)
-        // This way it's readable for the user and we can compare it easily, we lose precision but who cares for this feature
-
         // Remove every elements that has an invalid frequency
         // and if something is not ok, we can track the error AND alert the user!
         const validRecurrentExpenses: RecurrentExpense[] = recurrentExpenses
           // we first map and then filter to have the indexes of the valid expenses that we will use as ID when updating
           .map((expense, index) => {
             const errorMsg = checkRecurrentExpense(expense as ExpenseRow);
-            // TODO: should we move all the error handling in the domain? Service should just do requests I guess
             if (errorMsg) {
               logger.error(
                 new Error(`Invalid recurrent expense: ${errorMsg}`),
@@ -100,7 +96,7 @@ export const initRecurrentExpenseService = ({
         return validRecurrentExpenses;
       }
     } catch (e) {
-      onError(new Error(`Error while reading recurrent expenses: ${e}`));
+      onError(new Error(`Error while reading recurrent expenses: ${e}.\n Assicurati di avere la tab "Spese Ricorrenti" nel tuo spreadsheet!`));
     }
 
     return [];

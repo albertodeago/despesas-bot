@@ -30,6 +30,8 @@ export type GoogleService = ReturnType<typeof initGoogleService>;
 export const initGoogleService = (client: sheets_v4.Sheets) => {
   /**
    * Read from a google sheet
+   * 
+   * N.B: this method *throws* if the sheet is not found
    */
   const readGoogleSheet = async ({
     sheetId,
