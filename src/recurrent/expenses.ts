@@ -5,7 +5,7 @@ import type { ChatsConfigurationUseCase } from '../use-cases/chats-configuration
 import type {
   RecurrentExpense,
   RecurrentExpenseService,
-} from '../services/recurrent/expense';
+} from '../services/recurrent-expense';
 import type { Analytics } from '../analytics';
 
 type InitRecurrentExpensesParams = {

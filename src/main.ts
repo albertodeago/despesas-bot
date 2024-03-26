@@ -95,7 +95,12 @@ const main = async () => {
     logger,
     bot,
   });
-  const reminderService = initReminderService({ googleService, config, logger, bot });
+  const reminderService = initReminderService({
+    googleService,
+    config,
+    logger,
+    bot,
+  });
 
   const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
   const chatsConfigUC = initChatsConfigurationUseCase({

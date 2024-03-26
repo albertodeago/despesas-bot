@@ -16,7 +16,7 @@ type InitRemindersParams = {
   analytics: Analytics;
 };
 
-const CHECK_INTERVAL = 1000 * 60 * 0.5; // 60 minutes
+const CHECK_INTERVAL = 1000 * 60 * 60; // 60 minutes
 
 export const initReminders = ({
   logger,
