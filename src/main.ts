@@ -1,40 +1,40 @@
-import 'dotenv/config';
-import { version } from '../package.json';
-import { getGoogleSheetClient, initGoogleService } from './services/google';
-import { getBot } from './telegram';
-import { getConfig } from './config/config';
-import { initAnalytics } from './analytics';
+import "dotenv/config";
+import { version } from "../package.json";
+import { initAnalytics } from "./analytics";
+import { getConfig } from "./config/config";
+import { getGoogleSheetClient, initGoogleService } from "./services/google";
+import { getBot } from "./telegram";
 
-import { initCategoriesUseCase } from './use-cases/categories';
-import { initChatsConfigurationUseCase } from './use-cases/chats-configuration';
+import { initCategoriesUseCase } from "./use-cases/categories";
+import { initChatsConfigurationUseCase } from "./use-cases/chats-configuration";
 
-import { HelpCommand } from './commands/help/help';
-import { StartCommand } from './commands/start/start';
-import { StopCommand } from './commands/stop/stop';
-import { CategoriesCommand } from './commands/categories/categories';
-import { AddExpenseCommand } from './commands/expenses/add-expense';
-import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
-import { initLogger } from './logger';
-import { initRecurrentExpenses } from './recurrent/expenses';
-import { initRecurrentExpenseService } from './services/recurrent/expense';
-import { initReminders } from './recurrent/reminders';
-import { initReminderService } from './services/recurrent/reminder';
+import { CategoriesCommand } from "./commands/categories/categories";
+import { AddExpenseCommand } from "./commands/expenses/add-expense";
+import { AddExpenseQuickCommand } from "./commands/expenses/add-expense-quick";
+import { HelpCommand } from "./commands/help/help";
+import { StartCommand } from "./commands/start/start";
+import { StopCommand } from "./commands/stop/stop";
+import { initLogger } from "./logger";
+import { initRecurrentExpenses } from "./recurrent/expenses";
+import { initReminders } from "./recurrent/reminders";
+import { initRecurrentExpenseService } from "./services/recurrent/expense";
+import { initReminderService } from "./services/recurrent/reminder";
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
 const GOOGLE_SECRET_PRIVATE_KEY = (
-  process.env.GOOGLE_SECRET_PRIVATE_KEY || ''
-).replace(/\\n/g, '\n'); // https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library
+	process.env.GOOGLE_SECRET_PRIVATE_KEY || ""
+).replace(/\\n/g, "\n"); // https://stackoverflow.com/questions/74131595/error-error1e08010cdecoder-routinesunsupported-with-google-auth-library
 
 const ENVIRONMENT: Environment =
-  process.env.NODE_ENV === 'development' ? 'development' : 'production';
+	process.env.NODE_ENV === "development" ? "development" : "production";
 
 if (
-  !TELEGRAM_SECRET ||
-  !GOOGLE_SECRET_CLIENT_EMAIL ||
-  !GOOGLE_SECRET_PRIVATE_KEY
+	!TELEGRAM_SECRET ||
+	!GOOGLE_SECRET_CLIENT_EMAIL ||
+	!GOOGLE_SECRET_PRIVATE_KEY
 ) {
-  throw new Error('Missing environment variables, please check the .env file');
+	throw new Error("Missing environment variables, please check the .env file");
 }
 
 /**
@@ -70,128 +70,128 @@ If we put just one listener for every message, in that listener we could:
 */
 
 const main = async () => {
-  const config = getConfig(ENVIRONMENT);
+	const config = getConfig(ENVIRONMENT);
 
-  const googleSheetClient = await getGoogleSheetClient({
-    clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
-    privateKey: GOOGLE_SECRET_PRIVATE_KEY,
-  });
+	const googleSheetClient = await getGoogleSheetClient({
+		clientEmail: GOOGLE_SECRET_CLIENT_EMAIL,
+		privateKey: GOOGLE_SECRET_PRIVATE_KEY,
+	});
 
-  const googleService = initGoogleService(googleSheetClient);
+	const googleService = initGoogleService(googleSheetClient);
 
-  const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
-  const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
+	const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
+	const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
-  const logger = initLogger({
-    bot,
-    config,
-    level: ENVIRONMENT === 'development' ? 2 : 1,
-  });
-  const analytics = initAnalytics({ googleService, config, logger });
+	const logger = initLogger({
+		bot,
+		config,
+		level: ENVIRONMENT === "development" ? 2 : 1,
+	});
+	const analytics = initAnalytics({ googleService, config, logger });
 
-  const recurrentExpenseService = initRecurrentExpenseService({
-    googleService,
-    config,
-    logger,
-    bot,
-  });
-  const reminderService = initReminderService({
-    googleService,
-    config,
-    logger,
-    bot,
-  });
+	const recurrentExpenseService = initRecurrentExpenseService({
+		googleService,
+		config,
+		logger,
+		bot,
+	});
+	const reminderService = initReminderService({
+		googleService,
+		config,
+		logger,
+		bot,
+	});
 
-  const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
-  const chatsConfigUC = initChatsConfigurationUseCase({
-    googleService,
-    config,
-    logger,
-  });
+	const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
+	const chatsConfigUC = initChatsConfigurationUseCase({
+		googleService,
+		config,
+		logger,
+	});
 
-  // On startup we want to inform the admin that the bot is up
-  logger.sendInfo(upAndRunningMsg, 'NO_CHAT');
+	// On startup we want to inform the admin that the bot is up
+	logger.sendInfo(upAndRunningMsg, "NO_CHAT");
 
-  bot.on('message', (msg): void => {
-    logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
-  });
+	bot.on("message", (msg): void => {
+		logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
+	});
 
-  bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
+	bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
 
-  bot.onText(
-    StartCommand.pattern,
-    StartCommand.getHandler({
-      bot,
-      googleService,
-      config,
-      chatsConfigUC,
-      logger,
-    })
-  );
+	bot.onText(
+		StartCommand.pattern,
+		StartCommand.getHandler({
+			bot,
+			googleService,
+			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
 
-  bot.onText(
-    StopCommand.pattern,
-    StopCommand.getHandler({
-      bot,
-      config,
-      chatsConfigUC,
-      logger,
-    })
-  );
+	bot.onText(
+		StopCommand.pattern,
+		StopCommand.getHandler({
+			bot,
+			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
 
-  bot.onText(
-    AddExpenseCommand.pattern,
-    AddExpenseCommand.getHandler({
-      bot,
-      categoriesUC,
-      analytics,
-      googleService,
-      config,
-      chatsConfigUC,
-      logger,
-    })
-  );
+	bot.onText(
+		AddExpenseCommand.pattern,
+		AddExpenseCommand.getHandler({
+			bot,
+			categoriesUC,
+			analytics,
+			googleService,
+			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
 
-  bot.onText(
-    AddExpenseQuickCommand.pattern,
-    AddExpenseQuickCommand.getHandler({
-      bot,
-      googleService,
-      analytics,
-      config,
-      chatsConfigUC,
-      logger,
-    })
-  );
+	bot.onText(
+		AddExpenseQuickCommand.pattern,
+		AddExpenseQuickCommand.getHandler({
+			bot,
+			googleService,
+			analytics,
+			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
 
-  bot.onText(
-    CategoriesCommand.pattern,
-    CategoriesCommand.getHandler({
-      bot,
-      categoriesUC,
-      chatsConfigUC,
-      logger,
-    })
-  );
+	bot.onText(
+		CategoriesCommand.pattern,
+		CategoriesCommand.getHandler({
+			bot,
+			categoriesUC,
+			chatsConfigUC,
+			logger,
+		}),
+	);
 
-  const recurrentExpenseHandler = initRecurrentExpenses({
-    logger,
-    chatsConfigUC,
-    recurrentExpenseService,
-    analytics,
-    bot,
-  });
-  await recurrentExpenseHandler.check();
-  recurrentExpenseHandler.start();
+	const recurrentExpenseHandler = initRecurrentExpenses({
+		logger,
+		chatsConfigUC,
+		recurrentExpenseService,
+		analytics,
+		bot,
+	});
+	await recurrentExpenseHandler.check();
+	recurrentExpenseHandler.start();
 
-  const reminderHandler = initReminders({
-    logger,
-    chatsConfigUC,
-    reminderService,
-    analytics,
-    bot,
-  });
-  await reminderHandler.check();
-  reminderHandler.start();
+	const reminderHandler = initReminders({
+		logger,
+		chatsConfigUC,
+		reminderService,
+		analytics,
+		bot,
+	});
+	await reminderHandler.check();
+	reminderHandler.start();
 };
 main();

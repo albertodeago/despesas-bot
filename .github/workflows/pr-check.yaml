@@ -25,6 +25,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Linting and formatting
+        run: npm run check
+
       - name: Typechecking
         run: npm run ts-check
 
