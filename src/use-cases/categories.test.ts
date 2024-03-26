@@ -1,27 +1,24 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { Categories, _googleResultToCategories } from './categories';
+import {
+  initCategoriesUseCase,
+  _googleResultToCategories,
+  CategoriesUseCase,
+} from './categories';
 import { getMockLogger } from '../logger/mock';
+import { getMockGoogleService } from '../services/google/mock';
 
-const spyGet = vi.fn(() =>
-  Promise.resolve({
-    data: {
-      values: [
-        // ['Categories', 'Sub-categories'], This is not returned
-        ['other'],
-        ['food', 'grocery', 'restaurant'],
-        ['home', 'maintenance', 'garden', 'forniture', 'other'],
-      ],
-    },
-  })
+const spyRead = vi.fn(() =>
+  Promise.resolve([
+    // ['Categories', 'Sub-categories'], This is not returned
+    ['other'],
+    ['food', 'grocery', 'restaurant'],
+    ['home', 'maintenance', 'garden', 'forniture', 'other'],
+  ])
 );
 
-const mockGoogleSheetClient = {
-  spreadsheets: {
-    values: {
-      get: spyGet,
-    },
-  },
-};
+const mockGoogleService = getMockGoogleService({
+  spyRead,
+});
 const mockConfig = {
   CATEGORIES: {
     TAB_NAME: 'tab-name',
@@ -31,25 +28,29 @@ const mockConfig = {
 const mockLogger = getMockLogger();
 
 describe('USE-CASE: categories', () => {
-  let categories: Categories;
+  let categories: CategoriesUseCase;
 
   beforeEach(() => {
-    // @ts-expect-error
-    categories = new Categories(mockGoogleSheetClient, mockConfig, mockLogger);
+    categories = initCategoriesUseCase({
+      config: mockConfig,
+      logger: mockLogger,
+      googleService: mockGoogleService,
+    });
     vi.clearAllMocks();
   });
 
   it('should return the categories from the specified sheetId', async () => {
     const result = await categories.get('sheet-id');
 
-    const tmp = spyGet.mock.calls[0];
     // @ts-ignore - not sure why but this has a wrong type
-    const calledParams = spyGet.mock.calls[0][0] as unknown as {
+    const calledParams = spyRead.mock.calls[0][0] as unknown as {
       range: string;
-      spreadsheetId: string;
+      sheetId: string;
+      tabName: string;
     };
-    expect(calledParams!.range).toEqual('tab-name!range');
-    expect(calledParams!.spreadsheetId).toEqual('sheet-id');
+    expect(calledParams.range).toEqual('range');
+    expect(calledParams.tabName).toEqual('tab-name');
+    expect(calledParams.sheetId).toEqual('sheet-id');
     expect(result.length).toEqual(3);
     expect(result[0].name).toEqual('other');
     expect(result[1].subCategories).toHaveLength(2);
@@ -61,7 +62,7 @@ describe('USE-CASE: categories', () => {
     const cached = await categories.get('sheet-id');
 
     expect(result).toEqual(cached);
-    expect(spyGet.mock.calls).toHaveLength(1);
+    expect(spyRead.mock.calls).toHaveLength(1);
   });
 });
 

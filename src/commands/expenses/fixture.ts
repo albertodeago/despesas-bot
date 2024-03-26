@@ -8,8 +8,6 @@ export const waitMessage = async (vi: VitestUtils, bot: any) => {
   });
 };
 
-export const mockGoogleSheetClient = {};
-
 export const getMockAnalytics = (vi: VitestUtils) => ({
   addTrackedExpense: vi.fn(),
 });
@@ -20,8 +18,10 @@ export const getMockBot = (vi: VitestUtils) => ({
 });
 
 export const mockConfig = {
-  tabName: 'tab-name',
-  range: 'A:Z',
+  EXPENSES: {
+    TAB_NAME: 'tab-name',
+    RANGE: 'A:Z',
+  },
 };
 
 export const getCommonMessageProperties = (): {

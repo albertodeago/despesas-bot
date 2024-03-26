@@ -1,8 +1,7 @@
-import { sheets_v4 } from 'googleapis';
 import { CONFIG_TYPE } from '../config/config';
-import { readGoogleSheet } from '../google';
 import TTLCache from '@isaacs/ttlcache';
 import type { Logger } from '../logger';
+import { GoogleService } from '../services/google';
 
 export type Category = {
   name: string;
@@ -14,65 +13,51 @@ export type SubCategory = {
 
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-export interface CategoriesUseCase {
-  get: (sheetId: SheetId) => Promise<Category[]>;
-}
+type ConfigCategories = Pick<CONFIG_TYPE, 'CATEGORIES'>;
 
-export class Categories implements CategoriesUseCase {
-  config: CONFIG_TYPE;
-  client: sheets_v4.Sheets;
-  cache: TTLCache<SheetId, Category[]>;
+export type CategoriesUseCase = ReturnType<typeof initCategoriesUseCase>;
+
+export const initCategoriesUseCase = ({
+  config,
+  logger,
+  googleService,
+}: {
+  config: ConfigCategories;
   logger: Logger;
-
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
-    this.client = client;
-    this.config = config;
-    this.cache = new TTLCache({
-      max: 100,
-      ttl: CACHE_TTL,
-    });
-    this.logger = logger;
-  }
-
-  async get(sheetId: SheetId): Promise<Category[]> {
-    if (this.cache.has(sheetId)) {
-      this.logger.debug('CategoriesUseCase - get cache hit', 'NO_CHAT');
-      return this.cache.get(sheetId)!;
-    }
-
-    this.logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
-    const categories = await fetchCategories(
-      this.client,
-      sheetId,
-      this.config.CATEGORIES.TAB_NAME,
-      this.config.CATEGORIES.RANGE
-    );
-
-    this.cache.set(sheetId, categories);
-
-    return categories;
-  }
-}
-
-export const fetchCategories = async (
-  client: sheets_v4.Sheets,
-  sheetId: SheetId,
-  tabName: string,
-  range: string
-): Promise<Category[]> => {
-  const result = await readGoogleSheet({
-    client,
-    sheetId,
-    tabName,
-    range,
+  googleService: GoogleService;
+}) => {
+  const cache = new TTLCache<SheetId, Category[]>({
+    max: 100,
+    ttl: CACHE_TTL,
   });
 
-  if (!result) {
-    throw new Error('Categories not found');
-  }
-  // TODO: what happens if the tab is empty? we should throw an error, to be tested
+  const get = async (sheetId: SheetId): Promise<Category[]> => {
+    if (cache.has(sheetId)) {
+      logger.debug('CategoriesUseCase - get cache hit', 'NO_CHAT');
+      return cache.get(sheetId)!;
+    }
 
-  return _googleResultToCategories(result);
+    logger.debug('CategoriesUseCase - cache miss', 'NO_CHAT');
+    const rawCategories = await googleService.readGoogleSheet({
+      sheetId,
+      tabName: config.CATEGORIES.TAB_NAME,
+      range: config.CATEGORIES.RANGE,
+    });
+
+    if (!rawCategories) {
+      throw new Error('Categories not found');
+    }
+
+    const categories = _googleResultToCategories(rawCategories);
+
+    cache.set(sheetId, categories);
+
+    return categories;
+  };
+
+  return {
+    get,
+  };
 };
 
 // Exported just for testing

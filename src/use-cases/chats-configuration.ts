@@ -1,56 +1,42 @@
-import { sheets_v4 } from 'googleapis';
-import {
-  readGoogleSheet,
-  appendGoogleSheet,
-  updateGoogleSheet,
-} from '../google';
 import { CONFIG_TYPE } from '../config/config';
 import TTLCache from '@isaacs/ttlcache';
 import { Logger } from '../logger';
+import { GoogleService } from '../services/google';
 
 const CACHE_KEY = 'chat-configuration';
 const CACHE_TTL = 1000 * 60 * 5; // 5 min
 
-export interface ChatsConfigurationUseCase {
-  get: () => Promise<ChatConfig[]>;
-  isChatInConfiguration: (chatId: ChatId) => Promise<boolean>;
-  addChatToConfiguration: (chatConfig: ChatConfig) => Promise<boolean>;
-  updateChatInConfiguration: (
-    chatId: ChatId,
-    newChatConfig: ChatConfig
-  ) => Promise<boolean>;
-  isChatActiveInConfiguration: (chatId: ChatId) => Promise<boolean>;
-  getSpreadsheetIdFromChat: (chatId: ChatId) => Promise<SheetId>;
-}
+type ConfigChatsConfig = Pick<CONFIG_TYPE, 'CHATS_CONFIGURATION'>;
 
-export class ChatsConfiguration implements ChatsConfigurationUseCase {
-  client: sheets_v4.Sheets;
-  config: CONFIG_TYPE;
-  cache: TTLCache<typeof CACHE_KEY, ChatConfig[]>;
+export type ChatsConfigurationUseCase = ReturnType<
+  typeof initChatsConfigurationUseCase
+>;
+
+export const initChatsConfigurationUseCase = ({
+  config,
+  logger,
+  googleService,
+}: {
+  config: ConfigChatsConfig;
   logger: Logger;
+  googleService: GoogleService;
+}) => {
+  const cache: TTLCache<typeof CACHE_KEY, ChatConfig[]> = new TTLCache({
+    max: 1, // we just need 1 entry, the config itself
+    ttl: CACHE_TTL,
+  });
 
-  constructor(client: sheets_v4.Sheets, config: CONFIG_TYPE, logger: Logger) {
-    this.client = client;
-    this.config = config;
-    this.cache = new TTLCache({
-      max: 1, // we just need 1 entry, the config itself
-      ttl: CACHE_TTL,
-    });
-    this.logger = logger;
-  }
-
-  async get() {
+  const get = async () => {
     try {
-      const isCached = this.cache.has(CACHE_KEY);
+      const isCached = cache.has(CACHE_KEY);
       if (isCached) {
-        return this.cache.get(CACHE_KEY)!;
+        return cache.get(CACHE_KEY)!;
       }
 
-      const chatsConfig = await readGoogleSheet({
-        client: this.client,
-        sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
-        tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
-        range: this.config.CHATS_CONFIGURATION.RANGE,
+      const chatsConfig = await googleService.readGoogleSheet({
+        sheetId: config.CHATS_CONFIGURATION.SHEET_ID,
+        tabName: config.CHATS_CONFIGURATION.TAB_NAME,
+        range: config.CHATS_CONFIGURATION.RANGE,
       });
 
       if (chatsConfig && chatsConfig.length > 0) {
@@ -66,21 +52,21 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
             isActive: chatConfig[2].toLowerCase() === 'true',
           }));
 
-        this.cache.set(CACHE_KEY, validChatsConfig);
+        cache.set(CACHE_KEY, validChatsConfig);
 
         return validChatsConfig;
       }
     } catch (e) {
       const err = new Error(`ChatConfigurationUseCase - error in get: ${e}`);
-      this.logger.sendError(err, 'NO_CHAT');
+      logger.sendError(err, 'NO_CHAT');
     }
 
     return [];
-  }
+  };
 
-  async isChatInConfiguration(chatId: ChatId) {
+  const isChatInConfiguration = async (chatId: ChatId) => {
     try {
-      const chatsConfig = await this.get();
+      const chatsConfig = await get();
       if (chatsConfig) {
         const index = chatsConfig.findIndex(
           (chatConfig) => chatConfig.chatId === chatId
@@ -93,30 +79,29 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
       const err = new Error(
         `ChatConfigurationUseCase - error in isChatInConfiguration: ${e}`
       );
-      this.logger.sendError(err, 'NO_CHAT');
+      logger.sendError(err, 'NO_CHAT');
     }
 
     return false;
-  }
+  };
 
-  async addChatToConfiguration(chatConfig: ChatConfig) {
+  const addChatToConfiguration = async (chatConfig: ChatConfig) => {
     try {
-      await appendGoogleSheet({
-        client: this.client,
-        sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
-        tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
-        range: this.config.CHATS_CONFIGURATION.RANGE,
+      await googleService.appendGoogleSheet({
+        sheetId: config.CHATS_CONFIGURATION.SHEET_ID,
+        tabName: config.CHATS_CONFIGURATION.TAB_NAME,
+        range: config.CHATS_CONFIGURATION.RANGE,
         data: [
           [chatConfig.chatId, chatConfig.spreadsheetId, chatConfig.isActive],
         ],
       });
 
       // update cache
-      const currentCache = this.cache.get(CACHE_KEY);
+      const currentCache = cache.get(CACHE_KEY);
       if (currentCache) {
         const newValue = currentCache.slice();
         newValue.push(chatConfig);
-        this.cache.set(CACHE_KEY, newValue);
+        cache.set(CACHE_KEY, newValue);
       }
 
       return true;
@@ -124,17 +109,20 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
       const err = new Error(
         `ChatConfigurationUseCase - error in addChatToConfiguration: ${e}`
       );
-      this.logger.sendError(err, 'NO_CHAT');
+      logger.sendError(err, 'NO_CHAT');
     }
     return false;
-  }
+  };
 
-  async updateChatInConfiguration(chatId: ChatId, newChatConfig: ChatConfig) {
+  const updateChatInConfiguration = async (
+    chatId: ChatId,
+    newChatConfig: ChatConfig
+  ) => {
     // first we need to read the configuration, then we need to find the line with the right chatId
     // and then we need to update it
 
     try {
-      const chatsConfig = await this.get();
+      const chatsConfig = await get();
 
       if (chatsConfig) {
         const index = chatsConfig.findIndex(
@@ -144,14 +132,13 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         // and another one because the first row is the header that we skip when reading the configuration
         const correctIndex = index + 2;
 
-        const range = this.config.CHATS_CONFIGURATION.RANGE.split(':')
+        const range = config.CHATS_CONFIGURATION.RANGE.split(':')
           .map((v) => `${v}${correctIndex}`)
           .join(':');
 
-        await updateGoogleSheet({
-          client: this.client,
-          sheetId: this.config.CHATS_CONFIGURATION.SHEET_ID,
-          tabName: this.config.CHATS_CONFIGURATION.TAB_NAME,
+        await googleService.updateGoogleSheet({
+          sheetId: config.CHATS_CONFIGURATION.SHEET_ID,
+          tabName: config.CHATS_CONFIGURATION.TAB_NAME,
           range,
           data: [
             [
@@ -163,11 +150,11 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
         });
 
         // update cache
-        const currentCache = this.cache.get(CACHE_KEY);
+        const currentCache = cache.get(CACHE_KEY);
         if (currentCache) {
           const newValue = currentCache.slice();
           newValue[index] = newChatConfig;
-          this.cache.set(CACHE_KEY, newValue);
+          cache.set(CACHE_KEY, newValue);
         }
 
         return true;
@@ -176,36 +163,45 @@ export class ChatsConfiguration implements ChatsConfigurationUseCase {
       const err = new Error(
         `ChatConfigurationUseCase - error in updateChatInConfiguration: ${e}`
       );
-      this.logger.sendError(err, 'NO_CHAT');
+      logger.sendError(err, 'NO_CHAT');
     }
 
     return false;
-  }
+  };
 
-  async isChatActiveInConfiguration(chatId: ChatId) {
-    const _isChatInConfiguration = await this.isChatInConfiguration(chatId);
+  const isChatActiveInConfiguration = async (chatId: ChatId) => {
+    const _isChatInConfiguration = await isChatInConfiguration(chatId);
     if (!_isChatInConfiguration) {
       return false;
     }
 
-    const chats = await this.get();
+    const chats = await get();
     const chat = chats?.find((c) => c.chatId === chatId);
 
     return (chat && chat.isActive) || false;
-  }
+  };
 
-  async getSpreadsheetIdFromChat(chatId: ChatId) {
-    const chats = await this.get();
+  const getSpreadsheetIdFromChat = async (chatId: ChatId) => {
+    const chats = await get();
     const chat = chats?.find((c) => c.chatId === chatId);
 
     if (!chats || !chat) {
       const err = new Error(
         `ChatConfigurationUseCase - error in getSpreadsheetIdFromChat, chats not found or unable to match the chat ${chatId}`
       );
-      this.logger.sendError(err, 'NO_CHAT');
+      logger.sendError(err, 'NO_CHAT');
       throw err;
     }
 
     return chat.spreadsheetId;
-  }
-}
+  };
+
+  return {
+    get,
+    isChatInConfiguration,
+    addChatToConfiguration,
+    updateChatInConfiguration,
+    isChatActiveInConfiguration,
+    getSpreadsheetIdFromChat,
+  };
+};

@@ -1,12 +1,12 @@
 import 'dotenv/config';
 import { version } from '../package.json';
-import { getGoogleSheetClient } from './google';
+import { getGoogleSheetClient, initGoogleService } from './services/google';
 import { getBot } from './telegram';
 import { getConfig } from './config/config';
-import { Analytics } from './analytics';
+import { initAnalytics } from './analytics';
 
-import { Categories } from './use-cases/categories';
-import { ChatsConfiguration } from './use-cases/chats-configuration';
+import { initCategoriesUseCase } from './use-cases/categories';
+import { initChatsConfigurationUseCase } from './use-cases/chats-configuration';
 
 import { HelpCommand } from './commands/help/help';
 import { StartCommand } from './commands/start/start';
@@ -15,6 +15,8 @@ import { CategoriesCommand } from './commands/categories/categories';
 import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { initLogger } from './logger';
+import { initRecurrentExpenses } from './recurrent/expenses';
+import { initRecurrentExpenseService } from './services/recurrent-expense';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -36,22 +38,17 @@ if (
 /**
 MANDATORY TO RELEASE
 - TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: [BUG] salvare data in yyyy/mm/dd e non dd/mm/yyyy
 - TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
 
 FUTURE:
 - TODO: [FEATURE] how do we handle recurrent expenses?
   - TODO: [FEATURE] can I turn on some 'reminders' so that the bot help me track recurrent expenses (e.g. monthly bills) (activable in chats)
-  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas") -> but how do we let the user select when and how frequently?
-  this above should be both doable, we can run a task every x min/hours to check if there are recurrent-expenses/reminders to add/send
-  reminders and recurrent-expenses can be saved in the configuration sheet (or in the user one??)
-    saving them in the user one would make the scan of these stuff slower (need to read multiple sheets), but flexible, the user is the owner of the data again, but we also get the benefit that scanning the chatConfig, we immediately see which chats are active, and ignore the others
-    saving them in the configuration sheet would make the scan of these stuff faster, but less flexible, the user cannot edit them
-  when the process scans, in the line of a recurrent-expense/reminder there will should be a column with the "last-added-date", and we can just check
-  if the current date is greater than the last-added-date + the frequency, then we add the expense/send the reminder -> easy peasy
+  - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "aggiungi ricorrente 30 bolletta gas")
+    - TODO: do we want to provide a command to add this kind of expenses?
+    - TODO: do we want to enable the add only in certain hours?
 - TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary? (activable in chats)
-  - it would be pretty cool to send also a report/summary via some pie-charts
-- TODO: [FEATURE] can we parse vocals and answer/handle that too?
+  - TODO: [FEATURE] it would be pretty cool to send also a report/summary via some pie-charts
+- TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] typo tolerant?
 
 OPTIONAL:
@@ -60,8 +57,7 @@ OPTIONAL:
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
-- [MAINTENANCE] add an "error tracker" that sends error to my chat or something like that? At least to not be 100% blind
-- [CODE_QUALITY] improve project structure, currently it's pretty messy, also, some stuff are classes, some are just functions, meh
+- [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
 - [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)
 
@@ -81,6 +77,8 @@ const main = async () => {
     privateKey: GOOGLE_SECRET_PRIVATE_KEY,
   });
 
+  const googleService = initGoogleService(googleSheetClient);
+
   const bot = await getBot(TELEGRAM_SECRET, ENVIRONMENT);
   const upAndRunningMsg = `Bot v${version} up and listening. Environment ${ENVIRONMENT}`;
 
@@ -89,14 +87,21 @@ const main = async () => {
     config,
     level: ENVIRONMENT === 'development' ? 2 : 1,
   });
-  const analytics = new Analytics(googleSheetClient, config, logger);
+  const analytics = initAnalytics({ googleService, config, logger });
 
-  const categoriesUC = new Categories(googleSheetClient, config, logger);
-  const chatsConfigUC = new ChatsConfiguration(
-    googleSheetClient,
+  const recurrentExpenseService = initRecurrentExpenseService({
+    googleService,
     config,
-    logger
-  );
+    logger,
+    bot,
+  });
+
+  const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
+  const chatsConfigUC = initChatsConfigurationUseCase({
+    googleService,
+    config,
+    logger,
+  });
 
   // On startup we want to inform the admin that the bot is up
   logger.sendInfo(upAndRunningMsg, 'NO_CHAT');
@@ -111,7 +116,7 @@ const main = async () => {
     StartCommand.pattern,
     StartCommand.getHandler({
       bot,
-      googleSheetClient,
+      googleService,
       config,
       chatsConfigUC,
       logger,
@@ -133,7 +138,7 @@ const main = async () => {
       bot,
       categoriesUC,
       analytics,
-      googleSheetClient,
+      googleService,
       config,
       chatsConfigUC,
       logger,
@@ -144,7 +149,7 @@ const main = async () => {
     AddExpenseQuickCommand.pattern,
     AddExpenseQuickCommand.getHandler({
       bot,
-      googleSheetClient,
+      googleService,
       analytics,
       config,
       chatsConfigUC,
@@ -161,5 +166,14 @@ const main = async () => {
       logger,
     })
   );
+
+  const recurrentExpenseHandler = initRecurrentExpenses({
+    logger,
+    chatsConfigUC,
+    recurrentExpenseService,
+    analytics,
+    bot,
+  });
+  recurrentExpenseHandler.start();
 };
 main();

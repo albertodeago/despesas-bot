@@ -2,11 +2,17 @@ export type CONFIG_TYPE = ReturnType<typeof getConfig>;
 
 const sharedConfigProps = {
   ADMINISTRATION_CHAT_ID: '53084797',
-  tabName: 'Spese',
-  range: 'A:E',
+  EXPENSES: {
+    TAB_NAME: 'Spese',
+    RANGE: 'A:E',
+  },
   CATEGORIES: {
     TAB_NAME: 'Categorie',
     RANGE: 'A2:Z100',
+  },
+  RECURRENT_EXPENSES: {
+    TAB_NAME: 'Spese Ricorrenti',
+    RANGE: 'A1:G50', // TODO: document this limit, max 50 entries
   },
 };
 
@@ -16,6 +22,8 @@ const developmentConfig: typeof productionConfig = {
     TAB_NAME: 'analytics',
     TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
+    TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '18bmsNx-F-vK-NHavi_QCv2DisS6i7FKmTDPAa44Mdpk',
@@ -29,6 +37,8 @@ const productionConfig = {
     TAB_NAME: 'analytics',
     TRACKED_EXPENSES_RANGE: 'A1:B1',
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
+    TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
+    TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '12zLMygxscN3KeRnJcQ2YwhyZFuIhdyYOjYAKCtjjxkY',
