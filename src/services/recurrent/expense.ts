@@ -1,18 +1,17 @@
-import type { sheets_v4 } from 'googleapis';
-import type { CONFIG_TYPE } from '../config/config';
-import type { Logger } from '../logger';
+import type { CONFIG_TYPE } from '../../config/config';
+import type { Logger } from '../../logger';
 import TelegramBot from 'node-telegram-bot-api';
-import { GoogleService } from './google';
-import { createExpenseRow, formatDate } from '../utils';
+import { GoogleService } from '../google';
+import { createExpenseRow, formatDate } from '../../utils';
+import { RecurrentFrequency, getDateWithFallback } from './common';
 
-export type RecurrentExpenseFrequency = 'settimanale' | 'mensile' | 'bimestrale' | 'trimestrale';
 export type RecurrentExpense = {
   index: number; // this is the row number in the google sheet, we use it as an identifier
   category: string;
   subCategory?: string;
   message?: string;
   amount: number;
-  frequency: RecurrentExpenseFrequency;
+  frequency: RecurrentFrequency;
   lastAddedDate: Date;
 };
 
@@ -74,7 +73,7 @@ export const initRecurrentExpenseService = ({
                 subCategory: '',
                 message: '',
                 amount: 0,
-                frequency: 'invalid' as RecurrentExpenseFrequency,
+                frequency: 'invalid' as RecurrentFrequency,
                 lastAddedDate: new Date(),
               };
             }
@@ -85,7 +84,7 @@ export const initRecurrentExpenseService = ({
               subCategory: expense[1],
               message: expense[2],
               amount: parseInt(expense[3]),
-              frequency: expense[4] as RecurrentExpenseFrequency,
+              frequency: expense[4] as RecurrentFrequency,
               lastAddedDate: getDateWithFallback(expense[5]),
             };
           })
@@ -96,7 +95,7 @@ export const initRecurrentExpenseService = ({
         return validRecurrentExpenses;
       }
     } catch (e) {
-      onError(new Error(`Error while reading recurrent expenses: ${e}.\n Assicurati di avere la tab "Spese Ricorrenti" nel tuo spreadsheet!`));
+      onError(new Error(`Error while reading recurrent expenses: ${e}.\n Assicurati di avere la tab "${config.RECURRENT_EXPENSES.TAB_NAME}" nel tuo spreadsheet!`));
     }
 
     return [];
@@ -187,15 +186,4 @@ const checkRecurrentExpense = (expenseRow: ExpenseRow): string | undefined => {
   }
 
   return errorMsg;
-};
-
-// Last added date is either what we find, or we set a default value (1 year ago, just to be sure the bot will consider it due)
-const getDateWithFallback = (date: string): Date => {
-  if (date) {
-    return new Date(date);
-  } else {
-    const lastAddedDate = new Date();
-    lastAddedDate.setFullYear(lastAddedDate.getFullYear() - 1);
-    return lastAddedDate;
-  }
 };

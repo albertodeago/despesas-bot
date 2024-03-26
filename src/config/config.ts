@@ -14,6 +14,10 @@ const sharedConfigProps = {
     TAB_NAME: 'Spese Ricorrenti',
     RANGE: 'A1:G50', // TODO: document this limit, max 50 entries
   },
+  REMINDERS: {
+    TAB_NAME: 'Promemoria',
+    RANGE: 'A1:C50', // TODO: document this limit, max 50 entries
+  }
 };
 
 const developmentConfig: typeof productionConfig = {
@@ -24,6 +28,8 @@ const developmentConfig: typeof productionConfig = {
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
     TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
     TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
+    TRACKED_REMINDERS_RANGE: 'A3:B3',
+    TRACKED_REMINDERS_LABEL: 'Tracked reminders',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '18bmsNx-F-vK-NHavi_QCv2DisS6i7FKmTDPAa44Mdpk',
@@ -39,6 +45,8 @@ const productionConfig = {
     TRACKED_EXPENSES_LABEL: 'Tracked expenses',
     TRACKED_RECURRENT_EXPENSES_RANGE: 'A2:B2',
     TRACKED_RECURRENT_EXPENSES_LABEL: 'Tracked recurrent expenses',
+    TRACKED_REMINDERS_RANGE: 'A3:B3',
+    TRACKED_REMINDERS_LABEL: 'Tracked reminders',
   },
   CHATS_CONFIGURATION: {
     SHEET_ID: '12zLMygxscN3KeRnJcQ2YwhyZFuIhdyYOjYAKCtjjxkY',

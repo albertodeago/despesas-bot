@@ -16,7 +16,9 @@ import { AddExpenseCommand } from './commands/expenses/add-expense';
 import { AddExpenseQuickCommand } from './commands/expenses/add-expense-quick';
 import { initLogger } from './logger';
 import { initRecurrentExpenses } from './recurrent/expenses';
-import { initRecurrentExpenseService } from './services/recurrent-expense';
+import { initRecurrentExpenseService } from './services/recurrent/expense';
+import { initReminders } from './recurrent/reminders';
+import { initReminderService } from './services/recurrent/reminder';
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -95,6 +97,7 @@ const main = async () => {
     logger,
     bot,
   });
+  const reminderService = initReminderService({ googleService, config, logger, bot });
 
   const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
   const chatsConfigUC = initChatsConfigurationUseCase({
@@ -174,6 +177,17 @@ const main = async () => {
     analytics,
     bot,
   });
+  await recurrentExpenseHandler.check();
   recurrentExpenseHandler.start();
+
+  const reminderHandler = initReminders({
+    logger,
+    chatsConfigUC,
+    reminderService,
+    analytics,
+    bot,
+  });
+  await reminderHandler.check();
+  reminderHandler.start();
 };
 main();

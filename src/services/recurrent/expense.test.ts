@@ -2,10 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   RecurrentExpense,
   initRecurrentExpenseService,
-} from './recurrent-expense';
-import { getMockLogger } from '../logger/mock';
-import { getMockGoogleService } from './google/mock';
-import { formatDate } from '../utils';
+} from './expense';
+import { getMockLogger } from '../../logger/mock';
+import { getMockGoogleService } from '../google/mock';
+import { formatDate } from '../../utils';
 
 const spyRead = vi.fn(async () => [
   [
