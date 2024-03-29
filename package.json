@@ -1,32 +1,38 @@
 {
-  "name": "despesas-bot",
-  "version": "1.8.0",
-  "description": "A telegram bot to track your expenses on a google sheet",
-  "main": "main.js",
-  "scripts": {
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch",
-    "build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
-    "dev": "npm run build && node ./dist/main.js",
-    "ts-check": "tsc --noEmit"
-  },
-  "author": "Alberto De Agostini",
-  "license": "ISC",
-  "dependencies": {
-    "@google-cloud/local-auth": "2.1.0",
-    "@isaacs/ttlcache": "^1.4.1",
-    "dotenv": "^16.3.1",
-    "googleapis": "95.0.0",
-    "node-telegram-bot-api": "0.64.0"
-  },
-  "devDependencies": {
-    "@flydotio/dockerfile": "^0.5.0",
-    "@types/node": "20.10.2",
-    "@types/node-telegram-bot-api": "0.63.3",
-    "@vitest/coverage-v8": "^1.2.1",
-    "esbuild": "0.19.8",
-    "typescript": "5.3.2",
-    "vitest": "1.2.1"
-  }
+	"name": "despesas-bot",
+	"version": "1.8.0",
+	"description": "A telegram bot to track your expenses on a google sheet",
+	"main": "main.js",
+	"scripts": {
+		"dev": "npm run build && node ./dist/main.js",
+		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
+		"ts-check": "tsc --noEmit",
+		"test": "vitest run",
+		"test:coverage": "vitest run --coverage",
+		"test:watch": "vitest watch",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"lint:apply": "biome lint --apply .",
+		"check": "biome check .",
+		"check:apply": "biome check --apply ."
+	},
+	"author": "Alberto De Agostini",
+	"license": "ISC",
+	"dependencies": {
+		"@google-cloud/local-auth": "2.1.0",
+		"@isaacs/ttlcache": "^1.4.1",
+		"dotenv": "^16.3.1",
+		"googleapis": "95.0.0",
+		"node-telegram-bot-api": "0.64.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.6.3",
+		"@flydotio/dockerfile": "^0.5.0",
+		"@types/node": "20.10.2",
+		"@types/node-telegram-bot-api": "0.63.3",
+		"@vitest/coverage-v8": "^1.2.1",
+		"esbuild": "0.19.8",
+		"typescript": "5.3.2",
+		"vitest": "1.2.1"
+	}
 }

@@ -1,9 +1,9 @@
-import TelegramBot from 'node-telegram-bot-api';
-import { fromMsg } from '../../utils';
-import { CONFIG_TYPE } from '../../config/config';
-import type { ChatsConfigurationUseCase } from '../../use-cases/chats-configuration';
-import { Logger } from '../../logger';
-import { GoogleService } from '../../services/google';
+import type TelegramBot from "node-telegram-bot-api";
+import type { CONFIG_TYPE } from "../../config/config";
+import type { Logger } from "../../logger";
+import type { GoogleService } from "../../services/google";
+import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
+import { fromMsg } from "../../utils";
 
 const STARTED_MSG = `Ciao! Sono il tuo bot personal per il tracciamento delle spese e mi sono collegato al tuo foglio di calcolo.
 
@@ -30,66 +30,69 @@ const CANT_READ_SHEET_MSG = `Non riesco a leggere il foglio di calcolo.
 Assicurati che l'id sia corretto e che io abbia i permessi per leggerlo.`;
 
 type StartCommandHandlerProps = {
-  bot: TelegramBot;
-  googleService: GoogleService;
-  config: Pick<CONFIG_TYPE, "ADMINISTRATION_CHAT_ID" | "EXPENSES">;
-  chatsConfigUC: ChatsConfigurationUseCase;
-  logger: Logger;
+	bot: TelegramBot;
+	googleService: GoogleService;
+	config: Pick<CONFIG_TYPE, "ADMINISTRATION_CHAT_ID" | "EXPENSES">;
+	chatsConfigUC: ChatsConfigurationUseCase;
+	logger: Logger;
 };
 export const StartCommand: BotCommand<StartCommandHandlerProps> = {
-  pattern: /\/start \S+$/,
-  getHandler({ bot, googleService, config, chatsConfigUC, logger }) {
-    return async (msg: TelegramBot.Message) => {
-      const { chatId, strChatId, tokens } = fromMsg(msg);
-      logger.info(`StartCommand handler. Tokens ${tokens}`, strChatId);
+	pattern: /\/start \S+$/,
+	getHandler({ bot, googleService, config, chatsConfigUC, logger }) {
+		return async (msg: TelegramBot.Message) => {
+			const { chatId, strChatId, tokens } = fromMsg(msg);
+			logger.info(`StartCommand handler. Tokens ${tokens}`, strChatId);
 
-      if (tokens.length < 2) {
-        bot.sendMessage(chatId, NO_SHEET_ID_MSG, { parse_mode: 'Markdown' });
-        return;
-      }
+			if (tokens.length < 2) {
+				bot.sendMessage(chatId, NO_SHEET_ID_MSG, { parse_mode: "Markdown" });
+				return;
+			}
 
-      const sheetId = tokens[1];
-      // attempt to read something from the sheet to validate it
-      // if it fails, we should inform the user and return
-      try {
-        await googleService.readGoogleSheet({
-          sheetId,
-          tabName: config.EXPENSES.TAB_NAME,
-          range: 'A1',
-        });
+			const sheetId = tokens[1];
+			// attempt to read something from the sheet to validate it
+			// if it fails, we should inform the user and return
+			try {
+				await googleService.readGoogleSheet({
+					sheetId,
+					tabName: config.EXPENSES.TAB_NAME,
+					range: "A1",
+				});
 
-        const newChatConfig = {
-          chatId: strChatId,
-          spreadsheetId: sheetId,
-          isActive: true,
-        };
-        // sheet is ok, check if we already have the chatId in the ChatConfig
-        // if we do, update the row, otherwise add a new row
-        const isInConfig = await chatsConfigUC.isChatInConfiguration(strChatId);
+				const newChatConfig = {
+					chatId: strChatId,
+					spreadsheetId: sheetId,
+					isActive: true,
+				};
+				// sheet is ok, check if we already have the chatId in the ChatConfig
+				// if we do, update the row, otherwise add a new row
+				const isInConfig = await chatsConfigUC.isChatInConfiguration(strChatId);
 
-        if (isInConfig) {
-          // we need to update the row and set to active
-          await chatsConfigUC.updateChatInConfiguration(
-            `${chatId}`,
-            newChatConfig
-          );
-        } else {
-          // new chat, we need to add a row in the config
-          await chatsConfigUC.addChatToConfiguration(newChatConfig);
-        }
+				if (isInConfig) {
+					// we need to update the row and set to active
+					await chatsConfigUC.updateChatInConfiguration(
+						`${chatId}`,
+						newChatConfig,
+					);
+				} else {
+					// new chat, we need to add a row in the config
+					await chatsConfigUC.addChatToConfiguration(newChatConfig);
+				}
 
-        bot.sendMessage(chatId, STARTED_MSG, { parse_mode: 'Markdown' });
-        bot.sendMessage(config.ADMINISTRATION_CHAT_ID, `Bot started for chat ${strChatId}`);
-        return;
-      } catch (e) {
-        const err = new Error(
-          `Error while handling the start command ${sheetId}: ${e}`
-        );
-        logger.sendError(err, strChatId);
+				bot.sendMessage(chatId, STARTED_MSG, { parse_mode: "Markdown" });
+				bot.sendMessage(
+					config.ADMINISTRATION_CHAT_ID,
+					`Bot started for chat ${strChatId}`,
+				);
+				return;
+			} catch (e) {
+				const err = new Error(
+					`Error while handling the start command ${sheetId}: ${e}`,
+				);
+				logger.sendError(err, strChatId);
 
-        bot.sendMessage(chatId, CANT_READ_SHEET_MSG);
-        return;
-      }
-    };
-  },
+				bot.sendMessage(chatId, CANT_READ_SHEET_MSG);
+				return;
+			}
+		};
+	},
 };
