@@ -1,4 +1,6 @@
+import { Chart } from "chart.js";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import type { ChartTypeRegistry } from "chart.js";
 import type TelegramBot from "node-telegram-bot-api";
@@ -8,6 +10,8 @@ import type { Logger } from "../logger";
 import type { GoogleService } from "../services/google";
 // import type { Reminder, ReminderService } from "../services/recurrent/reminder";
 import type { ChatsConfigurationUseCase } from "../use-cases/chats-configuration";
+
+Chart.register(ChartDataLabels);
 
 type InitReportsParams = {
 	logger: Logger;
@@ -67,7 +71,14 @@ const getChartConfiguration = ({
 					text: chartName,
 				},
 				legend: {
-					position: "top",
+					position: "top" as const,
+				},
+				datalabels: {
+					backgroundColor: "#ffffff",
+					color: "#333333",
+					font: {
+						size: 22,
+					},
 				},
 			},
 		},
@@ -158,21 +169,28 @@ export const initReports = ({
 						expenseDate.getFullYear() === now.getFullYear()
 					);
 				});
-				console.log(prevMonthExpenses);
+				// console.log(prevMonthExpenses);
+
+				const totalExpense = prevMonthExpenses.reduce((acc, expense) => {
+					return acc + expense.amount;
+				}, 0);
 
 				// group expenses by category
-				const expensesByCategory = prevMonthExpenses.reduce((acc, expense) => {
-					const category = expense.category;
-					if (!acc[category]) {
-						acc[category] = 0;
-					}
-					acc[category] += expense.amount;
-					return acc;
-				}, {});
+				const acc: Record<string, number> = {};
+				const expensesByCategory: Record<string, number> =
+					prevMonthExpenses.reduce((acc, expense) => {
+						const category = expense.category;
+						if (!acc[category]) {
+							acc[category] = 0;
+						}
+						acc[category] += expense.amount;
+						return acc;
+					}, acc);
 
 				// group expenses by subcategory
-				const expensesBySubCategory = prevMonthExpenses.reduce(
-					(acc, expense) => {
+				const acc2: Record<string, number> = {};
+				const expensesBySubCategory: Record<string, number> =
+					prevMonthExpenses.reduce((acc, expense) => {
 						const category = expense.category;
 						const subCategory = expense.subCategory;
 						const key =
@@ -184,20 +202,15 @@ export const initReports = ({
 						}
 						acc[key] += expense.amount;
 						return acc;
-					},
-					{},
-				);
+					}, acc2);
 
-				console.log(expensesBySubCategory);
 				// get last month name
-				// get yesterday in Date
 				const lastMonthDate = new Date(
 					now.getFullYear(),
 					now.getMonth() - 1,
 					15,
 				);
 				const monthName = lastMonthDate.toLocaleString("it", { month: "long" });
-				console.log(monthName);
 
 				const chartByCategoryConfig = getChartConfiguration({
 					chartName: `Spese di ${monthName} per categoria`,
@@ -206,6 +219,13 @@ export const initReports = ({
 				});
 
 				// send a text msg with the prev month expenses, markdown table
+				let msg = `Le spese di ${monthName} sono state di ${totalExpense}€\n`;
+				for (const [category, amount] of Object.entries(expensesByCategory)) {
+					msg += `- ${category}(${Math.round(
+						(amount / totalExpense) * 100,
+					)}%): ${amount}€\n`;
+				}
+				bot.sendMessage(chat.chatId, msg, { parse_mode: "Markdown" });
 
 				// create the pie chart and send it to the user
 				const chartByCategory = await chartJSNodeCanvas.renderToBuffer(
@@ -216,17 +236,28 @@ export const initReports = ({
 				// wait a bit before sending the next chart
 				await new Promise((resolve) => setTimeout(resolve, 2500));
 
-				// const chartBySubCategoryConfig = getChartConfiguration({
-				// 	chartName: `Spese di ${monthName} per sottocategoria`,
-				// 	labels: Object.keys(expensesBySubCategory),
-				// 	data: Object.values(expensesBySubCategory),
-				// });
+				const chartBySubCategoryConfig = getChartConfiguration({
+					chartName: `Spese di ${monthName} per sottocategoria`,
+					labels: Object.keys(expensesBySubCategory),
+					data: Object.values(expensesBySubCategory),
+				});
 
-				// // create the pie chart and send it to the user
-				// const chartBySubCategory = await chartJSNodeCanvas.renderToBuffer(
-				// 	chartBySubCategoryConfig,
-				// );
-				// bot.sendPhoto(chat.chatId, chartBySubCategory);
+				// send a text msg with the prev month expenses, markdown table
+				msg = "Report per sotto-categorie:\n";
+				for (const [subCategory, amount] of Object.entries(
+					expensesBySubCategory,
+				)) {
+					msg += `- ${subCategory}(${Math.round(
+						(amount / totalExpense) * 100,
+					)}%): ${amount}€\n`;
+				}
+				bot.sendMessage(chat.chatId, msg, { parse_mode: "Markdown" });
+
+				// create the pie chart and send it to the user
+				const chartBySubCategory = await chartJSNodeCanvas.renderToBuffer(
+					chartBySubCategoryConfig,
+				);
+				bot.sendPhoto(chat.chatId, chartBySubCategory);
 			}
 		} catch (e) {
 			const err = new Error(`Error while checking reports: ${e}`);
