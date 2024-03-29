@@ -30,49 +30,49 @@ const mockConfig = {
 
 const expectedExpenses = [
 	{
-		date: new Date("2024-01-01T07:00:00Z"),
+		date: new Date("2024-01-01T08:00:00Z"),
 		amount: 10,
 		category: "food",
 		subCategory: "groceries",
 		description: "bread",
 	},
 	{
-		date: new Date("2024-01-20T07:00:00Z"),
+		date: new Date("2024-01-20T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
 		description: "eggs",
 	},
 	{
-		date: new Date("2024-01-25T07:00:00Z"),
+		date: new Date("2024-01-25T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
 		description: "eggs",
 	},
 	{
-		date: new Date("2024-01-26T07:00:00Z"),
+		date: new Date("2024-01-26T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
 		description: "eggs",
 	},
 	{
-		date: new Date("2024-01-27T07:00:00Z"),
+		date: new Date("2024-01-27T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
 		description: "eggs",
 	},
 	{
-		date: new Date("2024-01-27T07:00:00Z"),
+		date: new Date("2024-01-27T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
 		description: "eggs",
 	},
 	{
-		date: new Date("2024-01-30T07:00:00Z"),
+		date: new Date("2024-01-30T08:00:00Z"),
 		amount: 30,
 		category: "food",
 		subCategory: "groceries",
@@ -132,21 +132,21 @@ describe("Expense Service", () => {
 			expect(lastMonthExpenses).toHaveLength(3);
 			expect(lastMonthExpenses).toEqual([
 				{
-					date: new Date("2023-12-01T07:00:00Z"),
+					date: new Date("2023-12-01T08:00:00Z"),
 					amount: 20,
 					category: "personal",
 					subCategory: "",
 					description: "",
 				},
 				{
-					date: new Date("2023-12-20T07:00:00Z"),
+					date: new Date("2023-12-20T08:00:00Z"),
 					amount: 30,
 					category: "gift",
 					subCategory: "flowers",
 					description: "asd",
 				},
 				{
-					date: new Date("2023-12-30T07:00:00Z"),
+					date: new Date("2023-12-30T08:00:00Z"),
 					amount: 40,
 					category: "food",
 					subCategory: "groceries",
