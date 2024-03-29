@@ -17,6 +17,8 @@ import { StopCommand } from "./commands/stop/stop";
 import { initLogger } from "./logger";
 import { initRecurrentExpenses } from "./recurrent/expenses";
 import { initReminders } from "./recurrent/reminders";
+import { initReports } from "./recurrent/reports";
+import { initExpenseService } from "./services/expense";
 import { initRecurrentExpenseService } from "./services/recurrent/expense";
 import { initReminderService } from "./services/recurrent/reminder";
 
@@ -100,6 +102,10 @@ const main = async () => {
 		config,
 		logger,
 		bot,
+	});
+	const expenseService = initExpenseService({
+		googleService,
+		config,
 	});
 
 	const categoriesUC = initCategoriesUseCase({ config, logger, googleService });
@@ -193,5 +199,13 @@ const main = async () => {
 	});
 	await reminderHandler.check();
 	reminderHandler.start();
+
+	const reports = initReports({
+		logger,
+		bot,
+		chatsConfigUC,
+		expenseService,
+	});
+	await reports.start();
 };
 main();
