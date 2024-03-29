@@ -21,6 +21,8 @@
 	"dependencies": {
 		"@google-cloud/local-auth": "2.1.0",
 		"@isaacs/ttlcache": "^1.4.1",
+		"chart.js": "^3.9.1",
+		"chartjs-node-canvas": "^4.1.6",
 		"dotenv": "^16.3.1",
 		"googleapis": "95.0.0",
 		"node-telegram-bot-api": "0.64.0"
