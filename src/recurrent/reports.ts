@@ -1,100 +1,28 @@
-import { Chart } from "chart.js";
-import { ChartJSNodeCanvas } from "chartjs-node-canvas";
-import ChartDataLabels from "chartjs-plugin-datalabels";
+import { UNCATEGORIZED_CATEGORY } from "../config/config";
+import { getChart } from "./chart/chart";
 
-import type { ChartTypeRegistry } from "chart.js";
 import type TelegramBot from "node-telegram-bot-api";
-import type { Analytics } from "../analytics";
-import type { CONFIG_TYPE } from "../config/config";
 import type { Logger } from "../logger";
-import type { GoogleService } from "../services/google";
-// import type { Reminder, ReminderService } from "../services/recurrent/reminder";
+import type { Expense, ExpenseService } from "../services/expense";
 import type { ChatsConfigurationUseCase } from "../use-cases/chats-configuration";
-
-Chart.register(ChartDataLabels);
 
 type InitReportsParams = {
 	logger: Logger;
 	bot: TelegramBot;
 	chatsConfigUC: ChatsConfigurationUseCase;
-	// reminderService: ReminderService;
-	googleService: GoogleService;
-	analytics: Analytics;
-	config: Pick<CONFIG_TYPE, "EXPENSES">;
+	expenseService: ExpenseService;
 };
 
 const CHECK_INTERVAL = 1000 * 60 * 60 * 10; // 10 hours
-
-/* Randomize array in-place using Durstenfeld shuffle algorithm */
-function shuffleArray(array: string[]) {
-	for (let i = array.length - 1; i > 0; i--) {
-		const j = Math.floor(Math.random() * (i + 1));
-		const temp = array[i];
-		array[i] = array[j];
-		array[j] = temp;
-	}
-	return array;
-}
-
-const chartJSNodeCanvas = new ChartJSNodeCanvas({
-	width: 800,
-	height: 800,
-	backgroundColour: "white",
-});
-// generate an array of 50 different colors
-const colors = shuffleArray(
-	Array.from({ length: 50 }, (_, i) => {
-		return `hsl(${(i * 7) % 360}, 100%, 50%)`;
-	}),
-);
-const getChartConfiguration = ({
-	chartName,
-	labels,
-	data,
-}: { chartName: string; labels: string[]; data: number[] }) => {
-	return {
-		type: "doughnut" as keyof ChartTypeRegistry,
-		data: {
-			datasets: [
-				{
-					data,
-					backgroundColor: colors,
-				},
-			],
-			// These labels appear in the legend and in the tooltips when hovering different arcs
-			labels,
-		},
-		options: {
-			plugins: {
-				title: {
-					display: true,
-					text: chartName,
-				},
-				legend: {
-					position: "top" as const,
-				},
-				datalabels: {
-					backgroundColor: "#ffffff",
-					color: "#333333",
-					font: {
-						size: 22,
-					},
-				},
-			},
-		},
-	};
-};
 
 export const initReports = ({
 	logger,
 	bot,
 	chatsConfigUC,
-	// reminderService,
-	googleService,
-	analytics,
-	config,
+	expenseService,
 }: InitReportsParams) => {
 	let interval: NodeJS.Timeout | null = null;
+	let lastSentDate = new Date();
 
 	// Check reports
 	const check = async () => {
@@ -111,10 +39,24 @@ export const initReports = ({
 		try {
 			// check if today is the first day of the month
 			const now = new Date();
-			// if (now.getDate() !== 1) {
-			// 	logger.debug("Today is not the first day of the month", "NO_CHAT");
-			// 	return;
-			// }
+			if (now.getDate() !== 1) {
+				logger.debug(
+					"Today is not the first day of the month, skipping reports",
+					"NO_CHAT",
+				);
+				return;
+			}
+			const lastSentIsToday =
+				new Date().getDate() === lastSentDate.getDate() &&
+				new Date().getMonth() === lastSentDate.getMonth() &&
+				new Date().getFullYear() === lastSentDate.getFullYear();
+			if (lastSentIsToday) {
+				logger.debug("Reports already sent today, skipping", "NO_CHAT");
+				return;
+			}
+
+			// update the last sent date to avoid sending the same report multiple times in the same day
+			lastSentDate = new Date();
 
 			const activeChats = (await chatsConfigUC.get()).filter(
 				(chat) => chat.isActive,
@@ -126,83 +68,15 @@ export const initReports = ({
 					strChatId,
 				);
 
-				// TODO: get expenses of last month
-				const data = await googleService.readGoogleSheet({
+				const expenses = await expenseService.getLastMonthExpenses({
 					sheetId: chat.spreadsheetId,
-					range: config.EXPENSES.RANGE,
-					tabName: config.EXPENSES.TAB_NAME,
 				});
-				if (!data) {
-					console.log("NO DATA");
+				if (expenses.length === 0) {
 					return;
 				}
 
-				const expenses = data.map((d) => {
-					const dateString = d[0]; // format is dd/mm/yyyy
-					const dateSplit = dateString.split("/");
-					const date = new Date(
-						+dateSplit[2],
-						+dateSplit[1] - 1, // month is 0-based, that's why we need dataParts[1] - 1
-						+dateSplit[0],
-						8, // just to make sure we don't get the prev day because of the timezone
-					);
-
-					return {
-						date,
-						amount: Number.parseFloat(d[1]),
-						category: d[2],
-						subCategory: d[3],
-						description: d[4],
-					};
-				});
-				expenses.shift(); // remove the header
-
-				// sort it JUST IN CASE
-				expenses.sort((a, b) => {
-					return a.date.getTime() - b.date.getTime();
-				});
-
-				const prevMonthExpenses = expenses.filter((expense) => {
-					const expenseDate = expense.date;
-					return (
-						expenseDate.getMonth() === now.getMonth() - 1 &&
-						expenseDate.getFullYear() === now.getFullYear()
-					);
-				});
-				// console.log(prevMonthExpenses);
-
-				const totalExpense = prevMonthExpenses.reduce((acc, expense) => {
-					return acc + expense.amount;
-				}, 0);
-
-				// group expenses by category
-				const acc: Record<string, number> = {};
-				const expensesByCategory: Record<string, number> =
-					prevMonthExpenses.reduce((acc, expense) => {
-						const category = expense.category;
-						if (!acc[category]) {
-							acc[category] = 0;
-						}
-						acc[category] += expense.amount;
-						return acc;
-					}, acc);
-
-				// group expenses by subcategory
-				const acc2: Record<string, number> = {};
-				const expensesBySubCategory: Record<string, number> =
-					prevMonthExpenses.reduce((acc, expense) => {
-						const category = expense.category;
-						const subCategory = expense.subCategory;
-						const key =
-							category === "NON CATEGORIZZATA"
-								? category
-								: `${category} - ${subCategory}`;
-						if (!acc[key]) {
-							acc[key] = 0;
-						}
-						acc[key] += expense.amount;
-						return acc;
-					}, acc2);
+				const { totalExpense, expensesByCategory, expensesBySubCategory } =
+					getExpenseGrouped(expenses);
 
 				// get last month name
 				const lastMonthDate = new Date(
@@ -210,54 +84,58 @@ export const initReports = ({
 					now.getMonth() - 1,
 					15,
 				);
-				const monthName = lastMonthDate.toLocaleString("it", { month: "long" });
+				const lastMonthName = lastMonthDate.toLocaleString("it", {
+					month: "long",
+				});
 
-				const chartByCategoryConfig = getChartConfiguration({
-					chartName: `Spese di ${monthName} per categoria`,
+				// send a text msg with the prev month expenses, markdown table
+				const categoryMsg = getCategoryReportMsg({
+					lastMonthName,
+					totalExpense,
+					expensesByCategory,
+				});
+				bot.sendMessage(chat.chatId, categoryMsg, { parse_mode: "Markdown" });
+
+				// create the pie chart and send it to the user
+				const chartByCategory = await getChart({
+					chartName: `Spese di ${lastMonthName} per categoria`,
 					labels: Object.keys(expensesByCategory),
 					data: Object.values(expensesByCategory),
 				});
+				bot.sendPhoto(
+					chat.chatId,
+					chartByCategory,
+					{},
+					{
+						filename: `Spese per categoria di ${lastMonthName}.png`,
+						contentType: "application/octet-stream",
+					},
+				);
 
 				// send a text msg with the prev month expenses, markdown table
-				let msg = `Le spese di ${monthName} sono state di ${totalExpense}€\n`;
-				for (const [category, amount] of Object.entries(expensesByCategory)) {
-					msg += `- ${category}(${Math.round(
-						(amount / totalExpense) * 100,
-					)}%): ${amount}€\n`;
-				}
-				bot.sendMessage(chat.chatId, msg, { parse_mode: "Markdown" });
+				const subCategoryMsg = getSubCategoryReportMsg({
+					totalExpense,
+					expensesBySubCategory,
+				});
+				bot.sendMessage(chat.chatId, subCategoryMsg, {
+					parse_mode: "Markdown",
+				});
 
 				// create the pie chart and send it to the user
-				const chartByCategory = await chartJSNodeCanvas.renderToBuffer(
-					chartByCategoryConfig,
-				);
-				bot.sendPhoto(chat.chatId, chartByCategory);
-
-				// wait a bit before sending the next chart
-				await new Promise((resolve) => setTimeout(resolve, 2500));
-
-				const chartBySubCategoryConfig = getChartConfiguration({
-					chartName: `Spese di ${monthName} per sottocategoria`,
+				const chartBySubCategory = await getChart({
+					chartName: `Spese di ${lastMonthName} per sottocategoria`,
 					labels: Object.keys(expensesBySubCategory),
 					data: Object.values(expensesBySubCategory),
 				});
-
-				// send a text msg with the prev month expenses, markdown table
-				msg = "Report per sotto-categorie:\n";
-				for (const [subCategory, amount] of Object.entries(
-					expensesBySubCategory,
-				)) {
-					msg += `- ${subCategory}(${Math.round(
-						(amount / totalExpense) * 100,
-					)}%): ${amount}€\n`;
-				}
-				bot.sendMessage(chat.chatId, msg, { parse_mode: "Markdown" });
-
-				// create the pie chart and send it to the user
-				const chartBySubCategory = await chartJSNodeCanvas.renderToBuffer(
-					chartBySubCategoryConfig,
+				bot.sendPhoto(
+					chat.chatId,
+					chartBySubCategory,
+					{},
+					{
+						filename: `Spese per sottocategoria di ${lastMonthName}.png`,
+						contentType: "application/octet-stream",
+					},
 				);
-				bot.sendPhoto(chat.chatId, chartBySubCategory);
 			}
 		} catch (e) {
 			const err = new Error(`Error while checking reports: ${e}`);
@@ -275,4 +153,87 @@ export const initReports = ({
 		check, // mainly returned for testing purposes
 		start,
 	};
+};
+
+/**
+ * Cycle through the expenses and calculate:
+ * - total
+ * - map grouped by category
+ * - map grouped by subcategory
+ */
+export const getExpenseGrouped = (
+	expenses: Expense[],
+): {
+	totalExpense: number;
+	expensesByCategory: Record<string, number>;
+	expensesBySubCategory: Record<string, number>;
+} => {
+	let totalExpense = 0;
+	const expensesByCategory: Record<string, number> = {};
+	const expensesBySubCategory: Record<string, number> = {};
+
+	for (const expense of expenses) {
+		// handle totalExpense
+		totalExpense += expense.amount;
+
+		// handle expenses by category
+		const category = expense.category;
+		if (!expensesByCategory[category]) {
+			expensesByCategory[category] = 0;
+		}
+		expensesByCategory[category] += expense.amount;
+
+		// handle expenses by subcategory
+		const subCategory = expense.subCategory;
+		const key =
+			category === UNCATEGORIZED_CATEGORY
+				? category
+				: `${category} - ${subCategory}`;
+		if (!expensesBySubCategory[key]) {
+			expensesBySubCategory[key] = 0;
+		}
+		expensesBySubCategory[key] += expense.amount;
+	}
+
+	return {
+		totalExpense,
+		expensesByCategory,
+		expensesBySubCategory,
+	};
+};
+
+const getCategoryReportMsg = ({
+	lastMonthName,
+	totalExpense,
+	expensesByCategory,
+}: {
+	lastMonthName: string;
+	totalExpense: number;
+	expensesByCategory: Record<string, number>;
+}) => {
+	let msg = `Le spese di ${lastMonthName} sono state di ${totalExpense}€\n`;
+	for (const [category, amount] of Object.entries(expensesByCategory)) {
+		msg += `- ${category} (${Math.round(
+			(amount / totalExpense) * 100,
+		)}%): ${amount}€\n`;
+	}
+
+	return msg;
+};
+
+const getSubCategoryReportMsg = ({
+	totalExpense,
+	expensesBySubCategory,
+}: {
+	totalExpense: number;
+	expensesBySubCategory: Record<string, number>;
+}) => {
+	let msg = "Report per sotto-categorie:\n";
+	for (const [subCategory, amount] of Object.entries(expensesBySubCategory)) {
+		msg += `- ${subCategory}(${Math.round(
+			(amount / totalExpense) * 100,
+		)}%): ${amount}€\n`;
+	}
+
+	return msg;
 };
