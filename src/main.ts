@@ -40,18 +40,16 @@ if (
 }
 
 /**
-MANDATORY TO RELEASE
-- TODO: test some actual failure (e.g. start with an invalid id - check others)
-- TODO: polish the spreadsheet (e.g. automatic graph, automatic color cells not categorized, format dates)
+BUGS:
+- latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev, let's wait next month)
 
 FUTURE:
 - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
 - TODO: [FEATURE] add command to add reminders? (e.g. "promemoria settimanale bolletta gas")
-  - TODO: do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
-- TODO: [FEATURE] recurrent message (weekly or monthly) for a report/summary?
-  - TODO: [FEATURE] it would be pretty cool to send also a report/summary via some pie-charts
+- TODO: [FEATURE] do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] typo tolerant?
+- TODO: [IMPROVEMENT] sort textual reports by most expensive category to least expensive
 
 OPTIONAL:
 - [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
