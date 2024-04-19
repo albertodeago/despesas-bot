@@ -26,7 +26,8 @@
 		"chartjs-plugin-datalabels": "^2.2.0",
 		"dotenv": "^16.3.1",
 		"googleapis": "95.0.0",
-		"node-telegram-bot-api": "0.64.0"
+		"node-telegram-bot-api": "0.64.0",
+		"node-wit": "^6.6.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.6.3",

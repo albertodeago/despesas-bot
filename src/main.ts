@@ -1,4 +1,6 @@
+import { createReadStream, unlinkSync } from "node:fs";
 import "dotenv/config";
+import { Wit, log } from "node-wit";
 import { version } from "../package.json";
 import { initAnalytics } from "./analytics";
 import { getConfig } from "./config/config";
@@ -21,6 +23,18 @@ import { initReports } from "./recurrent/reports";
 import { initExpenseService } from "./services/expense";
 import { initRecurrentExpenseService } from "./services/recurrent/expense";
 import { initReminderService } from "./services/recurrent/reminder";
+
+// const actions = {
+// 	confirm_order(contextMap) {
+// 		return { context_map: { ...contextMap, order_confirmation: "PIZZA42" } };
+// 	},
+// };
+
+const witClient = new Wit({
+	accessToken: "RGGMJSHK4HRUKMR3FMFSZV65VCCVZNGZ",
+	// actions,
+	logger: new log.Logger(log.DEBUG), // optional
+});
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;
@@ -119,6 +133,30 @@ const main = async () => {
 	bot.on("message", (msg): void => {
 		logger.info(`Received message: ${msg.text}`, `${msg.chat.id}`);
 	});
+
+	bot.on("voice", async (msg): Promise<void> => {
+		console.log("voice", msg?.voice);
+		const voiceFileId = msg?.voice?.file_id;
+		if (!voiceFileId) {
+			// TODO: send error msg to admin, something not working correctly
+			return;
+		}
+		const voiceFile = await bot.downloadFile(voiceFileId, "./");
+		const file = createReadStream(`./${voiceFile}`);
+
+		const resp = await witClient.speech("audio/ogg", file, {
+			language: "it_IT",
+		});
+		console.log("wit answer\n", resp);
+
+		try {
+			unlinkSync(`./${voiceFile}`);
+			console.log("file deleted");
+		} catch (err) {
+			console.error("error deleting file", err);
+		}
+	});
+	return;
 
 	bot.onText(HelpCommand.pattern, HelpCommand.getHandler({ bot, logger }));
 
