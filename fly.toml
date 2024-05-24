@@ -14,6 +14,7 @@ primary_region = "cdg"
   auto_stop_machines = false
   auto_start_machines = false
   min_machines_running = 1
+  max_machines_running = 1
   processes = ["app"]
 
 [[vm]]
