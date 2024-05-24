@@ -211,8 +211,13 @@ const getCategoryReportMsg = ({
 	totalExpense: number;
 	expensesByCategory: Record<string, number>;
 }) => {
+	// sort the categories by most expensive to least expensive
+	const sortedCategories = Object.entries(expensesByCategory).sort(
+		(a, b) => b[1] - a[1],
+	);
+
 	let msg = `Le spese di ${lastMonthName} sono state di ${totalExpense}€\n`;
-	for (const [category, amount] of Object.entries(expensesByCategory)) {
+	for (const [category, amount] of sortedCategories) {
 		msg += `- ${category} (${Math.round(
 			(amount / totalExpense) * 100,
 		)}%): ${amount}€\n`;
@@ -228,8 +233,13 @@ const getSubCategoryReportMsg = ({
 	totalExpense: number;
 	expensesBySubCategory: Record<string, number>;
 }) => {
+	// sort the subcategories by most expensive to least expensive
+	const sortedSubCategories = Object.entries(expensesBySubCategory).sort(
+		(a, b) => b[1] - a[1],
+	);
+
 	let msg = "Report per sotto-categorie:\n";
-	for (const [subCategory, amount] of Object.entries(expensesBySubCategory)) {
+	for (const [subCategory, amount] of sortedSubCategories) {
 		msg += `- ${subCategory}(${Math.round(
 			(amount / totalExpense) * 100,
 		)}%): ${amount}€\n`;

@@ -68,7 +68,7 @@ const mockExpenseService = {
 			},
 			{
 				date: new Date("2024-01-01"),
-				amount: 20,
+				amount: 200,
 				category: "other",
 				subCategory: "subother 1",
 				description: "",
@@ -224,7 +224,7 @@ describe("Reports", () => {
 			expect(mockBot.sendMessage).toHaveBeenCalledTimes(4); // 4 is because it's 2 messages for each active chat
 		});
 
-		it("should send a message with the report by category", async () => {
+		it("should send a message with the report by category (sorted)", async () => {
 			vi.setSystemTime(mockDateBefore);
 			const reportsHandler = initReports({
 				logger: mockLogger,
@@ -238,15 +238,15 @@ describe("Reports", () => {
 			const calls = mockBot.sendMessage.mock.calls;
 			expect(calls[0][0]).toBe("123");
 			expect(calls[0][1]).toEqual(
-				"Le spese di gennaio sono state di 180€\n" +
-					"- food (78%): 140€\n" +
-					"- other (17%): 30€\n" +
-					"- NON CATEGORIZZATA (6%): 10€\n",
+				"Le spese di gennaio sono state di 360€\n" +
+					"- other (58%): 210€\n" +
+					"- food (39%): 140€\n" +
+					"- NON CATEGORIZZATA (3%): 10€\n",
 			);
 			expect(calls[2][0]).toBe("-321"); // second active chat
 		});
 
-		it("should send a message with the report by subCategory", async () => {
+		it("should send a message with the report by subCategory (sorted)", async () => {
 			vi.setSystemTime(mockDateBefore);
 			const reportsHandler = initReports({
 				logger: mockLogger,
@@ -261,11 +261,11 @@ describe("Reports", () => {
 			expect(calls[1][0]).toBe("123");
 			expect(calls[1][1]).toEqual(
 				"Report per sotto-categorie:\n" +
-					"- food - groceries(22%): 40€\n" +
-					"- food - restaurants(56%): 100€\n" +
-					"- other - subother 1(11%): 20€\n" +
-					"- other - subother 2(6%): 10€\n" +
-					"- NON CATEGORIZZATA(6%): 10€\n",
+					"- other - subother 1(56%): 200€\n" +
+					"- food - restaurants(28%): 100€\n" +
+					"- food - groceries(11%): 40€\n" +
+					"- other - subother 2(3%): 10€\n" +
+					"- NON CATEGORIZZATA(3%): 10€\n",
 			);
 			expect(calls[3][0]).toBe("-321"); // second active chat
 		});
