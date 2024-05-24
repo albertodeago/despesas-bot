@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { createExpenseRow, getDescriptionFromTokenizedMessage } from "./utils";
+import {
+	createExpenseRow,
+	getDescriptionFromTokenizedMessage,
+	getDifference,
+	includesConsideringTypo,
+} from "./utils";
 
 describe("utils", () => {
 	describe("createExpenseRow", () => {
@@ -153,5 +158,68 @@ describe("utils", () => {
 
 			expect(description).toBe("this is a long description");
 		});
+	});
+});
+
+describe("getDifference", () => {
+	it("should return the difference between two strings", () => {
+		const difference = getDifference("prova", "prova");
+		expect(difference).toBe(0);
+
+		const difference2 = getDifference("prova", "provaa");
+		expect(difference2).toBe(1);
+
+		const difference3 = getDifference("prova", "prva");
+		expect(difference3).toBe(1);
+
+		const difference4 = getDifference("prova", "rova");
+		expect(difference4).toBe(1);
+
+		const difference5 = getDifference("prova", "arova");
+		expect(difference5).toBe(2);
+
+		const difference6 = getDifference("prova", "acqua");
+		expect(difference6).toBe(8);
+	});
+});
+
+describe("includesConsideringTypo", () => {
+	it("should return false if the string is too different compared to the array", () => {
+		const res1 = includesConsideringTypo(["prova"], "acqua");
+		expect(res1).toBe(false);
+
+		const res2 = includesConsideringTypo(["prova"], "provaaaa");
+		expect(res2).toBe(false);
+
+		const res3 = includesConsideringTypo(["testo"], "to");
+		expect(res3).toBe(false);
+
+		const res4 = includesConsideringTypo(["prova"], "ovaa");
+		expect(res4).toBe(false);
+	});
+
+	it("should return the name of the matched element if the string is not too different compared to the array", () => {
+		const res1 = includesConsideringTypo(["prova"], "pro");
+		expect(res1).toBe("prova");
+
+		const res2 = includesConsideringTypo(["prova"], "provaa");
+		expect(res2).toBe("prova");
+
+		const res3 = includesConsideringTypo(["prova"], "prov");
+		expect(res3).toBe("prova");
+
+		const res4 = includesConsideringTypo(["prova", "provino"], "provin");
+		expect(res4).toBe("provino");
+
+		const res5 = includesConsideringTypo(["prova", "provino"], "provinc");
+		expect(res5).toBe("provino");
+	});
+
+	it("should return the one with the exact same name if there is one", () => {
+		const res1 = includesConsideringTypo(["prova", "pro"], "pro");
+		expect(res1).toBe("pro");
+
+		const res2 = includesConsideringTypo(["prova", "prov"], "prova");
+		expect(res2).toBe("prova");
 	});
 });

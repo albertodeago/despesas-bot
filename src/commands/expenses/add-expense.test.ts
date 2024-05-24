@@ -128,8 +128,37 @@ describe("AddExpenseCommand", () => {
 		expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
 	});
 
+	it("should add the expense if the message finish with a category with no subcategories (including typo)", async () => {
+		handler({ ...defaultMsg, text: "aggiungi 20 descrizione Category_33" });
+
+		await waitMessage(vi, mockBot);
+		expect(spyAppend).toHaveBeenCalledWith({
+			sheetId: "sheet-id",
+			tabName: "tab-name",
+			range: "A:Z",
+			data: [["15/12/2023", 20, "Category_3", "", "descrizione"]],
+		});
+		const calledWith = mockBot.sendMessage.mock.calls[0];
+		expect(calledWith[0]).toBe(123);
+		expect(calledWith[1]).toContain("Fatto!");
+		expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
+	});
+
 	it("should ask for the subcategory if the message doesn't finish with a category with no subcategories", async () => {
 		handler({ ...defaultMsg, text: "aggiungi 20 descrizione Category_1" });
+
+		await waitMessage(vi, mockBot);
+		const calledWith = mockBot.sendMessage.mock.calls[0];
+		expect(calledWith[0]).toBe(123);
+		expect(calledWith[1]).toContain("Scegli una sottocategoria");
+
+		// we also set a once listener after this
+		expect(mockBot.once).toHaveBeenCalled(); // tested with getSubcategoryHandler
+		expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
+	});
+
+	it("should ask for the subcategory if the message doesn't finish with a category with no subcategories (including typo)", async () => {
+		handler({ ...defaultMsg, text: "aggiungi 20 descrizione Cagory_1" });
 
 		await waitMessage(vi, mockBot);
 		const calledWith = mockBot.sendMessage.mock.calls[0];
@@ -158,6 +187,44 @@ describe("AddExpenseCommand", () => {
 
 	it("should add the expense if the message finish with a category and subcategory", async () => {
 		handler(defaultMsg);
+
+		await waitMessage(vi, mockBot);
+		expect(spyAppend).toHaveBeenCalledWith({
+			sheetId: "sheet-id",
+			tabName: "tab-name",
+			range: "A:Z",
+			data: [["15/12/2023", 20, "Category_1", "Subcategory_1", "descrizione"]],
+		});
+		const calledWith = mockBot.sendMessage.mock.calls[0];
+		expect(calledWith[0]).toBe(123);
+		expect(calledWith[1]).toContain("Fatto!");
+		expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
+	});
+
+	it("should add the expense if the message finish with a category and subcategory (with typo)", async () => {
+		handler({
+			...defaultMsg,
+			text: "aggiungi 20 descrizione Category_1 Subcategory_11",
+		});
+
+		await waitMessage(vi, mockBot);
+		expect(spyAppend).toHaveBeenCalledWith({
+			sheetId: "sheet-id",
+			tabName: "tab-name",
+			range: "A:Z",
+			data: [["15/12/2023", 20, "Category_1", "Subcategory_1", "descrizione"]],
+		});
+		const calledWith = mockBot.sendMessage.mock.calls[0];
+		expect(calledWith[0]).toBe(123);
+		expect(calledWith[1]).toContain("Fatto!");
+		expect(mockAnalytics.addTrackedExpense).toHaveBeenCalled();
+	});
+
+	it("should add the expense if the message finish with a category and subcategory (with double typo)", async () => {
+		handler({
+			...defaultMsg,
+			text: "aggiungi 20 descrizione Categor_11 Subcategor_11",
+		});
 
 		await waitMessage(vi, mockBot);
 		expect(spyAppend).toHaveBeenCalledWith({

@@ -65,3 +65,76 @@ export function shuffleArray(array: string[]) {
 	}
 	return array;
 }
+
+/**
+ * This function first counts the occurrences of each character in both strings.
+ * Then it iterates over the counts and adds the absolute difference between the
+ * counts in the two strings to the total difference count. If a character is
+ * present in one string but not the other, it adds the count from the string
+ * where the character is present to the total difference count.
+ * Finally, it returns the total difference count.
+ */
+export function getDifference(s: string, t: string): number {
+	const sCount: { [key: string]: number } = Array.from(s).reduce(
+		(count: { [key: string]: number }, char) => {
+			count[char] = (count[char] || 0) + 1;
+			return count;
+		},
+		{},
+	);
+
+	const tCount: { [key: string]: number } = Array.from(t).reduce(
+		(count: { [key: string]: number }, char) => {
+			count[char] = (count[char] || 0) + 1;
+			return count;
+		},
+		{},
+	);
+
+	let diffCount = 0;
+
+	for (const char in sCount) {
+		if (tCount[char]) {
+			diffCount += Math.abs(sCount[char] - tCount[char]);
+		} else {
+			diffCount += sCount[char];
+		}
+	}
+
+	for (const char in tCount) {
+		if (!sCount[char]) {
+			diffCount += tCount[char];
+		}
+	}
+
+	return diffCount;
+}
+
+export const includesConsideringTypo = (
+	categories: string[],
+	text: string,
+): string | false => {
+	const distance = 2; // hardcoded distance for now
+	const lowerCaseText = text.toLowerCase();
+
+	// first try to hard match the item
+	const match = categories.find(
+		(category) => category.toLowerCase() === lowerCaseText,
+	);
+	if (match) {
+		return match;
+	}
+
+	// didn't match, let's try to find a close one
+	for (const category of categories) {
+		if (category.toLowerCase() === lowerCaseText) {
+			return category;
+		}
+
+		if (getDifference(category.toLowerCase(), lowerCaseText) <= distance) {
+			return category;
+		}
+	}
+
+	return false;
+};

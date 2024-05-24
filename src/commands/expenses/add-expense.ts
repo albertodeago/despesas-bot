@@ -5,6 +5,7 @@ import {
 	formatDate,
 	fromMsg,
 	getDescriptionFromTokenizedMessage,
+	includesConsideringTypo,
 } from "../../utils";
 import {
 	getErrorMessage,
@@ -234,7 +235,6 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 
 				// get the categories of the current chat
 				const allCategories = await categoriesUC.get(spreadSheetId);
-
 				const categoriesFlat = allCategories.map((c) => c.name);
 
 				// we need at least 'aggiungi <amount> <descrizione>|<categoria>'
@@ -254,14 +254,21 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 				// and maybe the subcategory
 				const secondLastToken = tokens[tokens.length - 2];
 				const lastToken = tokens[tokens.length - 1];
-				if (categoriesFlat.includes(lastToken)) {
+
+				const matchedCategory = includesConsideringTypo(
+					categoriesFlat,
+					lastToken,
+				);
+				if (matchedCategory) {
 					// last token is a category. if that category have no subcategories, we can add
 					// the expense, otherwise we need to show the subcategories
 
-					const category = allCategories.find((c) => c.name === lastToken);
+					const category = allCategories.find(
+						(c) => c.name === matchedCategory,
+					);
 					if (!category) {
 						throw new Error(
-							`Category not found, should've found a category ${lastToken}, but didn't happen`,
+							`Category not found, should've found a category ${matchedCategory} (text was ${lastToken}), but didn't happen`,
 						);
 					}
 					if (category.subCategories.length === 0) {
@@ -327,19 +334,28 @@ export const AddExpenseCommand: BotCommand<AddExpenseCommandHandlerProps> = {
 					return;
 				}
 
-				if (categoriesFlat.includes(secondLastToken)) {
+				const matchedCategory2 = includesConsideringTypo(
+					categoriesFlat,
+					secondLastToken,
+				);
+				if (matchedCategory2) {
 					// second last token is a category, need to check if last token is a (correct) subcategory
 					const category = allCategories.find(
-						(c) => c.name === secondLastToken,
+						(c) => c.name === matchedCategory2,
 					);
 					if (!category) {
 						throw new Error(
-							`Category not found, should've found a category ${lastToken}, but didn't happen`,
+							`Category not found, should've found a category ${matchedCategory} (text was ${secondLastToken}), but didn't happen`,
 						);
 					}
 
+					const subCategoriesFlat = category.subCategories.map((sc) => sc.name);
+					const matchedSubCategory = includesConsideringTypo(
+						subCategoriesFlat,
+						lastToken,
+					);
 					const subCategory = category.subCategories.find(
-						(sc) => sc.name === lastToken,
+						(sc) => sc.name === matchedSubCategory,
 					);
 					if (!subCategory) {
 						// last token is not a subcategory, send an error message
