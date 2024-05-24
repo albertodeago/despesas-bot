@@ -44,22 +44,21 @@ BUGS:
 - latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev, let's wait next month)
 
 FUTURE:
+- TODO: [IMPROVEMENT] sort textual reports by most expensive category to least expensive
+- TODO: [FEATURE] typo tolerant (for commands, e.g. matching agiungi)
+- TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
 - TODO: [FEATURE] add command to add reminders? (e.g. "promemoria settimanale bolletta gas")
 - TODO: [FEATURE] do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
-- TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
-- TODO: [FEATURE] typo tolerant?
-- TODO: [IMPROVEMENT] sort textual reports by most expensive category to least expensive
 
 OPTIONAL:
+- [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
 - [FEATURE] function to add a category / subcategory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [FEATURE] alias /a for "aggiungi"?
 - [FEATURE] alias /av for "aggiungi veloce"?
-- [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
-- [CODE_QUALITY] Add biome for linting and formatting (with PR check, and maybe pre-hook commit)
 
 Probably a big refactor would make things easier.
 If we put just one listener for every message, in that listener we could:
