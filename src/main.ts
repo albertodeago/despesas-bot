@@ -41,7 +41,6 @@ if (
 
 /**
 BUGS:
-- report of may 2024 was missing surely at least one expense
 - latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev, let's wait next month)
 
 FUTURE:

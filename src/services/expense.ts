@@ -35,9 +35,14 @@ export const initExpenseService = ({
 		}
 
 		const expenses: Expense[] = data.map((d) => {
+			// We manipulate the response, removing the point (.) that sheets uses as a
+			// thousands separator.
+			// We also replacing the comma (,) with a point (.) because that was JS is
+			// expecting (1.396,00 -> 1.396 instead of 1396)
+			const amount = Number.parseFloat(d[1].replace(".", "").replace(",", "."));
 			return {
 				date: dateFromDDMMYYYY(d[0]),
-				amount: Number.parseFloat(d[1]),
+				amount,
 				category: d[2],
 				subCategory: d[3],
 				description: d[4],
