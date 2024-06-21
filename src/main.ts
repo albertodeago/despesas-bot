@@ -41,9 +41,11 @@ if (
 
 /**
 BUGS:
+- report of may 2024 was missing surely at least one expense
 - latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev, let's wait next month)
 
 FUTURE:
+- TODO: [FEATURE] add command to get the total expenses of a specific category / subcategory
 - TODO: [IMPROVEMENT] sort textual reports by most expensive category to least expensive
 - TODO: [FEATURE] typo tolerant (for commands, e.g. matching agiungi)
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
