@@ -83,7 +83,9 @@ export const initRecurrentExpenseService = ({
 							category: expense[0],
 							subCategory: expense[1],
 							message: expense[2],
-							amount: Number.parseInt(expense[3]),
+							amount: Number.parseFloat(
+								expense[3].replace(".", "").replace(",", "."),
+							),
 							frequency: expense[4] as RecurrentFrequency,
 							lastAddedDate: getDateWithFallback(expense[5]),
 						};
