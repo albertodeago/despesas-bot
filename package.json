@@ -29,7 +29,7 @@
 		"node-telegram-bot-api": "0.64.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.6.3",
+		"@biomejs/biome": "1.8.2",
 		"@flydotio/dockerfile": "^0.5.0",
 		"@types/node": "20.10.2",
 		"@types/node-telegram-bot-api": "0.63.3",
