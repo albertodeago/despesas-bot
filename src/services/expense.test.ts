@@ -14,6 +14,7 @@ const spyRead = vi.fn(async () => [
 	["27/01/2024", "30", "food", "groceries", "eggs"],
 	["27/01/2024", "30", "food", "groceries", "eggs"],
 	["30/01/2024", "30", "food", "groceries", "eggs"],
+	["31/01/2024", "3.000,50", "trip", "hotel", "fancy hotel"],
 	["01/02/2024", "30", "food", "groceries", "eggs"],
 	["10/02/2024", "30", "food", "groceries", "eggs"],
 ]);
@@ -78,6 +79,13 @@ const expectedExpenses = [
 		subCategory: "groceries",
 		description: "eggs",
 	},
+	{
+		date: new Date("2024-01-31T08:00:00Z"),
+		amount: 3000.5,
+		category: "trip",
+		subCategory: "hotel",
+		description: "fancy hotel",
+	},
 ];
 
 // mock new Date() to return a fixed date
@@ -101,7 +109,7 @@ describe("Expense Service", () => {
 			const lastMonthExpenses = await expenseService.getLastMonthExpenses({
 				sheetId: "sheetId",
 			});
-			expect(lastMonthExpenses).toHaveLength(7);
+			expect(lastMonthExpenses).toHaveLength(8);
 			expect(lastMonthExpenses).toEqual(expectedExpenses);
 		});
 
@@ -115,7 +123,7 @@ describe("Expense Service", () => {
 			const lastMonthExpenses = await expenseService.getLastMonthExpenses({
 				sheetId: "sheetId",
 			});
-			expect(lastMonthExpenses).toHaveLength(7);
+			expect(lastMonthExpenses).toHaveLength(8);
 			expect(lastMonthExpenses).toEqual(expectedExpenses);
 		});
 
