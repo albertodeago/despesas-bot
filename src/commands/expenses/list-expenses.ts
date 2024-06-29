@@ -1,9 +1,9 @@
-import { fromMsg, includesConsideringTypo } from "../../utils";
+import { formatDate, fromMsg, includesConsideringTypo } from "../../utils";
 import { getMsgExplanationList } from "./messages";
 
 import type TelegramBot from "node-telegram-bot-api";
 import type { Logger } from "../../logger";
-import type { GoogleService } from "../../services/google";
+import type { ExpenseService } from "../../services/expense";
 import type { CategoriesUseCase } from "../../use-cases/categories";
 import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
 
@@ -12,17 +12,17 @@ const GENERIC_ERROR_MSG = "Si è verificato un errore, riprovare più tardi.";
 type ListExpenseProps = {
 	bot: TelegramBot;
 	categoriesUC: CategoriesUseCase;
-	googleService: GoogleService;
+	expenseService: ExpenseService;
 	chatsConfigUC: ChatsConfigurationUseCase;
 	logger: Logger;
 };
-export const ListExpenseCommand: BotCommand<ListExpenseProps> = {
+export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 	pattern: /^lista spese/i,
 	getHandler:
-		({ bot, categoriesUC, googleService, chatsConfigUC, logger }) =>
+		({ bot, categoriesUC, expenseService, chatsConfigUC, logger }) =>
 		async (msg: TelegramBot.Message) => {
 			const { chatId, strChatId, tokens, date } = fromMsg(msg);
-			logger.info(`ListExpenseCommand handler. Tokens ${tokens}`, strChatId);
+			logger.info(`ListExpensesCommand handler. Tokens ${tokens}`, strChatId);
 
 			try {
 				// check, if it's a message in a inactive (on non existent) chat based on our
@@ -70,13 +70,21 @@ export const ListExpenseCommand: BotCommand<ListExpenseProps> = {
 
 					if (categoryObj.subCategories.length === 0) {
 						// the category doesn't have any subcategories, we can send the expenses
-						// TODO: fetch expenses and show them with a total
-						// const expenses = await googleService.getExpenses({
-						// 	spreadSheetId,
-						// 	category: categoryObj.name,
-						// });
-						// bot.sendMessage(chatId, expenses.join("\n"));
-						// return;
+						const expenses = await expenseService.getAllExpenses({
+							sheetId: spreadSheetId,
+							filters: { categoryName: category },
+						});
+
+						const expenseMsg = expenses
+							.map(
+								(e) =>
+									`- ${formatDate(e.date)}: ${e.amount}€ (${e.description || "nessuna descrizione"})`,
+							)
+							.join("\n");
+						bot.sendMessage(
+							chatId,
+							`Ecco tutte le spese relative alla categoria ${categoryObj.name}\n${expenseMsg}`,
+						);
 					} else {
 						// the category has subcategories, we need to show them
 						const subCategories = categoryObj.subCategories.map(
@@ -121,7 +129,25 @@ export const ListExpenseCommand: BotCommand<ListExpenseProps> = {
 						);
 						return;
 					}
-					// TODO: fetch expenses and show them with a total
+
+					const expenses = await expenseService.getAllExpenses({
+						sheetId: spreadSheetId,
+						filters: {
+							categoryName: matchedCategory,
+							subCategoryName: matchedSubCategory,
+						},
+					});
+
+					const expenseMsg = expenses
+						.map(
+							(e) =>
+								`- ${formatDate(e.date)}: ${e.amount}€ (${e.description || "nessuna descrizione"})`,
+						)
+						.join("\n");
+					bot.sendMessage(
+						chatId,
+						`Ecco tutte le spese relative alla sottocategoria ${matchedSubCategory} (${matchedCategory})\n${expenseMsg}`,
+					);
 					return;
 				}
 			} catch (e) {

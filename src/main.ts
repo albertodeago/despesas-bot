@@ -11,6 +11,7 @@ import { initChatsConfigurationUseCase } from "./use-cases/chats-configuration";
 import { CategoriesCommand } from "./commands/categories/categories";
 import { AddExpenseCommand } from "./commands/expenses/add-expense";
 import { AddExpenseQuickCommand } from "./commands/expenses/add-expense-quick";
+import { ListExpensesCommand } from "./commands/expenses/list-expenses";
 import { HelpCommand } from "./commands/help/help";
 import { StartCommand } from "./commands/start/start";
 import { StopCommand } from "./commands/stop/stop";
@@ -159,6 +160,17 @@ const main = async () => {
 			googleService,
 			analytics,
 			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
+
+	bot.onText(
+		ListExpensesCommand.pattern,
+		ListExpensesCommand.getHandler({
+			bot,
+			categoriesUC,
+			expenseService,
 			chatsConfigUC,
 			logger,
 		}),

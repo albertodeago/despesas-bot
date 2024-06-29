@@ -29,7 +29,7 @@ const mockConfig = {
 	},
 };
 
-const expectedExpenses = [
+const expectedExpensesLastMonth = [
 	{
 		date: new Date("2024-01-01T08:00:00Z"),
 		amount: 10,
@@ -92,6 +92,61 @@ const expectedExpenses = [
 const mockDate = new Date("2024-02-01T00:00:00Z");
 
 describe("Expense Service", () => {
+	describe("getAllExpenses", () => {
+		it("should return all the expenses", async () => {
+			const expenseService = initExpenseService({
+				googleService: mockGoogleService,
+				config: mockConfig,
+			});
+			const expenses = await expenseService.getAllExpenses({
+				sheetId: "sheetId",
+			});
+			expect(expenses).toHaveLength(13);
+			expect(expenses[0]).toEqual({
+				date: new Date("2023-12-01T08:00:00Z"),
+				amount: 20,
+				category: "personal",
+				subCategory: "",
+				description: "",
+			});
+			expect(expenses[12]).toEqual({
+				date: new Date("2024-02-10T08:00:00Z"),
+				amount: 30,
+				category: "food",
+				subCategory: "groceries",
+				description: "eggs",
+			});
+		});
+
+		it("should allow filtering by category", async () => {
+			const expenseService = initExpenseService({
+				googleService: mockGoogleService,
+				config: mockConfig,
+			});
+			const expenses = await expenseService.getAllExpenses({
+				sheetId: "sheetId",
+				filters: {
+					categoryName: "food",
+				},
+			});
+
+			expect(expenses).toHaveLength(10);
+			expect(expenses[0]).toEqual({
+				date: new Date("2023-12-30T08:00:00Z"),
+				amount: 40,
+				category: "food",
+				subCategory: "groceries",
+				description: "milk",
+			});
+			expect(expenses[9]).toEqual({
+				date: new Date("2024-02-10T08:00:00Z"),
+				amount: 30,
+				category: "food",
+				subCategory: "groceries",
+				description: "eggs",
+			});
+		});
+	});
 	describe("getLastMonthExpenses", () => {
 		beforeEach(() => {
 			vi.useFakeTimers();
@@ -110,7 +165,7 @@ describe("Expense Service", () => {
 				sheetId: "sheetId",
 			});
 			expect(lastMonthExpenses).toHaveLength(8);
-			expect(lastMonthExpenses).toEqual(expectedExpenses);
+			expect(lastMonthExpenses).toEqual(expectedExpensesLastMonth);
 		});
 
 		it("should return the last month expenses even if we are at half month", async () => {
@@ -124,7 +179,7 @@ describe("Expense Service", () => {
 				sheetId: "sheetId",
 			});
 			expect(lastMonthExpenses).toHaveLength(8);
-			expect(lastMonthExpenses).toEqual(expectedExpenses);
+			expect(lastMonthExpenses).toEqual(expectedExpensesLastMonth);
 		});
 
 		it("should return the last month expenses even if we are on 1° january", async () => {
