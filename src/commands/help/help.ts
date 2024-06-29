@@ -20,6 +20,8 @@ Dopo che avrai lanciato il comando \`/start\`, puoi utilizzare gli altri comandi
 - \`aggiungi 20 pizza con colleghi cibo ristorante\` 👉 esempio per tracciare una spesa (cibo e ristorante sono rispettivamente categoria e sotto-categoria)
 - \`aggiungi 20 pizza con colleghi\` 👉 il bot ti chiederà in maniera interattiva come categorizzare la spesa
 - \`aggiungi veloce 20\` 👉 esempio per tracciare una spesa velocemente, senza assegnare una categoria
+- \`lista spese\` 👉 per listare le spese di una categoria/sottocategoria
+- \`lista spese cibo ristorante\` 👉 esempio per avere tutte le spese con sottocategoria \`ristorante\`
 - \`/help\` 👉 per riavere questo messaggio!
 `;
 
