@@ -75,6 +75,7 @@ export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 							filters: { categoryName: category },
 						});
 
+						const totalAmount = expenses.reduce((acc, e) => acc + e.amount, 0);
 						const expenseMsg = expenses
 							.map(
 								(e) =>
@@ -83,7 +84,7 @@ export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 							.join("\n");
 						bot.sendMessage(
 							chatId,
-							`Ecco tutte le spese relative alla categoria ${categoryObj.name}\n${expenseMsg}`,
+							`Ecco tutte le spese relative alla categoria ${categoryObj.name}\nTotale spese: ${totalAmount}€\n${expenseMsg}`,
 						);
 					} else {
 						// the category has subcategories, we need to show them
@@ -137,6 +138,7 @@ export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 							subCategoryName: matchedSubCategory,
 						},
 					});
+					const totalAmount = expenses.reduce((acc, e) => acc + e.amount, 0);
 
 					const expenseMsg = expenses
 						.map(
@@ -146,7 +148,7 @@ export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 						.join("\n");
 					bot.sendMessage(
 						chatId,
-						`Ecco tutte le spese relative alla sottocategoria ${matchedSubCategory} (${matchedCategory})\n${expenseMsg}`,
+						`Ecco tutte le spese relative alla sottocategoria ${matchedSubCategory} (${matchedCategory})\nTotale spese: ${totalAmount}€\n${expenseMsg}`,
 					);
 					return;
 				}

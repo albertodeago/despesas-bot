@@ -168,6 +168,7 @@ describe("AddExpenseCommand", () => {
 		expect(calledWith[0]).toBe(123);
 		expect(calledWith[1]).toContain(
 			`Ecco tutte le spese relative alla categoria personal
+Totale spese: 75€
 - 01/12/2023: 20€ (nessuna descrizione)
 - 21/01/2024: 30€ (private stuff)
 - 02/02/2024: 25€ (another personal)`,
@@ -182,6 +183,7 @@ describe("AddExpenseCommand", () => {
 		expect(calledWith[0]).toBe(123);
 		expect(calledWith[1]).toContain(
 			`Ecco tutte le spese relative alla sottocategoria groceries (food)
+Totale spese: 180€
 - 10/12/2023: 100€ (groceries for xmas)
 - 30/12/2023: 40€ (milk)
 - 01/01/2024: 10€ (nessuna descrizione)
