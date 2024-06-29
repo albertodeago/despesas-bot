@@ -43,6 +43,7 @@ const mockChatsConfigUC = {
 	getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve("sheet-id")),
 };
 const mockExpenseService = {
+	getAllExpenses: vi.fn(() => Promise.resolve([])),
 	getLastMonthExpenses: vi.fn(() =>
 		Promise.resolve([
 			{

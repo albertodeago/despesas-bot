@@ -138,3 +138,6 @@ export const includesConsideringTypo = (
 
 	return false;
 };
+
+export const filterNullish = <T>(item: T | null | undefined): item is T =>
+	item !== null && item !== undefined;

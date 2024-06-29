@@ -11,6 +11,7 @@ import { initChatsConfigurationUseCase } from "./use-cases/chats-configuration";
 import { CategoriesCommand } from "./commands/categories/categories";
 import { AddExpenseCommand } from "./commands/expenses/add-expense";
 import { AddExpenseQuickCommand } from "./commands/expenses/add-expense-quick";
+import { ListExpensesCommand } from "./commands/expenses/list-expenses";
 import { HelpCommand } from "./commands/help/help";
 import { StartCommand } from "./commands/start/start";
 import { StopCommand } from "./commands/stop/stop";
@@ -45,19 +46,15 @@ BUGS:
 
 FUTURE:
 - TODO: [FEATURE] add command to get the total expenses of a specific category / subcategory
-- TODO: [IMPROVEMENT] sort textual reports by most expensive category to least expensive
-- TODO: [FEATURE] typo tolerant (for commands, e.g. matching agiungi)
+	lista spese <categoria> [sottocategoria] 
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
-- TODO: [FEATURE] add command to add recurrent expenses? (e.g. "ricorrente mensile 30 bolletta gas <categoria> <sottocategoria>")
-- TODO: [FEATURE] add command to add reminders? (e.g. "promemoria settimanale bolletta gas")
 - TODO: [FEATURE] do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
+- TODO: [BUG] handle current "statefulness" by keeping a map in memory of which chat is expecting to send a message?
 
 OPTIONAL:
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
 - [FEATURE] function to add a category / subcategory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
-- [FEATURE] alias /a for "aggiungi"?
-- [FEATURE] alias /av for "aggiungi veloce"?
 - [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
 
@@ -163,6 +160,17 @@ const main = async () => {
 			googleService,
 			analytics,
 			config,
+			chatsConfigUC,
+			logger,
+		}),
+	);
+
+	bot.onText(
+		ListExpensesCommand.pattern,
+		ListExpensesCommand.getHandler({
+			bot,
+			categoriesUC,
+			expenseService,
 			chatsConfigUC,
 			logger,
 		}),

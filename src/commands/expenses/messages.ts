@@ -18,3 +18,6 @@ export const getErrorMessage = (e?: unknown) => {
 
 export const genericErrorMsg =
 	"Si è verificato un errore, riprovare più tardi.";
+
+export const getMsgExplanationList = () => `Per visualizzare le spese, scrivere\n
+lista spese <categoria> [sottocategoria]`;

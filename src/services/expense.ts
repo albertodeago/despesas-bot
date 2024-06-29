@@ -1,4 +1,5 @@
 import type { CONFIG_TYPE } from "../config/config";
+import { filterNullish } from "../utils";
 import type { GoogleService } from "./google";
 
 export type Expense = {
@@ -7,6 +8,11 @@ export type Expense = {
 	category: string;
 	subCategory: string;
 	description: string;
+};
+
+type getExpensesFilters = {
+	categoryName?: string;
+	subCategoryName?: string;
 };
 
 type InitExpenseServiceParams = {
@@ -20,11 +26,12 @@ export const initExpenseService = ({
 	googleService,
 	config,
 }: InitExpenseServiceParams) => {
-	const getLastMonthExpenses = async ({
+	const getAllExpenses = async ({
 		sheetId,
-	}: { sheetId: SheetId }): Promise<Expense[]> => {
-		const now = new Date();
-
+		filters,
+	}: { sheetId: SheetId; filters?: getExpensesFilters }): Promise<
+		Expense[]
+	> => {
 		const data = await googleService.readGoogleSheet({
 			sheetId,
 			range: config.EXPENSES.RANGE,
@@ -34,26 +41,56 @@ export const initExpenseService = ({
 			return [];
 		}
 
-		const expenses: Expense[] = data.map((d) => {
-			// We manipulate the response, removing the point (.) that sheets uses as a
-			// thousands separator.
-			// We also replacing the comma (,) with a point (.) because that was JS is
-			// expecting (1.396,00 -> 1.396 instead of 1396)
-			const amount = Number.parseFloat(d[1].replace(".", "").replace(",", "."));
-			return {
-				date: dateFromDDMMYYYY(d[0]),
-				amount,
-				category: d[2],
-				subCategory: d[3],
-				description: d[4],
-			};
-		});
+		const expenses: Expense[] = data
+			.map((d, index) => {
+				const date = dateFromDDMMYYYY(d[0]);
+				// We manipulate the response, removing the point (.) that sheets uses as a
+				// thousands separator.
+				// We also replacing the comma (,) with a point (.) because that was JS is
+				// expecting (1.396,00 -> 1.396 instead of 1396)
+				const amount = Number.parseFloat(
+					d[1].replace(".", "").replace(",", "."),
+				);
+				const category = d[2];
+				const subCategory = d[3];
+				const description = d[4];
+				if (index > 0 && filters?.categoryName) {
+					if (category !== filters.categoryName) {
+						return null;
+					}
+					if (
+						filters.subCategoryName &&
+						subCategory !== filters.subCategoryName
+					) {
+						return null;
+					}
+				}
+
+				return {
+					date,
+					amount,
+					category,
+					subCategory,
+					description,
+				};
+			})
+			.filter(filterNullish);
 		expenses.shift(); // remove the header
 
 		// sort it JUST IN CASE
 		expenses.sort((a, b) => {
 			return a.date.getTime() - b.date.getTime();
 		});
+
+		return expenses;
+	};
+
+	const getLastMonthExpenses = async ({
+		sheetId,
+	}: { sheetId: SheetId }): Promise<Expense[]> => {
+		const now = new Date();
+
+		const expenses = await getAllExpenses({ sheetId });
 
 		// if we are the first day of the year, we need to return the expenses of the last month of the previous year
 		if (now.getMonth() === 0) {
@@ -74,6 +111,7 @@ export const initExpenseService = ({
 	};
 
 	return {
+		getAllExpenses,
 		getLastMonthExpenses,
 	};
 };
