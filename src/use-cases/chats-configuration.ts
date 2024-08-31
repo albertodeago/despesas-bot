@@ -95,6 +95,7 @@ export const initChatsConfigurationUseCase = ({
 				data: [
 					[chatConfig.chatId, chatConfig.spreadsheetId, chatConfig.isActive],
 				],
+				valueInputOption: "RAW",
 			});
 
 			// update cache

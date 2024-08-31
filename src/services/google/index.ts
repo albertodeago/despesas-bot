@@ -77,7 +77,7 @@ export const initGoogleService = (client: sheets_v4.Sheets) => {
 		tabName,
 		range,
 		data,
-		valueInputOption = "RAW",
+		valueInputOption = "USER_ENTERED",
 		insertDataOption = "INSERT_ROWS",
 	}: {
 		sheetId: SheetId;
