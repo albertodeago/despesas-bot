@@ -48,11 +48,10 @@ FUTURE:
 - TODO: [FEATURE] add command to get the total expenses of a specific category / subcategory
 	lista spese <categoria> [sottocategoria] 
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
-- TODO: [FEATURE] do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
 - TODO: [BUG] handle current "statefulness" by keeping a map in memory of which chat is expecting to send a message?
 	this would solve the problem when a chat is waiting for a message and another user sends a message
 - TODO: [MAINTENANCE] try to update chart-js (and related deps)
-- TODO: [MAINTENANCE] should we try to update googleapis?
+- TODO: [MAINTENANCE] should we try to update googleapis? (tried, there is a ts error, but actually looks like it works)
 
 OPTIONAL:
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
