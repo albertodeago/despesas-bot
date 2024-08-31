@@ -20,22 +20,22 @@
 	"license": "ISC",
 	"dependencies": {
 		"@google-cloud/local-auth": "2.1.0",
-		"@isaacs/ttlcache": "^1.4.1",
+		"@isaacs/ttlcache": "1.4.1",
 		"chart.js": "^3.9.1",
 		"chartjs-node-canvas": "^4.1.6",
 		"chartjs-plugin-datalabels": "^2.2.0",
-		"dotenv": "^16.3.1",
+		"dotenv": "16.4.5",
 		"googleapis": "95.0.0",
-		"node-telegram-bot-api": "0.64.0"
+		"node-telegram-bot-api": "0.66.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.2",
-		"@flydotio/dockerfile": "^0.5.0",
+		"@biomejs/biome": "1.8.3",
+		"@flydotio/dockerfile": "0.5.8",
 		"@types/node": "20.10.2",
-		"@types/node-telegram-bot-api": "0.63.3",
-		"@vitest/coverage-v8": "^1.2.1",
-		"esbuild": "0.19.8",
-		"typescript": "5.3.2",
-		"vitest": "1.4.0"
+		"@types/node-telegram-bot-api": "0.64.7",
+		"@vitest/coverage-v8": "2.0.5",
+		"esbuild": "0.23.1",
+		"typescript": "5.5.4",
+		"vitest": "2.0.5"
 	}
 }

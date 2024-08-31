@@ -50,6 +50,9 @@ FUTURE:
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [FEATURE] do we want to let the user filter times when the bot checks for recurrent/reminders? (this would be a column in the sheet)
 - TODO: [BUG] handle current "statefulness" by keeping a map in memory of which chat is expecting to send a message?
+	this would solve the problem when a chat is waiting for a message and another user sends a message
+- TODO: [MAINTENANCE] try to update chart-js (and related deps)
+- TODO: [MAINTENANCE] should we try to update googleapis?
 
 OPTIONAL:
 - [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
@@ -57,6 +60,7 @@ OPTIONAL:
 - [FEATURE] function to add a category / subcategory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
+- [CODE_QUALITY] completely rewrite following clean-architecture
 
 Probably a big refactor would make things easier.
 If we put just one listener for every message, in that listener we could:
