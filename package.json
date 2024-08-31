@@ -1,6 +1,6 @@
 {
 	"name": "despesas-bot",
-	"version": "1.12.2",
+	"version": "1.12.3",
 	"description": "A telegram bot to track your expenses on a google sheet",
 	"main": "main.js",
 	"scripts": {
