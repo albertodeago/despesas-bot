@@ -42,24 +42,20 @@ if (
 
 /**
 BUGS:
-- latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev, let's wait next month)
+- latest prod report had 'squares' instead of text in graphs (? not able to reproduce it in dev)
+- TODO: [MAINTENANCE] try to update chart-js (and related deps)
 
 FUTURE:
-- TODO: [FEATURE] add command to get the total expenses of a specific category / subcategory
-	lista spese <categoria> [sottocategoria] 
 - TODO: [FEATURE] can we parse vocals and answer/handle that too? (check wit.ai https://www.google.com/search?q=wit%20speech%20to%20text&sourceid=chrome&ie=UTF-8)
 - TODO: [BUG] handle current "statefulness" by keeping a map in memory of which chat is expecting to send a message?
 	this would solve the problem when a chat is waiting for a message and another user sends a message
-- TODO: [MAINTENANCE] try to update chart-js (and related deps)
 - TODO: [MAINTENANCE] should we try to update googleapis? (tried, there is a ts error, but actually looks like it works)
 
 OPTIONAL:
-- [FEATURE] make answers various (e.g. "fatto", "spesa aggiunta", "ho aggiunto la spesa x", etc...)
 - [CODE_QUALITY] expose a fixture/mock folder/file in each module with a mock version of the module?
-- [FEATURE] function to add a category / subcategory? Do we want to add this kind of "admin" features? (not sure if they are useful, ppl should just edit the spreadsheet manually)
 - [CODE_QUALITY] improve project structure, currently it's pretty messy
   - we should have a "services" folder and "use-cases/domains" folder, services can only be used by use-cases
-- [CODE_QUALITY] completely rewrite following clean-architecture
+  - [CODE_QUALITY] completely rewrite following clean-architecture
 
 Probably a big refactor would make things easier.
 If we put just one listener for every message, in that listener we could:

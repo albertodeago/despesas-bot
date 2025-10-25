@@ -9,7 +9,22 @@ aggiungi 7.50 aperitivo`;
 export const getWrongAmountMessageQuick = () => `L'importo dev'essere un numero. Un esempio per inserire una spesa è:\n
 aggiungi veloce 7.50 aperitivo`;
 
-export const getOkMessage = () => "Fatto!";
+const okMessages = [
+	"Fatto!",
+	"Spesa aggiunta!",
+	"Ho aggiunto la spesa!",
+	"Perfetto, spesa registrata!",
+	"Tutto a posto!",
+	"Registrata!",
+	"Ok, aggiunta!",
+];
+export const getOkMessage = () => {
+	if (process.env.NODE_ENV === "test") {
+		return okMessages[0];
+	}
+	const randomIndex = Math.floor(Math.random() * okMessages.length);
+	return okMessages[randomIndex];
+};
 
 export const getErrorMessage = (e?: unknown) => {
 	const errMsg = e ? `\nErrore:\n${e}` : "";
