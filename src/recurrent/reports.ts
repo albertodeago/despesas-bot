@@ -1,10 +1,9 @@
-import { UNCATEGORIZED_CATEGORY } from "../config/config";
-import { getChart } from "./chart/chart";
-
 import type TelegramBot from "node-telegram-bot-api";
+import { UNCATEGORIZED_CATEGORY } from "../config/config";
 import type { Logger } from "../logger";
 import type { Expense, ExpenseService } from "../services/expense";
 import type { ChatsConfigurationUseCase } from "../use-cases/chats-configuration";
+import { getChart } from "./chart/chart";
 
 type InitReportsParams = {
 	logger: Logger;

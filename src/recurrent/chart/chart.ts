@@ -1,9 +1,8 @@
+import type { ChartTypeRegistry } from "chart.js";
 import { Chart } from "chart.js";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { shuffleArray } from "../../utils";
-
-import type { ChartTypeRegistry } from "chart.js";
 
 Chart.register(ChartDataLabels);
 

@@ -6,15 +6,12 @@
 	"scripts": {
 		"dev": "npm run build && node ./dist/main.js",
 		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node24 --outfile=./dist/main.js",
-		"ts-check": "tsc --noEmit",
+		"ts:check": "tsc --noEmit",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch",
-		"format": "biome format --write .",
-		"lint": "biome lint .",
-		"lint:apply": "biome lint --write .",
-		"check": "biome check .",
-		"check:apply": "biome check --apply ."
+		"lint": "biome check .",
+		"lint:apply": "biome check --write ."
 	},
 	"author": "Alberto De Agostini",
 	"license": "ISC",

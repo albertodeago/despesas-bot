@@ -1,10 +1,9 @@
+import type TelegramBot from "node-telegram-bot-api";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../../logger/mock";
 import { getMockGoogleService } from "../google/mock";
-import { initReminderService } from "./reminder";
-
-import type TelegramBot from "node-telegram-bot-api";
 import type { RecurrentFrequency } from "./common";
+import { initReminderService } from "./reminder";
 
 const spyRead = vi.fn(async () => [
 	["message", "frequency", "lastAddedDate"],

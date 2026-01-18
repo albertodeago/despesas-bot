@@ -2,7 +2,7 @@ import type TelegramBot from "node-telegram-bot-api";
 import type { CONFIG_TYPE } from "../../config/config";
 import type { Logger } from "../../logger";
 import type { GoogleService } from "../google";
-import { type RecurrentFrequency, getDateWithFallback } from "./common";
+import { getDateWithFallback, type RecurrentFrequency } from "./common";
 
 export type Reminder = {
 	index: number; // this is the row number in the google sheet, we use it as an identifier
@@ -120,7 +120,7 @@ export const initReminderService = ({
 
 type ReminderRow = [string, string, string, string];
 const checkReminder = (reminderRow: ReminderRow): string | undefined => {
-	let errorMsg: string | undefined ;
+	let errorMsg: string | undefined;
 
 	const [message, frequency, lastAddedDate] = reminderRow;
 	if (!message) {

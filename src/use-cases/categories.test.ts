@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../logger/mock";
 import { getMockGoogleService } from "../services/google/mock";
 import {
-	type CategoriesUseCase,
 	_googleResultToCategories,
+	type CategoriesUseCase,
 	initCategoriesUseCase,
 } from "./categories";
 

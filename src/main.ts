@@ -1,13 +1,6 @@
 import "dotenv/config";
 import { version } from "../package.json";
 import { initAnalytics } from "./analytics";
-import { getConfig } from "./config/config";
-import { getGoogleSheetClient, initGoogleService } from "./services/google";
-import { getBot } from "./telegram";
-
-import { initCategoriesUseCase } from "./use-cases/categories";
-import { initChatsConfigurationUseCase } from "./use-cases/chats-configuration";
-
 import { CategoriesCommand } from "./commands/categories/categories";
 import { AddExpenseCommand } from "./commands/expenses/add-expense";
 import { AddExpenseQuickCommand } from "./commands/expenses/add-expense-quick";
@@ -15,13 +8,18 @@ import { ListExpensesCommand } from "./commands/expenses/list-expenses";
 import { HelpCommand } from "./commands/help/help";
 import { StartCommand } from "./commands/start/start";
 import { StopCommand } from "./commands/stop/stop";
+import { getConfig } from "./config/config";
 import { initLogger } from "./logger";
 import { initRecurrentExpenses } from "./recurrent/expenses";
 import { initReminders } from "./recurrent/reminders";
 import { initReports } from "./recurrent/reports";
 import { initExpenseService } from "./services/expense";
+import { getGoogleSheetClient, initGoogleService } from "./services/google";
 import { initRecurrentExpenseService } from "./services/recurrent/expense";
 import { initReminderService } from "./services/recurrent/reminder";
+import { getBot } from "./telegram";
+import { initCategoriesUseCase } from "./use-cases/categories";
+import { initChatsConfigurationUseCase } from "./use-cases/chats-configuration";
 
 const TELEGRAM_SECRET = process.env.TELEGRAM_SECRET;
 const GOOGLE_SECRET_CLIENT_EMAIL = process.env.GOOGLE_SECRET_CLIENT_EMAIL;

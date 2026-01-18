@@ -1,10 +1,9 @@
+import type TelegramBot from "node-telegram-bot-api";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../../logger/mock";
 import { formatDate } from "../../utils";
 import { getMockGoogleService } from "../google/mock";
-import { type RecurrentExpense, initRecurrentExpenseService } from "./expense";
-
-import type TelegramBot from "node-telegram-bot-api";
+import { initRecurrentExpenseService, type RecurrentExpense } from "./expense";
 
 const spyRead = vi.fn(async () => [
 	[
