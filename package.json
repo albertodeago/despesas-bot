@@ -5,7 +5,7 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "npm run build && node ./dist/main.js",
-		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
+		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node24 --outfile=./dist/main.js",
 		"ts-check": "tsc --noEmit",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
@@ -25,13 +25,13 @@
 		"chartjs-node-canvas": "^4.1.6",
 		"chartjs-plugin-datalabels": "^2.2.0",
 		"dotenv": "16.4.5",
-		"googleapis": "95.0.0",
+		"googleapis": "148.0.0",
 		"node-telegram-bot-api": "0.66.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
 		"@flydotio/dockerfile": "0.5.8",
-		"@types/node": "20.10.2",
+		"@types/node": "24.0.10",
 		"@types/node-telegram-bot-api": "0.64.7",
 		"@vitest/coverage-v8": "2.0.5",
 		"esbuild": "0.23.1",
