@@ -1,5 +1,10 @@
 import type TelegramBot from "node-telegram-bot-api";
 import type { Analytics } from "../../analytics";
+import type { CONFIG_TYPE } from "../../config/config";
+import type { Logger } from "../../logger";
+import type { GoogleService } from "../../services/google";
+import type { CategoriesUseCase, Category } from "../../use-cases/categories";
+import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
 import {
 	createExpenseRow,
 	formatDate,
@@ -13,13 +18,6 @@ import {
 	getOkMessage,
 	getWrongAmountMessage,
 } from "./messages";
-
-import type { CONFIG_TYPE } from "../../config/config";
-import type { Logger } from "../../logger";
-import type { GoogleService } from "../../services/google";
-import type { CategoriesUseCase } from "../../use-cases/categories";
-import type { Category } from "../../use-cases/categories";
-import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
 
 const GENERIC_ERROR_MSG = "Si è verificato un errore, riprovare più tardi.";
 
