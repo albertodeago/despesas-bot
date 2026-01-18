@@ -1,7 +1,9 @@
+import type TelegramBot from "node-telegram-bot-api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../../logger/mock";
 import { initExpenseService } from "../../services/expense";
 import { getMockGoogleService } from "../../services/google/mock";
+import type { Category } from "../../use-cases/categories";
 import {
 	getCommonMessageProperties,
 	getMockBot,
@@ -9,9 +11,6 @@ import {
 	waitMessage,
 } from "./fixture";
 import { ListExpensesCommand } from "./list-expenses";
-
-import type TelegramBot from "node-telegram-bot-api";
-import type { Category } from "../../use-cases/categories";
 
 const spyRead = vi.fn(async () => [
 	["date", "amount", "category", "subCategory", "description"],
@@ -64,8 +63,8 @@ const defaultMsg: TelegramBot.Message = {
 
 const mockBot = getMockBot(vi);
 const mockChatsConfigUC = {
-	isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
-	updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+	isChatInConfiguration: vi.fn((_p1: ChatId) => Promise.resolve(false)),
+	updateChatInConfiguration: vi.fn((_p1: ChatId, _p2: ChatConfig) =>
 		Promise.resolve(true),
 	),
 	get: vi.fn(() =>
@@ -82,9 +81,9 @@ const mockChatsConfigUC = {
 			},
 		]),
 	),
-	addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
-	isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
-	getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve("sheet-id")),
+	addChatToConfiguration: vi.fn((_p1: ChatConfig) => Promise.resolve(true)),
+	isChatActiveInConfiguration: vi.fn((_p1: ChatId) => Promise.resolve(true)),
+	getSpreadsheetIdFromChat: vi.fn((_p1: ChatId) => Promise.resolve("sheet-id")),
 };
 const mockLogger = getMockLogger();
 const mockExpenseService = initExpenseService({

@@ -1,11 +1,10 @@
-import { formatDate, fromMsg, includesConsideringTypo } from "../../utils";
-import { getMsgExplanationList } from "./messages";
-
 import type TelegramBot from "node-telegram-bot-api";
 import type { Logger } from "../../logger";
 import type { ExpenseService } from "../../services/expense";
 import type { CategoriesUseCase } from "../../use-cases/categories";
 import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
+import { formatDate, fromMsg, includesConsideringTypo } from "../../utils";
+import { getMsgExplanationList } from "./messages";
 
 const GENERIC_ERROR_MSG = "Si è verificato un errore, riprovare più tardi.";
 
@@ -21,7 +20,7 @@ export const ListExpensesCommand: BotCommand<ListExpenseProps> = {
 	getHandler:
 		({ bot, categoriesUC, expenseService, chatsConfigUC, logger }) =>
 		async (msg: TelegramBot.Message) => {
-			const { chatId, strChatId, tokens, date } = fromMsg(msg);
+			const { chatId, strChatId, tokens } = fromMsg(msg);
 			logger.info(`ListExpensesCommand handler. Tokens ${tokens}`, strChatId);
 
 			try {

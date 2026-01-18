@@ -26,10 +26,10 @@ jobs:
         run: npm ci
 
       - name: Linting and formatting
-        run: npm run check
+        run: npm run lint
 
       - name: Typechecking
-        run: npm run ts-check
+        run: npm run ts:check
 
       - name: Unit Tests
         run: npm run test:coverage

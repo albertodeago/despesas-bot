@@ -17,11 +17,9 @@ export async function getGoogleSheetClient({
 		scopes: SCOPES,
 	});
 
-	const authClient = await auth.getClient();
-
 	return google.sheets({
 		version: "v4",
-		auth: authClient,
+		auth,
 	});
 }
 
@@ -78,7 +76,7 @@ export const initGoogleService = (client: sheets_v4.Sheets) => {
 		range,
 		data,
 		valueInputOption = "USER_ENTERED",
-		insertDataOption = "INSERT_ROWS",
+		insertDataOption = "OVERWRITE",
 	}: {
 		sheetId: SheetId;
 		tabName: string;

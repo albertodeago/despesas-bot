@@ -38,8 +38,8 @@ const defaultMsg: TelegramBot.Message = {
 const mockBot = getMockBot(vi);
 const mockAnalytics = getMockAnalytics(vi);
 const mockChatsConfigUC = {
-	isChatInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(false)),
-	updateChatInConfiguration: vi.fn((p1: ChatId, p2: ChatConfig) =>
+	isChatInConfiguration: vi.fn((_p1: ChatId) => Promise.resolve(false)),
+	updateChatInConfiguration: vi.fn((_p1: ChatId, _p2: ChatConfig) =>
 		Promise.resolve(true),
 	),
 	get: vi.fn(() =>
@@ -56,9 +56,9 @@ const mockChatsConfigUC = {
 			},
 		]),
 	),
-	addChatToConfiguration: vi.fn((p1: ChatConfig) => Promise.resolve(true)),
-	isChatActiveInConfiguration: vi.fn((p1: ChatId) => Promise.resolve(true)),
-	getSpreadsheetIdFromChat: vi.fn((p1: ChatId) => Promise.resolve("sheet-id")),
+	addChatToConfiguration: vi.fn((_p1: ChatConfig) => Promise.resolve(true)),
+	isChatActiveInConfiguration: vi.fn((_p1: ChatId) => Promise.resolve(true)),
+	getSpreadsheetIdFromChat: vi.fn((_p1: ChatId) => Promise.resolve("sheet-id")),
 };
 const mockLogger = getMockLogger();
 
@@ -296,7 +296,7 @@ describe("AddExpenseCommand", () => {
 
 			expect(mockBot.sendMessage).toHaveBeenCalledWith(
 				123,
-				"Cè stato un problema, reinserisci la spesa\n",
+				"C'è stato un problema, reinserisci la spesa\n",
 			);
 			expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
 		});
@@ -354,7 +354,7 @@ describe("AddExpenseCommand", () => {
 
 			expect(mockBot.sendMessage).toHaveBeenCalledWith(
 				123,
-				"Cè stato un problema, reinserisci la spesa\n",
+				"C'è stato un problema, reinserisci la spesa\n",
 			);
 			expect(mockAnalytics.addTrackedExpense).not.toHaveBeenCalled();
 		});

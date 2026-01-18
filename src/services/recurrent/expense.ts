@@ -3,7 +3,7 @@ import type { CONFIG_TYPE } from "../../config/config";
 import type { Logger } from "../../logger";
 import { createExpenseRow, formatDate } from "../../utils";
 import type { GoogleService } from "../google";
-import { type RecurrentFrequency, getDateWithFallback } from "./common";
+import { getDateWithFallback, type RecurrentFrequency } from "./common";
 
 export type RecurrentExpense = {
 	index: number; // this is the row number in the google sheet, we use it as an identifier
@@ -178,9 +178,9 @@ export const initRecurrentExpenseService = ({
 
 type ExpenseRow = [string, string, string, string, string, string];
 const checkRecurrentExpense = (expenseRow: ExpenseRow): string | undefined => {
-	let errorMsg: string | undefined = undefined;
+	let errorMsg: string | undefined;
 
-	const [category, subCategory, message, amount, frequency, lastAddedDate] =
+	const [category, _subCategory, _message, amount, frequency, _lastAddedDate] =
 		expenseRow;
 	if (!category) {
 		errorMsg = "Category is required";

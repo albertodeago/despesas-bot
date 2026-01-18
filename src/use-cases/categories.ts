@@ -1,4 +1,4 @@
-import TTLCache from "@isaacs/ttlcache";
+import { TTLCache } from "@isaacs/ttlcache";
 import type { CONFIG_TYPE } from "../config/config";
 import type { Logger } from "../logger";
 import type { GoogleService } from "../services/google";

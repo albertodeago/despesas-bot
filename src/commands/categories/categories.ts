@@ -1,10 +1,9 @@
 import type TelegramBot from "node-telegram-bot-api";
-import { fromMsg } from "../../utils";
-import { getCategoriesAnswer } from "./utils";
-
 import type { Logger } from "../../logger";
 import type { CategoriesUseCase } from "../../use-cases/categories";
 import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
+import { fromMsg } from "../../utils";
+import { getCategoriesAnswer } from "./utils";
 
 const GENERIC_ERROR_MSG = "Si è verificato un errore, riprovare più tardi.";
 

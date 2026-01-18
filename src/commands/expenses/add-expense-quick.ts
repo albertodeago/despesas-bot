@@ -1,6 +1,9 @@
 import type TelegramBot from "node-telegram-bot-api";
 import type { Analytics } from "../../analytics";
 import { type CONFIG_TYPE, UNCATEGORIZED_CATEGORY } from "../../config/config";
+import type { Logger } from "../../logger";
+import type { GoogleService } from "../../services/google";
+import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
 import {
 	createExpenseRow,
 	formatDate,
@@ -13,10 +16,6 @@ import {
 	getOkMessage,
 	getWrongAmountMessageQuick,
 } from "./messages";
-
-import type { Logger } from "../../logger";
-import type { GoogleService } from "../../services/google";
-import type { ChatsConfigurationUseCase } from "../../use-cases/chats-configuration";
 
 type AddExpenseQuickParams = {
 	bot: TelegramBot;

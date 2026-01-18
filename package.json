@@ -5,37 +5,34 @@
 	"main": "main.js",
 	"scripts": {
 		"dev": "npm run build && node ./dist/main.js",
-		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node20 --outfile=./dist/main.js",
-		"ts-check": "tsc --noEmit",
+		"build": "esbuild --bundle ./src/main.ts --platform=node --target=node24 --outfile=./dist/main.js",
+		"ts:check": "tsc --noEmit",
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest watch",
-		"format": "biome format --write .",
-		"lint": "biome lint .",
-		"lint:apply": "biome lint --apply .",
-		"check": "biome check .",
-		"check:apply": "biome check --apply ."
+		"lint": "biome check .",
+		"lint:apply": "biome check --write ."
 	},
 	"author": "Alberto De Agostini",
 	"license": "ISC",
 	"dependencies": {
 		"@google-cloud/local-auth": "3.0.1",
-		"@isaacs/ttlcache": "1.4.1",
-		"chart.js": "^3.9.1",
-		"chartjs-node-canvas": "^4.1.6",
-		"chartjs-plugin-datalabels": "^2.2.0",
-		"dotenv": "16.4.5",
-		"googleapis": "95.0.0",
-		"node-telegram-bot-api": "0.66.0"
+		"@isaacs/ttlcache": "2.1.4",
+		"chart.js": "4.5.1",
+		"chartjs-node-canvas": "5.0.0",
+		"chartjs-plugin-datalabels": "2.2.0",
+		"dotenv": "17.2.3",
+		"googleapis": "170.1.0",
+		"node-telegram-bot-api": "0.67.0"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.8.3",
-		"@flydotio/dockerfile": "0.5.8",
-		"@types/node": "20.10.2",
-		"@types/node-telegram-bot-api": "0.64.7",
-		"@vitest/coverage-v8": "2.0.5",
-		"esbuild": "0.23.1",
-		"typescript": "5.5.4",
-		"vitest": "2.0.5"
+		"@biomejs/biome": "2.3.11",
+		"@flydotio/dockerfile": "0.7.10",
+		"@types/node": "24.0.10",
+		"@types/node-telegram-bot-api": "0.64.13",
+		"@vitest/coverage-v8": "4.0.17",
+		"esbuild": "0.27.2",
+		"typescript": "5.9.3",
+		"vitest": "4.0.17"
 	}
 }
