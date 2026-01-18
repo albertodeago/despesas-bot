@@ -24,17 +24,17 @@
 		"chart.js": "4.5.1",
 		"chartjs-node-canvas": "5.0.0",
 		"chartjs-plugin-datalabels": "2.2.0",
-		"dotenv": "16.4.5",
+		"dotenv": "17.2.3",
 		"googleapis": "148.0.0",
-		"node-telegram-bot-api": "0.66.0"
+		"node-telegram-bot-api": "0.67.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "1.8.3",
-		"@flydotio/dockerfile": "0.5.8",
+		"@flydotio/dockerfile": "0.7.10",
 		"@types/node": "24.0.10",
-		"@types/node-telegram-bot-api": "0.64.7",
+		"@types/node-telegram-bot-api": "0.64.13",
 		"@vitest/coverage-v8": "2.0.5",
-		"esbuild": "0.23.1",
+		"esbuild": "0.27.2",
 		"typescript": "5.7.3",
 		"vitest": "2.0.5"
 	}
