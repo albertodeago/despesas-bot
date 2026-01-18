@@ -29,9 +29,10 @@ export const initExpenseService = ({
 	const getAllExpenses = async ({
 		sheetId,
 		filters,
-	}: { sheetId: SheetId; filters?: getExpensesFilters }): Promise<
-		Expense[]
-	> => {
+	}: {
+		sheetId: SheetId;
+		filters?: getExpensesFilters;
+	}): Promise<Expense[]> => {
 		const data = await googleService.readGoogleSheet({
 			sheetId,
 			range: config.EXPENSES.RANGE,
@@ -87,7 +88,9 @@ export const initExpenseService = ({
 
 	const getLastMonthExpenses = async ({
 		sheetId,
-	}: { sheetId: SheetId }): Promise<Expense[]> => {
+	}: {
+		sheetId: SheetId;
+	}): Promise<Expense[]> => {
 		const now = new Date();
 
 		const expenses = await getAllExpenses({ sheetId });
