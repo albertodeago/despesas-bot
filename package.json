@@ -21,8 +21,8 @@
 	"dependencies": {
 		"@google-cloud/local-auth": "3.0.1",
 		"@isaacs/ttlcache": "2.1.4",
-		"chart.js": "3.9.1",
-		"chartjs-node-canvas": "4.1.6",
+		"chart.js": "4.5.1",
+		"chartjs-node-canvas": "5.0.0",
 		"chartjs-plugin-datalabels": "2.2.0",
 		"dotenv": "16.4.5",
 		"googleapis": "148.0.0",
