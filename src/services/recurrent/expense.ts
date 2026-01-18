@@ -178,7 +178,7 @@ export const initRecurrentExpenseService = ({
 
 type ExpenseRow = [string, string, string, string, string, string];
 const checkRecurrentExpense = (expenseRow: ExpenseRow): string | undefined => {
-	let errorMsg: string | undefined = undefined;
+	let errorMsg: string | undefined ;
 
 	const [category, subCategory, message, amount, frequency, lastAddedDate] =
 		expenseRow;

@@ -30,7 +30,7 @@ export const getOkMessage = () => {
 
 export const getErrorMessage = (e?: unknown) => {
 	const errMsg = e ? `\nErrore:\n${e}` : "";
-	return `C\è stato un problema, reinserisci la spesa\n${errMsg}`;
+	return `C'è stato un problema, reinserisci la spesa\n${errMsg}`;
 };
 
 export const genericErrorMsg =

@@ -120,7 +120,7 @@ export const initReminderService = ({
 
 type ReminderRow = [string, string, string, string];
 const checkReminder = (reminderRow: ReminderRow): string | undefined => {
-	let errorMsg: string | undefined = undefined;
+	let errorMsg: string | undefined ;
 
 	const [message, frequency, lastAddedDate] = reminderRow;
 	if (!message) {

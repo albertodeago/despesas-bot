@@ -42,7 +42,7 @@ describe("USE-CASE: categories", () => {
 	it("should return the categories from the specified sheetId", async () => {
 		const result = await categories.get("sheet-id");
 
-		// @ts-ignore - not sure why but this has a wrong type
+		// @ts-expect-error - not sure why but this has a wrong type
 		const calledParams = spyRead.mock.calls[0][0] as unknown as {
 			range: string;
 			sheetId: string;
