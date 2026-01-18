@@ -180,7 +180,7 @@ type ExpenseRow = [string, string, string, string, string, string];
 const checkRecurrentExpense = (expenseRow: ExpenseRow): string | undefined => {
 	let errorMsg: string | undefined;
 
-	const [category, subCategory, message, amount, frequency, lastAddedDate] =
+	const [category, _subCategory, _message, amount, frequency, _lastAddedDate] =
 		expenseRow;
 	if (!category) {
 		errorMsg = "Category is required";
