@@ -20,7 +20,7 @@
 	"license": "ISC",
 	"dependencies": {
 		"@google-cloud/local-auth": "3.0.1",
-		"@isaacs/ttlcache": "1.4.1",
+		"@isaacs/ttlcache": "2.1.4",
 		"chart.js": "3.9.1",
 		"chartjs-node-canvas": "4.1.6",
 		"chartjs-plugin-datalabels": "2.2.0",
