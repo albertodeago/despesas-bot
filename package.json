@@ -21,9 +21,9 @@
 	"dependencies": {
 		"@google-cloud/local-auth": "3.0.1",
 		"@isaacs/ttlcache": "1.4.1",
-		"chart.js": "^3.9.1",
-		"chartjs-node-canvas": "^4.1.6",
-		"chartjs-plugin-datalabels": "^2.2.0",
+		"chart.js": "3.9.1",
+		"chartjs-node-canvas": "4.1.6",
+		"chartjs-plugin-datalabels": "2.2.0",
 		"dotenv": "16.4.5",
 		"googleapis": "148.0.0",
 		"node-telegram-bot-api": "0.66.0"
@@ -35,7 +35,7 @@
 		"@types/node-telegram-bot-api": "0.64.7",
 		"@vitest/coverage-v8": "2.0.5",
 		"esbuild": "0.23.1",
-		"typescript": "5.5.4",
+		"typescript": "5.7.3",
 		"vitest": "2.0.5"
 	}
 }
