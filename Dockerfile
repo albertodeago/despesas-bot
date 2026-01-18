@@ -26,12 +26,17 @@ RUN npm ci --include=dev
 # Copy application code
 COPY --link . .
 
+# Build the application
+RUN npm run build
+
 # Final stage for app image
 FROM base
 
 # Copy built application
-COPY --from=build /app /app
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/node_modules /app/node_modules
+COPY --from=build /app/package.json /app/package.json
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
-CMD [ "npm", "run", "dev" ]
+CMD [ "node", "./dist/main.js" ]
