@@ -83,6 +83,18 @@ then, to deploy, run
 fly deploy
 ```
 
+### Legacy Hobby memory budget
+
+`fly.toml` targets one always-on shared-CPU Machine with 256 MB RAM, matching
+this organization's legacy free compute allowance. Monthly reports retain the
+category and subcategory text summaries, but no longer generate chart images.
+New Fly organizations do not get this legacy allowance; other billable resources
+or bandwidth overages can still incur charges.
+
+See [the memory check and rollout notes](docs/memory-budget.md) before deploying.
+Changing the repository configuration does not resize the live Machine until a
+deployment applies it. Do not resize the old, heavier image to 256 MB first.
+
 ## Creating another instance of a bot like this
 
 This Bot leverages google service accounts to have a secure way to access the google sheet.

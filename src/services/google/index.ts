@@ -1,4 +1,5 @@
-import { google, type sheets_v4 } from "googleapis";
+import { sheets, type sheets_v4 } from "@googleapis/sheets";
+import { GoogleAuth } from "google-auth-library";
 
 const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
 
@@ -9,7 +10,7 @@ export async function getGoogleSheetClient({
 	clientEmail: string;
 	privateKey: string;
 }): Promise<sheets_v4.Sheets> {
-	const auth = new google.auth.GoogleAuth({
+	const auth = new GoogleAuth({
 		credentials: {
 			client_email: clientEmail,
 			private_key: privateKey,
@@ -17,7 +18,7 @@ export async function getGoogleSheetClient({
 		scopes: SCOPES,
 	});
 
-	return google.sheets({
+	return sheets({
 		version: "v4",
 		auth,
 	});

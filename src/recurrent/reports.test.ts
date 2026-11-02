@@ -3,11 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../logger/mock";
 import { getExpenseGrouped, initReports } from "./reports";
 
-const stubs = vi.hoisted(() => ({
-	getChart: () => Promise.resolve(Buffer.from("png image")),
-}));
-vi.mock("./chart/chart", () => ({ getChart: stubs.getChart }));
-
 const mockBot = {
 	sendMessage: vi.fn(),
 	sendPhoto: vi.fn(),
@@ -271,7 +266,7 @@ describe("Reports", () => {
 			expect(calls[3][0]).toBe("-321"); // second active chat
 		});
 
-		it("should send a photo with the report by category and subCategory to active chats", async () => {
+		it("should send text-only reports without generating photos", async () => {
 			vi.setSystemTime(mockDateBefore);
 			const reportsHandler = initReports({
 				logger: mockLogger,
@@ -282,8 +277,65 @@ describe("Reports", () => {
 			vi.setSystemTime(mockDate);
 			await reportsHandler.check();
 
-			const calls = mockBot.sendPhoto.mock.calls;
-			expect(calls).toHaveLength(4);
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(4);
+			expect(mockBot.sendPhoto).not.toHaveBeenCalled();
+		});
+
+		it.each([
+			1, 2,
+		])("should continue to later chats when send %i fails for the first chat", async (failedSend) => {
+			vi.setSystemTime(mockDateBefore);
+			const reportsHandler = initReports({
+				logger: mockLogger,
+				chatsConfigUC: mockChatsConfigUC,
+				bot: mockBot as unknown as TelegramBot,
+				expenseService: mockExpenseService,
+			});
+			const deliveryError = new Error("403 Forbidden: bot was blocked");
+			if (failedSend === 2) {
+				mockBot.sendMessage.mockResolvedValueOnce(undefined);
+			}
+			mockBot.sendMessage.mockRejectedValueOnce(deliveryError);
+
+			vi.setSystemTime(mockDate);
+			await reportsHandler.check();
+
+			const healthyChatMessages = mockBot.sendMessage.mock.calls
+				.filter(([chatId]) => chatId === "-321")
+				.map(([, message]) => message);
+			expect(healthyChatMessages).toEqual([
+				expect.stringContaining("Le spese di gennaio sono state di 360€"),
+				expect.stringContaining("Report per sotto-categorie:"),
+			]);
+			expect(mockLogger.sendError).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: expect.stringContaining(deliveryError.message),
+				}),
+				"123",
+			);
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(failedSend + 2);
+
+			await reportsHandler.check();
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(failedSend + 2);
+		});
+
+		it("should continue to later chats when the first chat has no expenses", async () => {
+			vi.setSystemTime(mockDateBefore);
+			const reportsHandler = initReports({
+				logger: mockLogger,
+				chatsConfigUC: mockChatsConfigUC,
+				bot: mockBot as unknown as TelegramBot,
+				expenseService: mockExpenseService,
+			});
+			mockExpenseService.getLastMonthExpenses.mockResolvedValueOnce([]);
+
+			vi.setSystemTime(mockDate);
+			await reportsHandler.check();
+
+			expect(mockBot.sendMessage.mock.calls.map(([chatId]) => chatId)).toEqual([
+				"-321",
+				"-321",
+			]);
 		});
 
 		it("should not send the same report multiple times in the same day", async () => {

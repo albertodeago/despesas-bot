@@ -3,7 +3,6 @@ import { UNCATEGORIZED_CATEGORY } from "../config/config";
 import type { Logger } from "../logger";
 import type { Expense, ExpenseService } from "../services/expense";
 import type { ChatsConfigurationUseCase } from "../use-cases/chats-configuration";
-import { getChart } from "./chart/chart";
 
 type InitReportsParams = {
 	logger: Logger;
@@ -30,9 +29,7 @@ export const initReports = ({
 		// 3. read the chatConfiguration
 		// 4. for each *active* chat,
 		// 5. gather the expenses of last month
-		// 6. create a pie chart with them
-		// 7. send the pie chart to the user
-		// 8. update the "last-added-date" column in the "report" tab
+		// 6. send category and subcategory text summaries
 		logger.debug("Checking reports", "NO_CHAT");
 
 		try {
@@ -67,74 +64,51 @@ export const initReports = ({
 					strChatId,
 				);
 
-				const expenses = await expenseService.getLastMonthExpenses({
-					sheetId: chat.spreadsheetId,
-				});
-				if (expenses.length === 0) {
-					return;
+				try {
+					const expenses = await expenseService.getLastMonthExpenses({
+						sheetId: chat.spreadsheetId,
+					});
+					if (expenses.length === 0) {
+						continue;
+					}
+
+					const { totalExpense, expensesByCategory, expensesBySubCategory } =
+						getExpenseGrouped(expenses);
+
+					// get last month name
+					const lastMonthDate = new Date(
+						now.getFullYear(),
+						now.getMonth() - 1,
+						15,
+					);
+					const lastMonthName = lastMonthDate.toLocaleString("it", {
+						month: "long",
+					});
+
+					// send a text msg with the prev month expenses, markdown table
+					const categoryMsg = getCategoryReportMsg({
+						lastMonthName,
+						totalExpense,
+						expensesByCategory,
+					});
+					await bot.sendMessage(chat.chatId, categoryMsg, {
+						parse_mode: "Markdown",
+					});
+
+					// send a text msg with the prev month expenses, markdown table
+					const subCategoryMsg = getSubCategoryReportMsg({
+						totalExpense,
+						expensesBySubCategory,
+					});
+					await bot.sendMessage(chat.chatId, subCategoryMsg, {
+						parse_mode: "Markdown",
+					});
+				} catch (e) {
+					const err = new Error(
+						`Error while checking reports for chat ${chat.chatId}: ${e}`,
+					);
+					logger.sendError(err, strChatId);
 				}
-
-				const { totalExpense, expensesByCategory, expensesBySubCategory } =
-					getExpenseGrouped(expenses);
-
-				// get last month name
-				const lastMonthDate = new Date(
-					now.getFullYear(),
-					now.getMonth() - 1,
-					15,
-				);
-				const lastMonthName = lastMonthDate.toLocaleString("it", {
-					month: "long",
-				});
-
-				// send a text msg with the prev month expenses, markdown table
-				const categoryMsg = getCategoryReportMsg({
-					lastMonthName,
-					totalExpense,
-					expensesByCategory,
-				});
-				bot.sendMessage(chat.chatId, categoryMsg, { parse_mode: "Markdown" });
-
-				// create the pie chart and send it to the user
-				const chartByCategory = await getChart({
-					chartName: `Spese di ${lastMonthName} per categoria`,
-					labels: Object.keys(expensesByCategory),
-					data: Object.values(expensesByCategory),
-				});
-				bot.sendPhoto(
-					chat.chatId,
-					chartByCategory,
-					{},
-					{
-						filename: `Spese per categoria di ${lastMonthName}.png`,
-						contentType: "application/octet-stream",
-					},
-				);
-
-				// send a text msg with the prev month expenses, markdown table
-				const subCategoryMsg = getSubCategoryReportMsg({
-					totalExpense,
-					expensesBySubCategory,
-				});
-				bot.sendMessage(chat.chatId, subCategoryMsg, {
-					parse_mode: "Markdown",
-				});
-
-				// create the pie chart and send it to the user
-				const chartBySubCategory = await getChart({
-					chartName: `Spese di ${lastMonthName} per sottocategoria`,
-					labels: Object.keys(expensesBySubCategory),
-					data: Object.values(expensesBySubCategory),
-				});
-				bot.sendPhoto(
-					chat.chatId,
-					chartBySubCategory,
-					{},
-					{
-						filename: `Spese per sottocategoria di ${lastMonthName}.png`,
-						contentType: "application/octet-stream",
-					},
-				);
 			}
 		} catch (e) {
 			const err = new Error(`Error while checking reports: ${e}`);

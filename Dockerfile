@@ -2,7 +2,7 @@
 
 # Adjust NODE_VERSION as desired
 ARG NODE_VERSION=24.10.0
-FROM node:${NODE_VERSION}-slim as base
+FROM node:${NODE_VERSION}-slim AS base
 
 LABEL fly_launch_runtime="Node.js"
 
@@ -13,11 +13,7 @@ WORKDIR /app
 ENV NODE_ENV="production"
 
 # Throw-away build stage to reduce size of final image
-FROM base as build
-
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
+FROM base AS build
 
 # Install node modules
 COPY --link package-lock.json package.json ./
@@ -27,7 +23,7 @@ RUN npm ci --include=dev
 COPY --link . .
 
 # Build the application
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 # Final stage for app image
 FROM base
