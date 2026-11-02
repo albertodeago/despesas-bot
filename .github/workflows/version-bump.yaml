@@ -18,13 +18,13 @@ jobs:
     name: 'Automated Version Bump'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7.0.1
         with:
           token: ${{ secrets.DESPESAS_PAT }}
       # To bump major -> "BREAKING CHANGE" | "major" | pattern "refactor!: drop node v16"
       # To bump minor -> "feat: new API" | "feature: new API"
       # otherwise it will bump patch
-      - uses: 'phips28/gh-action-bump-version@master'
+      - uses: 'phips28/gh-action-bump-version@v11.0.7'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
