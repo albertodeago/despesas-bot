@@ -281,6 +281,63 @@ describe("Reports", () => {
 			expect(mockBot.sendPhoto).not.toHaveBeenCalled();
 		});
 
+		it.each([
+			1, 2,
+		])("should continue to later chats when send %i fails for the first chat", async (failedSend) => {
+			vi.setSystemTime(mockDateBefore);
+			const reportsHandler = initReports({
+				logger: mockLogger,
+				chatsConfigUC: mockChatsConfigUC,
+				bot: mockBot as unknown as TelegramBot,
+				expenseService: mockExpenseService,
+			});
+			const deliveryError = new Error("403 Forbidden: bot was blocked");
+			if (failedSend === 2) {
+				mockBot.sendMessage.mockResolvedValueOnce(undefined);
+			}
+			mockBot.sendMessage.mockRejectedValueOnce(deliveryError);
+
+			vi.setSystemTime(mockDate);
+			await reportsHandler.check();
+
+			const healthyChatMessages = mockBot.sendMessage.mock.calls
+				.filter(([chatId]) => chatId === "-321")
+				.map(([, message]) => message);
+			expect(healthyChatMessages).toEqual([
+				expect.stringContaining("Le spese di gennaio sono state di 360€"),
+				expect.stringContaining("Report per sotto-categorie:"),
+			]);
+			expect(mockLogger.sendError).toHaveBeenCalledWith(
+				expect.objectContaining({
+					message: expect.stringContaining(deliveryError.message),
+				}),
+				"123",
+			);
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(failedSend + 2);
+
+			await reportsHandler.check();
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(failedSend + 2);
+		});
+
+		it("should continue to later chats when the first chat has no expenses", async () => {
+			vi.setSystemTime(mockDateBefore);
+			const reportsHandler = initReports({
+				logger: mockLogger,
+				chatsConfigUC: mockChatsConfigUC,
+				bot: mockBot as unknown as TelegramBot,
+				expenseService: mockExpenseService,
+			});
+			mockExpenseService.getLastMonthExpenses.mockResolvedValueOnce([]);
+
+			vi.setSystemTime(mockDate);
+			await reportsHandler.check();
+
+			expect(mockBot.sendMessage.mock.calls.map(([chatId]) => chatId)).toEqual([
+				"-321",
+				"-321",
+			]);
+		});
+
 		it("should not send the same report multiple times in the same day", async () => {
 			vi.setSystemTime(mockDateBefore);
 			const reportsHandler = initReports({

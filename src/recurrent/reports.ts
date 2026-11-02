@@ -64,44 +64,51 @@ export const initReports = ({
 					strChatId,
 				);
 
-				const expenses = await expenseService.getLastMonthExpenses({
-					sheetId: chat.spreadsheetId,
-				});
-				if (expenses.length === 0) {
-					return;
+				try {
+					const expenses = await expenseService.getLastMonthExpenses({
+						sheetId: chat.spreadsheetId,
+					});
+					if (expenses.length === 0) {
+						continue;
+					}
+
+					const { totalExpense, expensesByCategory, expensesBySubCategory } =
+						getExpenseGrouped(expenses);
+
+					// get last month name
+					const lastMonthDate = new Date(
+						now.getFullYear(),
+						now.getMonth() - 1,
+						15,
+					);
+					const lastMonthName = lastMonthDate.toLocaleString("it", {
+						month: "long",
+					});
+
+					// send a text msg with the prev month expenses, markdown table
+					const categoryMsg = getCategoryReportMsg({
+						lastMonthName,
+						totalExpense,
+						expensesByCategory,
+					});
+					await bot.sendMessage(chat.chatId, categoryMsg, {
+						parse_mode: "Markdown",
+					});
+
+					// send a text msg with the prev month expenses, markdown table
+					const subCategoryMsg = getSubCategoryReportMsg({
+						totalExpense,
+						expensesBySubCategory,
+					});
+					await bot.sendMessage(chat.chatId, subCategoryMsg, {
+						parse_mode: "Markdown",
+					});
+				} catch (e) {
+					const err = new Error(
+						`Error while checking reports for chat ${chat.chatId}: ${e}`,
+					);
+					logger.sendError(err, strChatId);
 				}
-
-				const { totalExpense, expensesByCategory, expensesBySubCategory } =
-					getExpenseGrouped(expenses);
-
-				// get last month name
-				const lastMonthDate = new Date(
-					now.getFullYear(),
-					now.getMonth() - 1,
-					15,
-				);
-				const lastMonthName = lastMonthDate.toLocaleString("it", {
-					month: "long",
-				});
-
-				// send a text msg with the prev month expenses, markdown table
-				const categoryMsg = getCategoryReportMsg({
-					lastMonthName,
-					totalExpense,
-					expensesByCategory,
-				});
-				await bot.sendMessage(chat.chatId, categoryMsg, {
-					parse_mode: "Markdown",
-				});
-
-				// send a text msg with the prev month expenses, markdown table
-				const subCategoryMsg = getSubCategoryReportMsg({
-					totalExpense,
-					expensesBySubCategory,
-				});
-				await bot.sendMessage(chat.chatId, subCategoryMsg, {
-					parse_mode: "Markdown",
-				});
 			}
 		} catch (e) {
 			const err = new Error(`Error while checking reports: ${e}`);
