@@ -8,7 +8,7 @@ on:
   pull_request:
 
 env:
-  NODE_VERSION: 20.8
+  NODE_VERSION: 24.10.0
 
 jobs:
   test:
@@ -36,3 +36,26 @@ jobs:
 
       - name: 'Report Coverage'
         uses: davelosert/vitest-coverage-report-action@v2
+
+  memory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Build production image
+        run: docker build -t despesas-bot:memory-check .
+
+      - name: Check memory budget without external network access
+        run: |
+          docker run --rm --network none --memory 256m --memory-swap 256m \
+            -e NODE_PATH=/smoke/node_modules \
+            -v "$PWD/scripts:/app/scripts:ro" \
+            -v "$PWD/node_modules:/smoke/node_modules:ro" \
+            despesas-bot:memory-check node scripts/memory-smoke.cjs

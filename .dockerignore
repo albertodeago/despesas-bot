@@ -1,4 +1,8 @@
-.env
+.env*
+.git
+.claude
+coverage
+.DS_Store
 node_modules
 dist
 client_secret.json

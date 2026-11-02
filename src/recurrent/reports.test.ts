@@ -3,11 +3,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getMockLogger } from "../logger/mock";
 import { getExpenseGrouped, initReports } from "./reports";
 
-const stubs = vi.hoisted(() => ({
-	getChart: () => Promise.resolve(Buffer.from("png image")),
-}));
-vi.mock("./chart/chart", () => ({ getChart: stubs.getChart }));
-
 const mockBot = {
 	sendMessage: vi.fn(),
 	sendPhoto: vi.fn(),
@@ -271,7 +266,7 @@ describe("Reports", () => {
 			expect(calls[3][0]).toBe("-321"); // second active chat
 		});
 
-		it("should send a photo with the report by category and subCategory to active chats", async () => {
+		it("should send text-only reports without generating photos", async () => {
 			vi.setSystemTime(mockDateBefore);
 			const reportsHandler = initReports({
 				logger: mockLogger,
@@ -282,8 +277,8 @@ describe("Reports", () => {
 			vi.setSystemTime(mockDate);
 			await reportsHandler.check();
 
-			const calls = mockBot.sendPhoto.mock.calls;
-			expect(calls).toHaveLength(4);
+			expect(mockBot.sendMessage).toHaveBeenCalledTimes(4);
+			expect(mockBot.sendPhoto).not.toHaveBeenCalled();
 		});
 
 		it("should not send the same report multiple times in the same day", async () => {
